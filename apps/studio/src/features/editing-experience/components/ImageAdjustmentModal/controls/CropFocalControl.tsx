@@ -4,8 +4,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
 import { BiCrosshair } from "react-icons/bi"
 import { generateAssetUrl } from "~/utils/generateAssetUrl"
 
-// The brand accent, read from Chakra's generated CSS var so these inline styles
-// (on raw canvas divs, where theme tokens aren't available) track the theme.
+// Inline styles on raw divs cannot use theme tokens, so read Chakra's CSS var.
 const ACCENT = "var(--chakra-colors-interaction-main-default)"
 
 import type {
@@ -48,19 +47,13 @@ interface CropFocalControlProps {
   cropMode: "fixed" | "custom" | "none"
   lockedRatio?: { width: number; height: number }
   focalEnabled: boolean
-  // The host modal's open state. Re-showing the focal hint on every open (not
-  // just on mount) needs an explicit open signal — this control's instance
-  // can persist/remount independently of the modal's own open/close cycle.
+  // The modal's open state. The focal hint shows again on every open.
   isOpen?: boolean
   onCropChange: (crop: CropRectNormalized) => void
   onFocalChange: (focal: { x: number; y: number }) => void
-  // Fired once the image's true pixel aspect ratio is known, so a caller
-  // that needs to compute a ratio-correct crop independently (e.g. the
-  // modal's "Reset image" button) can do the same math this control does.
+  // Fires when the image loads, with its pixel width / height.
   onImageAspectChange?: (aspect: number) => void
-  // Fired once the image's true pixel dimensions are known, so the modal can
-  // compare the cropped region's effective resolution against the component's
-  // rendered frame and warn on low-resolution crops.
+  // Fires when the image loads, with its pixel size.
   onNaturalSizeChange?: (size: { width: number; height: number }) => void
   // Blocks further crop/focal edits while a save is in flight -- otherwise
   // an edit made during that window is silently lost: handleSave already
@@ -92,8 +85,6 @@ export const CropFocalControl = ({
   isDisabled = false,
 }: CropFocalControlProps): JSX.Element => {
   const boxRef = useRef<HTMLDivElement>(null)
-  // The source image's true pixel aspect — drives the box, letterboxing and
-  // crop math below.
   const [naturalAspect, setNaturalAspect] = useState<number | undefined>(
     undefined,
   )
@@ -101,15 +92,13 @@ export const CropFocalControl = ({
   const [dragTarget, setDragTarget] = useState<DragTarget>(null)
   const lastPointerRef = useRef<{ x: number; y: number } | null>(null)
 
-  // Nudges a first-time user toward the focal marker — shown on every modal
-  // open, dismissed for good as soon as they touch the marker.
+  // Shown on every modal open until the user touches the marker.
   const [showFocalHint, setShowFocalHint] = useState(true)
   useEffect(() => {
     if (isOpen) setShowFocalHint(true)
   }, [isOpen])
   const dismissFocalHint = () => setShowFocalHint(false)
-  // Measure the hint bubble so it can be clamped inside the canvas and its arrow
-  // aimed at the marker. Measured pre-paint (useLayoutEffect) to avoid a flash.
+  // Measure the hint bubble before paint, to clamp it inside the canvas.
   const hintRef = useRef<HTMLDivElement>(null)
   const [hintSize, setHintSize] = useState({ width: 0, height: 0 })
   useLayoutEffect(() => {
@@ -125,9 +114,6 @@ export const CropFocalControl = ({
   const currentCrop = crop ?? defaultCropRect(lockedRatio, naturalAspect ?? 1)
   const currentFocal = focal ?? { x: 0.5, y: 0.5 }
 
-  // Track the canvas box's own pixel size, so we can work out exactly where
-  // the image renders inside it (object-fit: contain letterboxes/pillarboxes
-  // whenever the box's aspect ratio doesn't match the image's).
   useEffect(() => {
     const el = boxRef.current
     if (!el) return
@@ -144,11 +130,8 @@ export const CropFocalControl = ({
     return () => observer.disconnect()
   }, [])
 
-  // The image's true rendered rect within the box, normalized to the BOX —
-  // crop/focal values are normalized to the IMAGE, so every box-space
-  // pointer/percentage calculation below must map through this rect. Without
-  // it, the crop UI treats the whole box (including blank bleed space) as if
-  // it were the image.
+  // Where the image renders inside the box. Crop and focal values are
+  // normalized to the image, so all box-space math below maps through this.
   const imageBounds: NormalizedRect = useMemo(
     () =>
       naturalAspect
@@ -157,19 +140,14 @@ export const CropFocalControl = ({
     [boxSize, naturalAspect],
   )
 
-  // Map an image-normalized rect/point into box-normalized space for display.
   const toBoxSpace = (r: { x: number; y: number }) => ({
     x: imageBounds.x + r.x * imageBounds.width,
     y: imageBounds.y + r.y * imageBounds.height,
   })
 
-  // NB: the default crop is NOT written to the draft on mount. Merely opening
-  // the modal must not dirty the draft (otherwise Cancel prompts to discard and
-  // Save bakes a full-frame image for an untouched picture). The default stays
-  // local — shown via `currentCrop` and committed only on the first real edit
-  // (crop drag commits the dragged rect; focal drag commits the default crop,
-  // see handleFocalPointerDown). A ratio-correct default needs the image's true
-  // aspect, which isn't known until the <img> below fires onLoad.
+  // Do not write the default crop to the draft on mount. Opening the modal
+  // would dirty it, so Cancel would prompt and Save would bake an untouched
+  // image. The first crop or focal edit commits it.
 
   const handleImageLoad = (event: React.SyntheticEvent<HTMLImageElement>) => {
     const img = event.currentTarget
@@ -201,8 +179,7 @@ export const CropFocalControl = ({
     if (dragTarget !== "rect" || !lastPointerRef.current || !boxRef.current)
       return
     const boxRect = boxRef.current.getBoundingClientRect()
-    // Scale against the image's actual rendered pixel size, not the box's —
-    // otherwise a pointer delta gets under-scaled whenever there's bleed space.
+    // Scale by the image's rendered size, not the box's.
     const delta = clientDeltaToNormalized(
       event.clientX - lastPointerRef.current.x,
       event.clientY - lastPointerRef.current.y,
@@ -231,18 +208,14 @@ export const CropFocalControl = ({
   ) => {
     if (dragTarget !== handle || !boxRef.current) return
     const boxRect = boxRef.current.getBoundingClientRect()
-    // Map the pointer into the image's rendered pixel rect, not the box's —
-    // otherwise a handle can be dragged past the image's true edge into
-    // blank bleed space.
+    // Use the image's rendered rect, so a handle cannot leave the image.
     const imagePixelLeft = boxRect.left + imageBounds.x * boxRect.width
     const imagePixelTop = boxRect.top + imageBounds.y * boxRect.height
     const imagePixelWidth = imageBounds.width * boxRect.width
     const imagePixelHeight = imageBounds.height * boxRect.height
     const normalizedX = (event.clientX - imagePixelLeft) / imagePixelWidth
     const normalizedY = (event.clientY - imagePixelTop) / imagePixelHeight
-    // Holding Cmd/Ctrl on a corner handle of a free (unratioed) crop locks the
-    // drag to the image's own natural aspect ratio; edges can't express a
-    // single-dimension lock, so the modifier is ignored there.
+    // Cmd/Ctrl on a corner of a free crop keeps the image's own aspect ratio.
     const wantsAspectLock =
       (event.metaKey || event.ctrlKey) &&
       !lockedRatio &&
@@ -345,9 +318,7 @@ export const CropFocalControl = ({
 
   const focalWholeImagePoint = focalToWholeImagePoint(currentFocal, currentCrop)
   const focalBoxSpace = toBoxSpace(focalWholeImagePoint)
-  // A white disc behind the crosshair so the brand-blue marker stays legible
-  // over any image; the ring + shadow separate it from light backgrounds. Sized
-  // larger than the icon so the hit area stays reasonable.
+  // A white disc keeps the marker legible over any image.
   const markerStyle: CSSProperties = {
     position: "absolute",
     left: `${focalBoxSpace.x * 100}%`,
@@ -367,28 +338,24 @@ export const CropFocalControl = ({
     zIndex: 11,
   }
 
-  // On-load nudge toward the focal marker, rendered in the marker's own box-space
-  // (not a Popper tooltip) so it tracks the marker through async layout. Clamped
-  // inside the measured canvas frame and flipped above/below so it never clips.
+  // Positioned in the marker's box space, not a Popper tooltip, so it follows
+  // the marker through async layout.
   const HINT_GAP = 10
   const HINT_PAD = 8
   const HINT_ARROW = 6
   const MARKER_HALF = 13
   const hintAnchorX = focalBoxSpace.x * boxSize.width
   const hintAnchorY = focalBoxSpace.y * boxSize.height
-  // Flip below the marker when there isn't room above.
   const hintBelow =
     hintAnchorY - MARKER_HALF - HINT_GAP - HINT_ARROW - hintSize.height <
     HINT_PAD
   const hintTop = hintBelow
     ? hintAnchorY + MARKER_HALF + HINT_GAP + HINT_ARROW
     : hintAnchorY - MARKER_HALF - HINT_GAP - HINT_ARROW - hintSize.height
-  // Center on the marker, then clamp so the bubble stays inside the frame.
   const hintLeft = Math.min(
     Math.max(hintAnchorX - hintSize.width / 2, HINT_PAD),
     Math.max(HINT_PAD, boxSize.width - hintSize.width - HINT_PAD),
   )
-  // Arrow sits at the marker's x within the (possibly shifted) bubble.
   const hintArrowLeft = Math.min(
     Math.max(hintAnchorX - hintLeft, HINT_ARROW + 2),
     Math.max(HINT_ARROW + 2, hintSize.width - HINT_ARROW - 2),
@@ -407,8 +374,6 @@ export const CropFocalControl = ({
     pointerEvents: "none",
     zIndex: 12,
   }
-  // Triangle aimed at the marker: on the bubble's bottom edge when it sits above
-  // the marker, on the top edge when it sits below.
   const focalHintArrowStyle: CSSProperties = {
     position: "absolute",
     left: `${hintArrowLeft}px`,
@@ -444,17 +409,12 @@ export const CropFocalControl = ({
       h="100%"
       borderRadius="0.25rem"
       overflow="hidden"
-      // Fills its slot; the parent wrapper owns the sizing (flex-fill on desktop,
-      // a fixed height when stacked). The image is letterboxed inside via
-      // object-contain and all crop/focal math maps through `imageBounds`, so the
-      // canvas size is independent of the image's aspect — a stable editor height,
-      // not one that grows/shrinks per image. Flat backdrop; the crop frame +
-      // dim-outside overlay make the image bounds clear.
+      // The parent sets the size. The image letterboxes inside, so the canvas
+      // height does not change per image.
       bgColor="#f3f4f6"
     >
-      {/* `boxRef`/`boxSize` measure THIS inset div (not the outer Box), so every
-      percentage below — image, crop rect, handles, marker — is relative to the
-      same padded frame and stays glued to the image's true edges. */}
+      {/* `boxRef` measures this inset div, so every percentage below is
+          relative to the padded frame. */}
       <Box ref={boxRef} position="absolute" inset="0.75rem">
         {/* oxlint-disable-next-line @next/next/no-img-element -- needs naturalWidth/Height for the no-letterbox aspect mapping; user image, not an LCP hero */}
         <img
@@ -505,8 +465,6 @@ export const CropFocalControl = ({
             >
               <BiCrosshair size={18} />
             </div>
-            {/* On-load hint; co-located with the marker so it stays centered,
-                clamped inside the canvas and flipped so it never clips. */}
             {showFocalHint && boxSize.width > 0 && (
               <div ref={hintRef} style={focalHintStyle}>
                 Drag to set focal point

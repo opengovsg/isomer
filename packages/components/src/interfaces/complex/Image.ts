@@ -31,42 +31,28 @@ export const ImageSrcSchema = generateImageSrcSchema({})
 // Normalized [0,1] coordinate, shared by crop + focal in imageAdjustment.
 const NormalizedUnit = Type.Number({ minimum: 0, maximum: 1 })
 
-// The imageAdjustment object (Engineering RFC 09). Optional per image-bearing
-// component; absent means unedited. crop is baked into the rendered pixels and
-// kept only so the editor can re-bake from the original. focal is emitted at
-// render time as object-position. The adjustment modal writes it, never a
-// hand-edited JSONForms control, so it uses format: "hidden".
+// Engineering RFC 09. Absent means unedited. The bake applies crop to the
+// pixels, and crop stays here only so the editor can re-bake from the
+// original. Renderers emit focal as object-position. Only the adjustment
+// modal writes this, hence format: "hidden".
 //
-// Adding this to a new image-bearing component takes 3 layers. Each has shipped
-// silently broken on its own before (HeroGradientQuickLinks and the collection
-// thumbnail, both in git history).
-//   1. Schema. Spread `...generateAdjustableImageFields("<srcField>", {...})`
-//      into the component schema (the factory is below). It emits the src field
-//      and its `<srcField>ImageAdjustment` sibling together, so the sibling
-//      can't be forgotten or misnamed, and two image fields on one component get
-//      distinct, non-colliding keys. Covered by imageAdjustmentSchemaGuardrail.test.ts.
-//   2. Resolve and render. Add a case in Studio's resolveAdjustmentConfig
-//      (apps/studio .../ImageAdjustmentModal/adjustmentConfigRegistry.ts), then
-//      forward imageAdjustment to ImageClientWithAdjustment (or
-//      getFocalObjectPosition for a CSS background-image) in every render branch
-//      the component has, not just the first. Reference: InfoCardImage.tsx.
-//      Covered by imageAdjustmentWiringGuardrail.test.ts, keyed off focalEnabled.
-//   3. Prove it. Add a *.adjustment.stories.tsx (or a story in the component's
-//      own stories file) that sets a real imageAdjustment and shows the image
-//      shift. A schema field existing says nothing about whether a render branch
-//      honours it. Reference: HeroBlock.adjustment.stories.tsx, also covered by
-//      imageAdjustmentWiringGuardrail.test.ts.
-// Components that are never adjustable (LogoCloud, Video) go in both
-// INTENTIONALLY_NOT_ADJUSTABLE (adjustmentConfigRegistry.ts) and the schema
-// guardrail's allowlist instead of following these steps.
+// Making a component's image adjustable takes three steps. Each one has
+// shipped broken on its own before.
+//   1. Schema. Spread generateAdjustableImageFields("<srcField>") into the
+//      component schema. imageAdjustmentSchemaGuardrail.test.ts checks it.
+//   2. Render. Add a case to resolveAdjustmentConfig in Studio's
+//      adjustmentConfigRegistry.ts. Then pass the adjustment to
+//      ImageClientWithAdjustment, or to getFocalObjectPosition for a CSS
+//      background, in every render branch.
+//   3. Story. Add a story that sets a real adjustment and shows the image
+//      shift. imageAdjustmentWiringGuardrail.test.ts checks steps 2 and 3.
+// Components that are never adjustable, like LogoCloud and Video, go in
+// INTENTIONALLY_NOT_ADJUSTABLE and the schema guardrail's allowlist instead.
 export const imageAdjustmentSchema = Type.Object(
   {
-    // Crop box as a fraction of the original image. x/y is the top-left
-    // corner, width/height is the box size, all relative to the full original,
-    // not to any previous crop. {x:0.25, y:0, width:0.5, height:1} keeps the
-    // horizontal middle half and the full height. x+width and y+height should
-    // each stay within 1. validateCropBounds in useSaveImageAdjustment.ts
-    // enforces that at save time, not here.
+    // Fractions of the full original, never of a previous crop. x and y are
+    // the top-left corner. validateCropBounds checks x+width and y+height
+    // stay within 1 at save time. This schema does not.
     crop: Type.Object({
       x: NormalizedUnit,
       y: NormalizedUnit,
@@ -87,18 +73,9 @@ export const imageAdjustmentSchema = Type.Object(
 
 export type ImageAdjustment = Static<typeof imageAdjustmentSchema>
 
-// Emits an image src field and its adjustment sibling as one spread-in pair,
-// keyed off the field's own name (backgroundUrl gives backgroundUrlImageAdjustment):
-//   Type.Object({ ...generateAdjustableImageFields("backgroundUrl", { title }) })
-// Naming the sibling after its field, rather than a fixed "imageAdjustment" key,
-// means a component with two image fields gets two distinct keys instead of
-// silently colliding on one. The src stays a plain string, so no stored data
-// changes shape. Images that are never adjustable (LogoCloud, Video) keep
-// calling generateImageSrcSchema directly.
-//
-// Pass `optional: true` when the image field itself may be absent (Blockquote,
-// for one, has an optional image). The src is then wrapped in Type.Optional and
-// the return type reflects it. The adjustment sibling is always optional.
+// Emits an image src field and its `${name}ImageAdjustment` sibling to spread
+// into a schema. A per-field key lets one component have two image fields.
+// Pass `optional: true` when the image itself is optional, as on Blockquote.
 export const generateAdjustableImageFields = <
   TName extends string,
   TOptionalSrc extends boolean = false,

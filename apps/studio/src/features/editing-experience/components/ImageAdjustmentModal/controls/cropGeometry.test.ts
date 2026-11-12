@@ -227,11 +227,7 @@ describe("cropGeometry", () => {
     })
 
     it("compensates for a non-square source so the BAKED pixel ratio matches lockedRatio, not the normalized rect", () => {
-      // A 3:2 source image (e.g. 1500x1000px) locked to a 1:1 (square) crop.
-      // cropRectToPixels later multiplies the rect's normalized width/height
-      // by the source's actual (unequal) pixel width/height independently,
-      // so the normalized rect itself must be pre-divided by imageAspect for
-      // the final baked pixels to land on the intended 1:1 ratio.
+      // 3:2 source locked to a 1:1 crop.
       const rect = { x: 0, y: 0, width: 0.2, height: 0.2 }
       const ratio = { width: 1, height: 1 }
       const imageAspect = 3 / 2
@@ -243,10 +239,8 @@ describe("cropGeometry", () => {
         ratio,
         imageAspect,
       )
-      // Final baked pixel ratio = (normWidth/normHeight) * imageAspect.
       const bakedRatio = (resized.width / resized.height) * imageAspect
       expect(bakedRatio).toBeCloseTo(1)
-      // ...which means the normalized rect itself is NOT 1:1 here.
       expect(resized.width / resized.height).toBeCloseTo(1 / imageAspect)
     })
 
@@ -304,10 +298,7 @@ describe("cropGeometry", () => {
     })
 
     it("compensates for a non-square source so the BAKED pixel ratio matches lockedRatio", () => {
-      // Same compensation as resizeRectByHandle: a 3:2 source locked to a
-      // 1:1 crop must NOT be a 1:1 normalized rect, since cropRectToPixels
-      // multiplies normalized width/height by the source's unequal pixel
-      // width/height independently.
+      // 3:2 source locked to a 1:1 crop.
       const ratio = { width: 1, height: 1 }
       const imageAspect = 3 / 2
       const rect = defaultCropRect(ratio, imageAspect)
@@ -368,7 +359,7 @@ describe("cropGeometry", () => {
     })
 
     it("pillarboxes (blank left/right) when the image is narrower than the box", () => {
-      // Box is a wide 2:1, image is a portrait 1:2 — image fills height only.
+      // 2:1 box, 1:2 image.
       const bounds = getContainedImageBounds({ width: 400, height: 200 }, 0.5)
       expect(bounds.y).toBe(0)
       expect(bounds.height).toBe(1)
@@ -377,7 +368,7 @@ describe("cropGeometry", () => {
     })
 
     it("letterboxes (blank top/bottom) when the image is wider than the box", () => {
-      // Box is a square, image is a wide 4:1 — image fills width only.
+      // Square box, 4:1 image.
       const bounds = getContainedImageBounds({ width: 300, height: 300 }, 4)
       expect(bounds.x).toBe(0)
       expect(bounds.width).toBe(1)
