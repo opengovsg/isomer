@@ -72,3 +72,9 @@ apps/template/.local-publish*/
 
 # Argos screenshots
 screenshots/
+
+# Local agent scratch workspace
+.scratch/
+
+# Vitest failure-screenshot attachments
+.vitest/

@@ -1,6 +1,7 @@
 import type { CSSProperties, PropsWithChildren } from "react"
 import type { IframeCallbackFnProps } from "~/types/dom"
 import { Flex } from "@chakra-ui/react"
+import { ImageRetryProvider } from "@opengovsg/isomer-components"
 import { useEffect, useMemo, useRef } from "react"
 import Frame, { useFrame } from "react-frame-component"
 
@@ -172,7 +173,7 @@ const IframeInnerComponent = ({
 
   return (
     <div ref={containerRef} style={style}>
-      {children}
+      <ImageRetryProvider>{children}</ImageRetryProvider>
     </div>
   )
 }

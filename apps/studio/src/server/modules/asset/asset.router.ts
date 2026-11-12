@@ -99,7 +99,10 @@ export const assetRouter = router({
     .input(getPresignedPutUrlForBakeSchema)
     .meta({ rateLimitOptions: { max: 10, windowMs: 60_000 } })
     .mutation(
-      async ({ ctx, input: { siteId, resourceId, src, ext, fileSize } }) => {
+      async ({
+        ctx,
+        input: { siteId, resourceId, src, originalKey, ext, fileSize },
+      }) => {
         // Ownership of `src` is NOT re-verified against the resource's
         // persisted blob here (deliberate: a just-uploaded-but-not-yet-saved
         // image has no persisted reference yet, and requiring a page save
@@ -113,7 +116,7 @@ export const assetRouter = router({
           userId: ctx.user.id,
         })
 
-        const fileKey = deriveBakeKey({ src, ext, siteId })
+        const fileKey = deriveBakeKey({ src, originalKey, ext, siteId })
 
         const uploadConfig = await getPresignedPutUrl({
           key: fileKey,

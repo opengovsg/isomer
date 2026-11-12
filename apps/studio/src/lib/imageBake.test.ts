@@ -3,66 +3,41 @@ import { describe, it, expect } from "vitest"
 import {
   canBakeImage,
   cropRectToPixels,
-  isAnimatedWebp,
-  isAnimatedPng,
+  isAnimatedImageBlob,
   type CropRect,
 } from "./imageBake"
 
-// Minimal valid (extended-format) WebP header with the VP8X animation flag
-// either set or clear -- just enough bytes for isAnimatedWebp's own reader,
-// not a decodable image.
-const makeWebpHeader = (animated: boolean): Uint8Array => {
-  const bytes = new Uint8Array(21)
-  bytes.set([0x52, 0x49, 0x46, 0x46], 0) // "RIFF"
-  bytes.set([0x57, 0x45, 0x42, 0x50], 8) // "WEBP"
-  bytes.set([0x56, 0x50, 0x38, 0x58], 12) // "VP8X"
-  bytes[20] = animated ? 0x02 : 0x00
-  return bytes
+// A minimal GIF with `frameCount` frames (no color tables, 1x1 frames) — enough
+// structure for the block-walking sniffer, not a decodable image.
+const gifBytes = (frameCount: number): Uint8Array<ArrayBuffer> => {
+  // "GIF89a" + logical screen descriptor (1x1, no global color table).
+  const header = [...asciiBytes("GIF89a"), 1, 0, 1, 0, 0x00, 0, 0]
+  // Image Separator + 2,2,2,2 descriptor fields + packed(no LCT), LZW size, end.
+  const frame = [0x2c, 0, 0, 0, 0, 1, 0, 1, 0, 0x00, 0x02, 0x00]
+  const out = [...header]
+  for (let i = 0; i < frameCount; i++) out.push(...frame)
+  out.push(0x3b) // trailer
+  return Uint8Array.from(out)
 }
 
-// Minimal valid PNG byte stream: signature, then either an "acTL" chunk
-// before "IDAT" (animated/APNG) or straight to "IDAT" (static) -- chunk
-// data/CRC bytes are irrelevant to isAnimatedPng's chunk walk, so each
-// chunk's length is 0.
-const makeChunk = (type: string): number[] => {
-  const typeBytes = Array.from(type, (c) => c.charCodeAt(0))
-  return [0, 0, 0, 0, ...typeBytes, 0, 0, 0, 0] // length(0) + type + crc(0)
-}
+const asciiBytes = (s: string): number[] => [...s].map((c) => c.charCodeAt(0))
+
+// Build a PNG chunk: 4-byte big-endian length, 4-byte type, data, 4-byte CRC
+// (CRC is zero-filled; the sniffer doesn't validate it).
+const pngChunk = (type: string, dataLength: number): number[] => [
+  (dataLength >>> 24) & 0xff,
+  (dataLength >>> 16) & 0xff,
+  (dataLength >>> 8) & 0xff,
+  dataLength & 0xff,
+  ...asciiBytes(type),
+  ...new Array<number>(dataLength).fill(0),
+  0,
+  0,
+  0,
+  0,
+]
+
 const PNG_SIGNATURE = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]
-const makePng = (animated: boolean): Uint8Array =>
-  new Uint8Array([
-    ...PNG_SIGNATURE,
-    ...(animated ? makeChunk("acTL") : []),
-    ...makeChunk("IDAT"),
-  ])
-
-describe("isAnimatedWebp", () => {
-  it("returns true for an extended-format WebP with the animation flag set", () => {
-    expect(isAnimatedWebp(makeWebpHeader(true))).toBe(true)
-  })
-
-  it("returns false for an extended-format WebP without the animation flag", () => {
-    expect(isAnimatedWebp(makeWebpHeader(false))).toBe(false)
-  })
-
-  it("returns false for a non-WebP byte stream", () => {
-    expect(isAnimatedWebp(new Uint8Array(21))).toBe(false)
-  })
-})
-
-describe("isAnimatedPng", () => {
-  it("returns true for a PNG with an acTL chunk before IDAT", () => {
-    expect(isAnimatedPng(makePng(true))).toBe(true)
-  })
-
-  it("returns false for a static PNG (IDAT with no preceding acTL)", () => {
-    expect(isAnimatedPng(makePng(false))).toBe(false)
-  })
-
-  it("returns false for a non-PNG byte stream", () => {
-    expect(isAnimatedPng(new Uint8Array(8))).toBe(false)
-  })
-})
 
 describe("canBakeImage", () => {
   it("returns true for JPEG", () => {
@@ -195,5 +170,65 @@ describe("cropRectToPixels", () => {
     const result = cropRectToPixels(crop, 100, 100)
     expect(result.sw).toBe(0)
     expect(result.sh).toBe(0)
+  })
+})
+
+describe("isAnimatedImageBlob", () => {
+  const webp = (chunk: string, flags: number) =>
+    Uint8Array.from([
+      ...asciiBytes("RIFF"),
+      ...[0, 0, 0, 0],
+      ...asciiBytes("WEBP"),
+      ...asciiBytes(chunk),
+      ...[10, 0, 0, 0],
+      flags,
+      ...new Array<number>(10).fill(0),
+    ])
+  const check = (bytes: Uint8Array<ArrayBuffer>) =>
+    isAnimatedImageBlob(new Blob([bytes]))
+
+  it("is true for an extended WebP with the animation flag set", async () => {
+    expect(await check(webp("VP8X", 0x02))).toBe(true)
+  })
+
+  it("is false for a WebP without the animation flag or extended header", async () => {
+    expect(await check(webp("VP8X", 0x10))).toBe(false)
+    expect(await check(webp("VP8 ", 0x02))).toBe(false)
+  })
+
+  it("is true for an APNG (acTL, then a frame in IDAT and one in fdAT)", async () => {
+    const apng = Uint8Array.from([
+      ...PNG_SIGNATURE,
+      ...pngChunk("IHDR", 13),
+      ...pngChunk("acTL", 8),
+      ...pngChunk("fcTL", 26),
+      ...pngChunk("IDAT", 4),
+      ...pngChunk("fcTL", 26),
+      ...pngChunk("fdAT", 8),
+    ])
+    expect(await check(apng)).toBe(true)
+  })
+
+  it("is false for a static PNG (no acTL)", async () => {
+    const png = Uint8Array.from([
+      ...PNG_SIGNATURE,
+      ...pngChunk("IHDR", 13),
+      ...pngChunk("IDAT", 4),
+    ])
+    expect(await check(png)).toBe(false)
+  })
+
+  it("is false, without throwing, for a truncated PNG", async () => {
+    // Signature plus 2 stray bytes: too short to hold a chunk length.
+    expect(await check(Uint8Array.from([...PNG_SIGNATURE, 0, 0]))).toBe(false)
+  })
+
+  it("is true for a multi-frame GIF and false for a single-frame one", async () => {
+    expect(await check(gifBytes(2))).toBe(true)
+    expect(await check(gifBytes(1))).toBe(false)
+  })
+
+  it("is false for bytes that aren't WebP/PNG/GIF (e.g. JPEG)", async () => {
+    expect(await check(Uint8Array.from([1, 2, 3]))).toBe(false)
   })
 })

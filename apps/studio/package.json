@@ -140,6 +140,7 @@
     "flat": "catalog:",
     "inter-ui": "catalog:",
     "iron-session": "catalog:",
+    "is-animated": "catalog:",
     "isomorphic-dompurify": "catalog:",
     "jose": "catalog:",
     "jotai": "catalog:",

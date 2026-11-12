@@ -379,6 +379,7 @@ describe("getPresignedPutUrlForBakeSchema", () => {
     siteId: 1,
     resourceId: "1",
     src: "https://example.com/image.jpg",
+    originalKey: "1/uuid/image.jpg",
     ext: "jpeg" as const,
   }
 
@@ -396,5 +397,14 @@ describe("getPresignedPutUrlForBakeSchema", () => {
       fileSize: MAX_IMG_FILE_SIZE_BYTES,
     })
     expect(result.success).toBe(true)
+  })
+
+  it("rejects an originalKey longer than the S3 key limit", () => {
+    const result = getPresignedPutUrlForBakeSchema.safeParse({
+      ...baseInput,
+      originalKey: "a".repeat(1025),
+      fileSize: 1000,
+    })
+    expect(result.success).toBe(false)
   })
 })
