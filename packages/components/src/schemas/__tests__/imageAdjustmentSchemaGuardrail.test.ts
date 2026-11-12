@@ -8,10 +8,8 @@ import {
 } from "../../interfaces/complex/Hero"
 import { IsomerComplexComponentsMap } from "../components"
 
-// Components that intentionally never get image-adjustment -- mirrors
-// Studio's own INTENTIONALLY_NOT_ADJUSTABLE list (adjustmentConfigRegistry.ts).
-// Keep these two lists in sync: a component opted out here for a schema
-// reason should also be opted out there, and vice versa.
+// Keep in sync with Studio's INTENTIONALLY_NOT_ADJUSTABLE in
+// adjustmentConfigRegistry.ts.
 const INTENTIONALLY_NOT_ADJUSTABLE = new Set(["logocloud", "video"])
 
 // Pending: wired in a later PR of this stack.
@@ -28,15 +26,9 @@ interface ImageField {
   imageFieldName: string
 }
 
-// A plain-object walk of a compiled TypeBox schema (JSON-schema shaped at
-// runtime: `.properties`, `.anyOf`/`.allOf` for unions/composites, `.items`
-// for arrays). Returns every image-upload field (format: "image", from
-// generateImageSrcSchema) with the properties object it lives in. Each such
-// field should have a `${fieldName}ImageAdjustment` sibling (from
-// generateAdjustableImageFields), not one shared "imageAdjustment" key, so two
-// image fields on one node get distinct, non-colliding keys. A node whose own
-// format is "hidden" (a beta or not-yet-editable variant like HeroSearchbar) is
-// skipped, since nothing can set an adjustment on a field nobody can edit.
+// Walks a compiled TypeBox schema and returns every format: "image" field
+// with the properties object it lives in. Skips format: "hidden" nodes such
+// as HeroSearchbar, since nobody can edit those fields.
 const findImageFields = (
   node: unknown,
   acc: ImageField[] = [],
@@ -73,9 +65,8 @@ const findImageFields = (
   return acc
 }
 
-// The properties objects that make up a component's own top level: reached
-// only through unions/composites (anyOf/oneOf/allOf), never by descending into
-// a property or an array's `items`.
+// The component's own top-level properties objects. Follows unions only,
+// never a property or an array's `items`.
 const findTopLevelProperties = (
   node: unknown,
   acc = new Set<unknown>(),
@@ -93,11 +84,9 @@ const findTopLevelProperties = (
 }
 
 describe("imageAdjustment schema guardrail", () => {
-  // Studio's useAdjustmentConfigForField finds the block that owns an image
-  // field by climbing to the nearest ancestor with a string `type`. A nested
-  // image host (a card, slide or gallery item) that declared its own `type`
-  // would stop that climb early, so no config would resolve and "Adjust"
-  // would silently vanish for that field.
+  // Studio's useAdjustmentConfigForField climbs to the nearest ancestor with
+  // a `type` to find the owning block. A card or slide with its own `type`
+  // would stop the climb early and hide "Adjust".
   for (const [componentType, schema] of Object.entries(
     IsomerComplexComponentsMap,
   )) {
@@ -115,15 +104,8 @@ describe("imageAdjustment schema guardrail", () => {
     })
   }
 
-  // A component gaining an image-upload field (format: "image") but no
-  // imageAdjustment sibling is exactly how the collection thumbnail shipped
-  // with focal/fit controls in the editor that silently did nothing -- its
-  // page.image field had no imageAdjustment to carry that data at all. This
-  // test closes that gap one level up the stack from
-  // imageAdjustmentWiringGuardrail (which assumes the schema field already
-  // exists and checks it's actually *used*): every image field on a
-  // registered component must have the field declared in the first place,
-  // unless the component opted out above.
+  // The collection thumbnail shipped focal controls that did nothing,
+  // because its image field had no adjustment sibling to hold the data.
   for (const [componentType, schema] of Object.entries(
     IsomerComplexComponentsMap,
   )) {
@@ -143,8 +125,7 @@ describe("imageAdjustment schema guardrail", () => {
   }
 
   it("covers every component in IsomerComplexComponentsMap", () => {
-    // Guards against a typo'd or stale entry in INTENTIONALLY_NOT_ADJUSTABLE
-    // silently excluding a component that should be checked.
+    // Catches a typo or stale entry in INTENTIONALLY_NOT_ADJUSTABLE.
     const allComponentTypes = Object.keys(IsomerComplexComponentsMap).sort()
     for (const type of INTENTIONALLY_NOT_ADJUSTABLE) {
       expect(allComponentTypes).toContain(type)

@@ -103,10 +103,8 @@ export function EditorDrawerProvider({
   )
 }
 
-// Non-throwing accessor — returns null outside an EditorDrawerProvider instead
-// of throwing, for consumers that can also render in provider-less contexts
-// (e.g. JsonFormsImageControl, which also mounts in the Navbar/Footer/logo
-// settings forms with no page-editor drawer around it).
+// Returns null outside a provider. JsonFormsImageControl also mounts in the
+// navbar, footer and logo settings forms, which have none.
 export const useOptionalEditorDrawerContext = () =>
   useContext(EditorDrawerContext)
 
