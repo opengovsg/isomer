@@ -267,8 +267,8 @@ interface AdjustmentPreviewProps {
   // real-component path, which renders the component's own fit.
   objectFit?: "cover" | "contain"
   // The real page layout the published page would render at — threaded
-  // through so a state without its own `layout` still previews the real
-  // shape instead of always defaulting to "content".
+  // through so a layout-dependent shape previews correctly instead of always
+  // defaulting to "content".
   pageLayout?: IsomerPageLayoutType
   // Needed to pull the site's brand theme CSS vars into the preview iframe —
   // without them, classes like `bg-brand-canvas-inverse` resolve to nothing.
@@ -346,12 +346,10 @@ export const AdjustmentPreview = ({
 
   // Real-component preview: render the actual published block (real copy,
   // scrim, frame behaviour) with the adjusted image + draft imageAdjustment
-  // spliced in, instead of the framed-<img> approximation below. Rendered
-  // per-state (rather than once and reused) because a state can request a
-  // non-default `layout` (e.g. Blockquote's homepage/square variant).
-  const renderPreviewComponent = (
-    layout: AdjustmentPreviewState["layout"],
-  ): React.ReactNode => {
+  // spliced in, instead of the framed-<img> approximation below. Rendered at
+  // the page's own layout, so a layout-dependent shape (e.g. Blockquote's
+  // circle vs square) matches what this page will publish.
+  const renderPreviewComponent = (): React.ReactNode => {
     if (!block || !fieldHost || !imageFieldName) return null
     // The image + alt fallback below apply to the field HOST: the block itself
     // for a root-level field, the card for an array-nested one (e.g. InfoCards).
@@ -381,11 +379,7 @@ export const AdjustmentPreview = ({
     // returns nothing) falls back to the framed-image approximation,
     // same as skipRealComponentPreview.
     const component = isNestedField
-      ? buildSingleItemPreviewBlock?.(
-          block,
-          { ...fieldHost, ...patch },
-          fieldHost,
-        )
+      ? buildSingleItemPreviewBlock?.(block, { ...fieldHost, ...patch })
       : ({ ...block, ...patch } as IsomerComponent)
     if (!component) return null
     // renderComponent dispatches a bare component with no page layout
@@ -408,7 +402,7 @@ export const AdjustmentPreview = ({
       >
         {renderComponent({
           component,
-          layout: layout ?? pageLayout ?? "content",
+          layout: pageLayout ?? "content",
           site: PREVIEW_SITE_STUB,
           permalink: "",
           headingLevel: 1,
@@ -420,10 +414,8 @@ export const AdjustmentPreview = ({
   // Use the real component for every state when it can be built (and
   // skipRealComponentPreview doesn't opt out); otherwise every state falls
   // through to the framed-<img> approximation.
-  const defaultRender = skipRealComponentPreview
-    ? null
-    : renderPreviewComponent(undefined)
-  const useRealComponent = !!defaultRender
+  const rendered = skipRealComponentPreview ? null : renderPreviewComponent()
+  const useRealComponent = !!rendered
 
   // One rail tile at a given display width — either the real-component render
   // (scaled in an iframe) or the framed-image approximation.
@@ -432,9 +424,6 @@ export const AdjustmentPreview = ({
     width: number,
   ): React.ReactNode => {
     if (useRealComponent) {
-      const rendered = state.layout
-        ? renderPreviewComponent(state.layout)
-        : defaultRender
       return (
         // The theme fetch suspends AND can throw; without the ErrorBoundary a
         // failed getTheme would tear down the whole modal instead of this one
