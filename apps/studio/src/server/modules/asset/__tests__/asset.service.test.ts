@@ -685,8 +685,8 @@ describe("asset.service", () => {
 
     it("should mint a server leaf preserving the source folder and original filename", () => {
       // Arrange
-      const src = `/${36}/${UUID}/source.png`
-      const originalKey = `${36}/${UUID}/source.png`
+      const src = `/36/${UUID}/source.png`
+      const originalKey = `36/${UUID}/source.png`
       const siteId = 36
       const ext = "jpeg"
 
@@ -706,8 +706,8 @@ describe("asset.service", () => {
     it("derives the leaf name from the original, not a previous bake (no accumulation)", () => {
       // Re-edit: src is a prior bake, but the name comes from the true original.
       const key = deriveBakeKey({
-        src: `/${36}/${UUID}/source-${UUID}.png`,
-        originalKey: `${36}/${UUID}/source.png`,
+        src: `/36/${UUID}/source-${UUID}.png`,
+        originalKey: `36/${UUID}/source.png`,
         ext: "png",
         siteId: 36,
       })
@@ -718,8 +718,8 @@ describe("asset.service", () => {
 
     it("falls back to 'image' for a legacy baked originalKey with no recoverable name", () => {
       const key = deriveBakeKey({
-        src: `/${36}/${UUID}/baked-${UUID}.png`,
-        originalKey: `${36}/${UUID}/baked-${UUID}.png`,
+        src: `/36/${UUID}/baked-${UUID}.png`,
+        originalKey: `36/${UUID}/baked-${UUID}.png`,
         ext: "png",
         siteId: 36,
       })
@@ -730,8 +730,8 @@ describe("asset.service", () => {
 
     it("should use the correct extension from input", () => {
       // Arrange
-      const src = `/${36}/${UUID}/source.png`
-      const originalKey = `${36}/${UUID}/source.png`
+      const src = `/36/${UUID}/source.png`
+      const originalKey = `36/${UUID}/source.png`
       const siteId = 36
 
       // Act
