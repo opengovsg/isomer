@@ -19,13 +19,9 @@ export interface AspectRatio {
   height: number
 }
 
-// One preview pane in the modal: a real render of the target component at a
-// given breakpoint, all sharing the single crop + focal. For Tier B the biting
-// aspect ratio differs per breakpoint — declared here so the preview can show
-// which axis the focal actually moves at that state. The real-component
-// preview renders at the page's own layout, so a component whose shape follows
-// the layout (e.g. Blockquote: circle on content pages, square on the
-// homepage) needs nothing extra here.
+// One preview pane. Renders the target component at one breakpoint, and all
+// panes share the single crop and focal point. The real-component preview
+// uses the page's own layout, so layout-dependent shapes need nothing here.
 export interface AdjustmentPreviewState {
   id: string
   label: string
@@ -33,21 +29,14 @@ export interface AdjustmentPreviewState {
   aspectRatio?: AspectRatio
 }
 
-// Extensible options bag for context the registry can use when resolving a
-// config for a given instance (e.g. the page's layout). Add fields here as
-// future cases need them — this is deliberately just a plain
-// optional-properties object, not a plugin system.
+// Context the registry can use to resolve a config, e.g. the page layout.
 export interface AdjustmentRenderContext {
   pageLayout?: IsomerPageLayoutType
 }
 
-// For an array-nested image field (e.g. an InfoCards card) whose containing
-// block renders EVERY item, builds a block containing ONLY the edited item, so
-// the preview shows that one item rather than the whole block. `editedItem` is
-// the field host (e.g. the card object) with the adjusted image +
-// imageAdjustment already spliced in. Return undefined to skip the
-// real-component preview for this render (falls back to the framed-image
-// approximation) — e.g. if `ownerBlock` isn't shaped as expected.
+// For an array-nested image field, builds a block that holds only the
+// edited item. `editedItem` is the field host with the adjusted image
+// patched in. Return undefined to use the framed-image approximation.
 export type BuildSingleItemPreviewBlock = (
   ownerBlock: IsomerComponent,
   editedItem: Record<string, unknown>,
@@ -56,52 +45,37 @@ export type BuildSingleItemPreviewBlock = (
 export interface AdjustmentConfig {
   // Block/component type key this config applies to.
   componentType: string
-  // Name of the image field this config adjusts (e.g. "backgroundUrl").
+  // The image field this config adjusts, e.g. "backgroundUrl".
   imageField: string
   cropMode: CropMode
   // For cropMode "fixed": the ratio(s) to enforce. One entry = Tier A. Multiple
   // = Tier B responsive (ratio varies by breakpoint, paired with previewStates).
   lockedRatios?: AspectRatio[]
-  // Capability flag: whether the focal-point control can ever be offered (Tier
-  // B/C; false for A / D). With ownsImageFitField the modal additionally hides
-  // it while the fit is "contain" (see isFocalApplicable).
+  // Whether the focal-point control can be offered at all. With
+  // ownsImageFitField the modal also hides it while the fit is "contain".
   focalEnabled: boolean
-  // The breakpoints the preview rail shows (Mobile / Tablet / Desktop).
+  // The breakpoints the preview rail shows.
   previewStates: AdjustmentPreviewState[]
   // Guidance copy shown before/around upload (resolution hints etc.).
   preUploadCopy?: string
-  // The widest CSS-pixel width the image renders into on the published site
-  // (across all breakpoints). Used to warn when the cropped region can't fill
-  // that frame even at 1x — i.e. the result would look soft/blurry. Omit for
-  // components whose frame width isn't meaningfully bounded.
+  // The widest CSS-pixel width the image renders at on the published site.
+  // The modal warns when the crop is narrower. Omit if the width is unbounded.
   maxRenderedWidthPx?: number
-  // The tallest CSS-pixel height of that same rendered frame. Needed to warn
-  // correctly for fixed-height frames: under object-contain the image is only
-  // upscaled when it falls short on BOTH axes, so a height target is required to
-  // tell a genuinely small crop from a sharp wide/tall one (see
-  // computeLowResWarning). Omit when the frame height isn't meaningfully bounded
-  // (e.g. a width-driven natural-aspect image whose height just follows width).
+  // The tallest CSS-pixel height of that frame. Under "contain" the image
+  // only upscales when both axes fall short, so the warning needs a height.
+  // Omit when the height follows the width.
   maxRenderedHeightPx?: number
-  // Tier C conditional preview fit: the object-fit the framed-image preview
-  // (skipRealComponentPreview path) uses, resolved from the field host.
+  // Resolves the framed-image preview's object-fit from the field host.
   previewObjectFitFor?: (
     fieldHost: Record<string, unknown> | undefined,
   ) => "cover" | "contain"
-  // Opt out of the real-component preview in favour of the framed-image
-  // approximation below. For an array-nested image field whose host component
-  // has no buildSingleItemPreviewBlock (or it returns undefined for a given
-  // item) — the approximation (one framed image per state) is the
-  // fallback for a component that can't produce a meaningful single-item
-  // real render.
+  // Use the framed-image approximation, not the real component. For an
+  // array-nested field whose component can't render a single item.
   skipRealComponentPreview?: boolean
-  // For an array-nested image field whose config does NOT set
-  // skipRealComponentPreview, builds the synthetic single-item block the
-  // real-component preview renders (see BuildSingleItemPreviewBlock). Omitting
-  // this while the field is array-nested is equivalent to skipping the
-  // real-component preview for that render (AdjustmentPreview falls back to
-  // the framed approximation rather than rendering every item).
+  // Builds the one-item block for an array-nested field's real-component
+  // preview. Without it the preview uses the framed-image approximation.
   buildSingleItemPreviewBlock?: BuildSingleItemPreviewBlock
-  // Has a sibling imageFit field that the modal's fit control writes to
-  // (InfoCards' "Resize image to fit").
+  // The modal's fit control writes to a sibling imageFit field, e.g.
+  // InfoCards' "Resize image to fit".
   ownsImageFitField?: boolean
 }
