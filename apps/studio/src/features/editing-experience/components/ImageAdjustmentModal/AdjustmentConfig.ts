@@ -20,60 +20,37 @@ export interface AspectRatio {
 }
 
 // One preview pane in the modal: a real render of the target component at a
-// given breakpoint/layout, all sharing the single crop + focal. For Tier B the
-// biting aspect ratio differs per breakpoint — declared here so the preview can
-// show which axis the focal actually moves at that state. For a component
-// whose rendered shape changes with the page's `layout` rather than the
-// viewport (e.g. Blockquote: circle on a content page, square on the
-// homepage), set `layout` per state instead of (or alongside) viewportWidth —
-// the real-component preview passes it straight to `renderComponent`,
-// defaulting to "content" when omitted.
+// given breakpoint, all sharing the single crop + focal. For Tier B the biting
+// aspect ratio differs per breakpoint — declared here so the preview can show
+// which axis the focal actually moves at that state. The real-component
+// preview renders at the page's own layout, so a component whose shape follows
+// the layout (e.g. Blockquote: circle on content pages, square on the
+// homepage) needs nothing extra here.
 export interface AdjustmentPreviewState {
   id: string
   label: string
   viewportWidth?: number
   aspectRatio?: AspectRatio
-  layout?: IsomerPageLayoutType
 }
 
-// A named, switchable variant of a component's preview set — e.g. Blockquote's
-// "circle" vs "square" mask. Each version carries its OWN full breakpoint
-// preview set (the old flat `previewStates`, now scoped per-version instead of
-// global), so the two axes (breakpoint vs. rendered-shape variant) don't get
-// conflated into one array. The modal shows a dropdown to switch between
-// versions, but only when a config declares more than one.
-export interface PreviewVersion {
-  // Stable key, e.g. "circle", "square", "default".
-  id: string
-  // Dropdown option text. Omit when there's only one version — it's never
-  // shown, so most configs don't need it.
-  label?: string
-  previewStates: AdjustmentPreviewState[]
-}
-
-// Extensible options bag for context the registry can use to narrow which
-// version(s) of a config apply to a given instance. Blockquote reads
-// `pageLayout` to deterministically pick circle vs. square when the page's
-// layout is known; everyone else ignores it. Add fields here as future cases
-// need them — this is deliberately just a plain optional-properties object,
-// not a plugin system.
+// Extensible options bag for context the registry can use when resolving a
+// config for a given instance (e.g. the page's layout). Add fields here as
+// future cases need them — this is deliberately just a plain
+// optional-properties object, not a plugin system.
 export interface AdjustmentRenderContext {
   pageLayout?: IsomerPageLayoutType
 }
 
 // For an array-nested image field (e.g. an InfoCards card) whose containing
-// block renders EVERY item, builds the block to render for the preview.
-// `editedItem` is the field host (e.g. the card object) with the adjusted image +
-// imageAdjustment already spliced in; `originalItem` is that same host BEFORE
-// the splice, so the builder can locate it among the block's items and swap in
-// the adjusted copy — rendering the real sibling items alongside it so the
-// multi-column grid looks natural. Return undefined to skip the real-component
-// preview for this render (falls back to the framed-image approximation) — e.g.
-// if `ownerBlock` isn't shaped as expected.
+// block renders EVERY item, builds a block containing ONLY the edited item, so
+// the preview shows that one item rather than the whole block. `editedItem` is
+// the field host (e.g. the card object) with the adjusted image +
+// imageAdjustment already spliced in. Return undefined to skip the
+// real-component preview for this render (falls back to the framed-image
+// approximation) — e.g. if `ownerBlock` isn't shaped as expected.
 export type BuildSingleItemPreviewBlock = (
   ownerBlock: IsomerComponent,
   editedItem: Record<string, unknown>,
-  originalItem: Record<string, unknown>,
 ) => IsomerComponent | undefined
 
 export interface AdjustmentConfig {
@@ -89,11 +66,8 @@ export interface AdjustmentConfig {
   // B/C; false for A / D). With ownsImageFitField the modal additionally hides
   // it while the fit is "contain" (see isFocalApplicable).
   focalEnabled: boolean
-  // One or more named preview versions (e.g. Blockquote's circle/square masks).
-  // Always >= 1 entry. The modal shows a dropdown to pick the active one only
-  // when there's more than one; otherwise it renders the single version's
-  // previewStates directly, same as before this existed.
-  versions: PreviewVersion[]
+  // The breakpoints the preview rail shows (Mobile / Tablet / Desktop).
+  previewStates: AdjustmentPreviewState[]
   // Guidance copy shown before/around upload (resolution hints etc.).
   preUploadCopy?: string
   // The widest CSS-pixel width the image renders into on the published site
