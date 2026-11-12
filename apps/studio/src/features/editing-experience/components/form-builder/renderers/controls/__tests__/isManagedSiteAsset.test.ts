@@ -15,8 +15,6 @@ describe("isManagedSiteAsset", () => {
     ).toBe(true)
   })
 
-  // A real upload that happens to be named placeholder_no_image.png still lives
-  // under a canonical storage path, so it stays adjustable.
   it("accepts a real asset whose filename matches the placeholder", () => {
     expect(
       isManagedSiteAsset(
@@ -26,21 +24,17 @@ describe("isManagedSiteAsset", () => {
     ).toBe(true)
   })
 
-  // The reason this predicate exists: a freshly-added block carries the
-  // placeholder src, which starts with "/" but has no storage key — it must
-  // never offer "Adjust image".
+  // A new block carries this src. It starts with "/" but has no storage key.
   it("rejects the built-in placeholder image", () => {
     expect(isManagedSiteAsset("/placeholder_no_image.png", SITE_ID)).toBe(false)
   })
 
-  // The server's deriveBakeKey throws unless the key folder starts with
-  // `${siteId}/`, so another site's asset can never be baked here.
+  // deriveBakeKey throws unless the key folder starts with `${siteId}/`.
   it("rejects another site's asset", () => {
     expect(isManagedSiteAsset(`/99/${UUID}/photo.png`, SITE_ID)).toBe(false)
   })
 
-  // Legacy/migrated or hand-authored root-relative paths have no uuid folder,
-  // so parseAssetUrlToKey returns null and the save fails.
+  // No uuid folder, so parseAssetUrlToKey returns null and the save fails.
   it("rejects root-relative legacy paths", () => {
     expect(isManagedSiteAsset("/images/foo.jpg", SITE_ID)).toBe(false)
   })
@@ -57,7 +51,6 @@ describe("isManagedSiteAsset", () => {
     )
   })
 
-  // A nested path beyond `${siteId}/${uuid}/${file}` is not a canonical key.
   it("rejects paths with extra nested segments", () => {
     expect(
       isManagedSiteAsset(`/${SITE_ID}/${UUID}/sub/photo.png`, SITE_ID),
