@@ -1,6 +1,7 @@
 import { backOff } from "exponential-backoff"
-import { afterEach, describe, it, expect, vi } from "vitest"
+import { afterEach, beforeEach, describe, it, expect, vi } from "vitest"
 import { getAssetUploadBackoffOptions } from "~/features/editing-experience/components/form-builder/hooks/useAssetUpload"
+import { ASSETS_BASE_URL } from "~/utils/generateAssetUrl"
 
 import {
   chooseBakeMime,
@@ -135,6 +136,11 @@ describe("useSaveImageAdjustment pure helpers", () => {
 })
 
 describe("fetchImageBlob", () => {
+  // generateOriginalAssetUrl reads window.location (client-only code).
+  beforeEach(() => {
+    vi.stubGlobal("window", { location: { href: "http://localhost/" } })
+  })
+
   afterEach(() => {
     vi.unstubAllGlobals()
   })
@@ -154,6 +160,17 @@ describe("fetchImageBlob", () => {
     expect(result).toBe(blob)
     expect(fetchMock).toHaveBeenCalledTimes(1)
     expect(fetchMock.mock.calls[0]?.[0]).toContain("?original=true")
+  })
+
+  it("appends original=true to existing queries and keeps encoded keys fetchable", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(okResponse(new Blob()))
+    vi.stubGlobal("fetch", fetchMock)
+
+    await fetchImageBlob("/1/uuid/beach photo.png?v=2")
+
+    expect(fetchMock.mock.calls[0]?.[0]).toBe(
+      `${ASSETS_BASE_URL}/1/uuid/beach%20photo.png?v=2&original=true`,
+    )
   })
 
   it("falls back to the plain URL requesting webp when ?original is gated (403)", async () => {
