@@ -15,6 +15,7 @@ export const generateAssetUrl = (url: string): string => {
 export const generateOriginalAssetUrl = (url: string): string => {
   const resolved = generateAssetUrl(url)
   if (!resolved) return resolved
-  const separator = resolved.includes("?") ? "&" : "?"
-  return `${resolved}${separator}original=true`
+  const parsed = new URL(resolved, window.location.href)
+  parsed.searchParams.set("original", "true")
+  return parsed.href
 }
