@@ -17,29 +17,24 @@ const TIER_B_CONFIG: AdjustmentConfig = {
     { width: 4, height: 3 },
   ],
   focalEnabled: true,
-  versions: [
+  previewStates: [
     {
-      id: "default",
-      previewStates: [
-        {
-          id: "mobile",
-          label: "Mobile",
-          viewportWidth: 375,
-          aspectRatio: { width: 4, height: 3 },
-        },
-        {
-          id: "tablet",
-          label: "Tablet",
-          viewportWidth: 768,
-          aspectRatio: { width: 16, height: 9 },
-        },
-        {
-          id: "desktop",
-          label: "Desktop",
-          viewportWidth: 1024,
-          aspectRatio: { width: 16, height: 9 },
-        },
-      ],
+      id: "mobile",
+      label: "Mobile",
+      viewportWidth: 375,
+      aspectRatio: { width: 4, height: 3 },
+    },
+    {
+      id: "tablet",
+      label: "Tablet",
+      viewportWidth: 768,
+      aspectRatio: { width: 16, height: 9 },
+    },
+    {
+      id: "desktop",
+      label: "Desktop",
+      viewportWidth: 1024,
+      aspectRatio: { width: 16, height: 9 },
     },
   ],
   preUploadCopy:

@@ -22,12 +22,11 @@ import { resolveAdjustmentConfig } from "~/features/editing-experience/component
 export const useAdjustmentConfigForField = (path: string) => {
   const ctx = useJsonForms()
   const rootData: unknown = ctx.core?.data
-  // Context the registry can use to narrow a component's preview versions
-  // (e.g. Blockquote's circle/square by page layout). Optional-safe: this hook
-  // is also called from JsonFormsImageControl when it renders in provider-less
-  // settings forms (Navbar/Footer/logo) with no EditorDrawerProvider around it
-  // — there, pageLayout is simply undefined, which resolves to "show all
-  // versions" rather than throwing.
+  // Context the registry can use when resolving a config (see
+  // AdjustmentRenderContext). Optional-safe: this hook is also called from
+  // JsonFormsImageControl when it renders in provider-less settings forms
+  // (Navbar/Footer/logo) with no EditorDrawerProvider around it — there,
+  // pageLayout is simply undefined rather than throwing.
   const editorDrawerContext = useOptionalEditorDrawerContext()
   const pageLayout = editorDrawerContext?.previewPageState.layout
   const pathParts = path.split(".")
