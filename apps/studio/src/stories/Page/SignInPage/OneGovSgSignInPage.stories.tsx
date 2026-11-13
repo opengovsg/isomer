@@ -3,6 +3,7 @@ import { expect, userEvent, waitFor, within } from "storybook/test"
 import { authEmailHandlers } from "tests/msw/handlers/auth/email"
 import { authOneGovSgHandlers } from "tests/msw/handlers/auth/oneGovSg"
 import { meHandlers } from "tests/msw/handlers/me"
+import { ISOMER_SUPPORT_LINK } from "~/constants/misc"
 import SignInPage from "~/pages/sign-in"
 import {
   LOGIN_STATE_FLAG_TEST_ID,
@@ -127,6 +128,12 @@ export const Unauthorized: Story = {
     await expect(
       await canvas.findByText("You don’t have access to Isomer Studio"),
     ).toBeInTheDocument()
+    await expect(
+      canvas.getByText(/Ask your site’s admin to add you as a user/),
+    ).toBeInTheDocument()
+    await expect(
+      canvas.getByRole("link", { name: "Isomer Support" }),
+    ).toHaveAttribute("href", ISOMER_SUPPORT_LINK)
   },
 }
 

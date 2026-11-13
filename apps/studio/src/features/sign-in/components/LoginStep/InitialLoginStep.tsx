@@ -1,7 +1,8 @@
 import { Box, Stack, Text, VStack } from "@chakra-ui/react"
-import { Infobox } from "@opengovsg/design-system-react"
+import { Infobox, Link } from "@opengovsg/design-system-react"
 import { useMemo } from "react"
 import { IsomerLogo } from "~/components/Svg"
+import { ISOMER_SUPPORT_LINK } from "~/constants/misc"
 import { useEnv } from "~/hooks/useEnv"
 import { useIsSingpassEnabled } from "~/hooks/useIsSingpassEnabled"
 
@@ -31,7 +32,20 @@ export const InitialLoginStep = (): JSX.Element => {
   const errorDescription = useMemo(() => {
     switch (errorState) {
       case "unauthorized":
-        return "If you think you should have access, ask the agency you are working with to whitelist your email address."
+        return (
+          <>
+            Ask your site’s admin to add you as a user. If you think this is a
+            mistake, contact{" "}
+            <Link
+              variant="inline"
+              href={ISOMER_SUPPORT_LINK}
+              color="base.content.strong"
+            >
+              Isomer Support
+            </Link>
+            .
+          </>
+        )
       case "oneGovSgFailed":
         return "Try again, or log in with your email address."
       default:
