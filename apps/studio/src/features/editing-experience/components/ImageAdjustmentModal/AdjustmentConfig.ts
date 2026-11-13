@@ -58,8 +58,12 @@ export interface AdjustmentConfig {
   previewStates: AdjustmentPreviewState[]
   // Guidance copy shown before/around upload (resolution hints etc.).
   preUploadCopy?: string
-  // The widest CSS-pixel width the image renders at on the published site.
-  // The modal warns when the crop is narrower. Omit if the width is unbounded.
+  // Replaces the generic guidelines link after preUploadCopy with "Read the
+  // image guide for <guideLabel> or download a template to plan your image."
+  preUploadLinks?: { guideLabel: string; templateUrl: string }
+  // The width the modal warns below. Usually the widest CSS-pixel width the
+  // image renders at; some configs use the recommended upload size from
+  // preUploadCopy instead. Omit if the width is unbounded.
   maxRenderedWidthPx?: number
   // The tallest CSS-pixel height of that frame. Under "contain" the image
   // only upscales when both axes fall short, so the warning needs a height.
