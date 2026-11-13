@@ -47,27 +47,16 @@ export const useAdjustmentConfigForField = (path: string) => {
       ? (rawFieldHost as Record<string, unknown>)
       : undefined
 
-  // The owning block is the nearest ancestor with a `type`, which is what
-  // the registry keys on. Nested hosts like cards must never declare a
-  // `type`, or the climb stops early and Adjust disappears.
-  // imageAdjustmentSchemaGuardrail.test.ts enforces this.
-  const ownerBlock = useMemo((): IsomerComponent | undefined => {
-    const segments = parentPath ? parentPath.split(".") : []
-    for (let depth = segments.length; depth >= 0; depth--) {
-      const ancestorPath = segments.slice(0, depth).join(".")
-      const candidate: unknown = ancestorPath
-        ? get(rootData, ancestorPath)
-        : rootData
-      if (
-        typeof candidate === "object" &&
-        candidate !== null &&
-        typeof (candidate as { type?: unknown }).type === "string"
-      ) {
-        return candidate as IsomerComponent
-      }
-    }
-    return undefined
-  }, [rootData, parentPath])
+  // The owning block is the form root. Block editors (ComplexEditorStateDrawer,
+  // HeroEditorDrawer) pass the block itself as the form data, as other controls
+  // like JsonFormsMaxColumnsControl assume. Other forms (page metadata, navbar,
+  // footer) have no `type` at the root, so no block resolves.
+  const ownerBlock =
+    typeof rootData === "object" &&
+    rootData !== null &&
+    typeof (rootData as { type?: unknown }).type === "string"
+      ? (rootData as IsomerComponent)
+      : undefined
 
   const currentAdjustment = get(rootData, siblingPath) as
     | ImageAdjustment
