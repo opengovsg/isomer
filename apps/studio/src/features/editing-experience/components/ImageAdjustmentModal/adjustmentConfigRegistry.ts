@@ -1,5 +1,4 @@
 import type { IsomerComponent } from "@opengovsg/isomer-components"
-import { IMAGE_FIT } from "@opengovsg/isomer-components"
 
 import type {
   AdjustmentConfig,
@@ -15,14 +14,6 @@ export const INTENTIONALLY_NOT_ADJUSTABLE = [
   "video",
   "navbar",
 ] as const
-
-// Preview-only object-fit fallback for the framed-image approximation (used
-// when a real-component render fails or isn't attempted) — mirrors the real
-// card's own imageFit so a fallback frame doesn't show the wrong fit.
-const imageFitPreviewObjectFit = (
-  fieldHost: Record<string, unknown> | undefined,
-): "cover" | "contain" =>
-  fieldHost?.imageFit === IMAGE_FIT.Content ? "contain" : "cover"
 
 // Builds the InfoCards block the real-component preview renders: ONLY the card
 // being edited, so it fills the tile (AdjustmentPreview forces the grid to one
@@ -354,7 +345,6 @@ const INFOCARDS_WITH_FULL_IMAGE_CONFIG: AdjustmentConfig = {
   // Full-image cards are square on mobile, portrait at lg (lg:aspect-[2/3]);
   // 640 is a conservative height representative (the square case at 640px).
   maxRenderedHeightPx: 640,
-  previewObjectFitFor: imageFitPreviewObjectFit,
   // Renders the single card for real via buildSingleItemPreviewBlock.
   buildSingleItemPreviewBlock: buildSingleCardPreviewBlock,
   // Card is square up to lg, then 2:3 portrait at lg: square on mobile/tablet,
