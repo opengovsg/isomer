@@ -31,6 +31,8 @@ const INVALID_LOGIN_FLOW = new TRPCError({
   message: "Invalid login flow",
 })
 
+const PENDING_LOGIN_IDENTIFIER = `${ONE_GOV_SG_LOGIN_METHOD}|state`
+
 const createSessionState = () => ({
   codeVerifier: "code-verifier",
   nonce: "nonce",
@@ -98,6 +100,19 @@ describe("auth.oneGovSg", () => {
       expect(session.oneGovSg?.sessionState?.state).toBe("state")
     })
 
+    it("should record the pending login server-side", async () => {
+      // Act
+      await caller.login({})
+
+      // Assert
+      const pendingLogin = await db
+        .selectFrom("VerificationToken")
+        .selectAll()
+        .where("identifier", "=", PENDING_LOGIN_IDENTIFIER)
+        .executeTakeFirst()
+      expect(pendingLogin).toBeDefined()
+    })
+
     it("should reject a launcher login from an unknown issuer", async () => {
       // Act
       const result = caller.login({ iss: "https://evil.example" })
@@ -149,8 +164,32 @@ describe("auth.oneGovSg", () => {
       iss: env.ONE_GOV_SG_ISSUER,
     }
 
-    beforeEach(() => {
+    beforeEach(async () => {
       session.oneGovSg = { sessionState: createSessionState() }
+      await db
+        .insertInto("VerificationToken")
+        .values({
+          identifier: PENDING_LOGIN_IDENTIFIER,
+          token: "",
+          expires: new Date(Date.now() + 60 * 1000),
+        })
+        .execute()
+    })
+
+    it("should not exchange a callback replayed with the original cookie", async () => {
+      // Arrange
+      vi.spyOn(growthbookLib, "getIsSingpassEnabled").mockReturnValue(true)
+      const replayedSession = applySession()
+      replayedSession.oneGovSg = { sessionState: createSessionState() }
+      const replayCaller = createCaller(createMockRequest(replayedSession))
+      await caller.callback(callbackInput)
+
+      // Act
+      const result = replayCaller.callback({ ...callbackInput, code: "other" })
+
+      // Assert
+      await expect(result).rejects.toThrow(INVALID_LOGIN_FLOW)
+      expect(OneGovSgService.exchangeCode).toHaveBeenCalledTimes(1)
     })
 
     it("should throw if no login is in progress", async () => {

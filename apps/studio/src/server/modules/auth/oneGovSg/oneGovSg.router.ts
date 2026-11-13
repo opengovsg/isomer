@@ -23,9 +23,12 @@ import { upsertUser } from "../email/email.service"
 import { getOtpFingerPrint } from "../email/utils"
 import { clearSessionData } from "../session"
 import {
+  consumePendingLogin,
+  describeOneGovSgError,
   exchangeCode,
   getAuthorizationUrl,
   isOneGovSgEnabled,
+  recordPendingLogin,
 } from "./oneGovSg.service"
 
 const assertOneGovSgEnabled = () => {
@@ -71,16 +74,16 @@ export const oneGovSgRouter = router({
         authorization = await getAuthorizationUrl()
       } catch (error) {
         ctx.logger.error(
-          { err: error },
+          { reason: describeOneGovSgError(error) },
           "one.gov.sg authorization request failed",
         )
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: "one.gov.sg login failed",
-          cause: error,
         })
       }
 
+      await recordPendingLogin(authorization.session)
       clearSessionData(ctx.session)
       set(ctx.session, "oneGovSg.sessionState", authorization.session)
       await ctx.session.save()
@@ -92,6 +95,7 @@ export const oneGovSgRouter = router({
   // must fail before it can consume the real pending login.
   callback: publicProcedure
     .input(oneGovSgCallbackSchema)
+    .meta({ rateLimitOptions: {} })
     .query(async ({ ctx, input: { state, iss, code, error } }) => {
       assertOneGovSgEnabled()
 
@@ -124,6 +128,14 @@ export const oneGovSgRouter = router({
       clearSessionData(ctx.session)
       await ctx.session.save()
 
+      if (!(await consumePendingLogin(state))) {
+        ctx.logger.warn("one.gov.sg login already used or expired")
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Invalid login flow",
+        })
+      }
+
       if (error) {
         // `error_description` is IdP-controlled text: keep it out of logs and UI.
         ctx.logger.warn({ error }, "one.gov.sg returned an error")
@@ -144,12 +156,13 @@ export const oneGovSgRouter = router({
       try {
         email = await exchangeCode({ code, iss, session: sessionState })
       } catch (err) {
-        // Do not log `code` or the session state: they complete the exchange.
-        ctx.logger.error({ err }, "one.gov.sg token exchange failed")
+        ctx.logger.error(
+          { reason: describeOneGovSgError(err) },
+          "one.gov.sg token exchange failed",
+        )
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: "one.gov.sg login failed",
-          cause: err,
         })
       }
 

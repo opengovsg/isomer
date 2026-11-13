@@ -1,10 +1,13 @@
 import type { SessionData } from "~/lib/types/session"
 import { calculateJwkThumbprint, exportJWK, importPKCS8 } from "jose"
-import { generators, Issuer, type Client } from "openid-client"
+import { errors, generators, Issuer, type Client } from "openid-client"
 import { env } from "~/env.mjs"
 import { createBaseLogger } from "~/lib/logger"
 import { SIGN_IN_ONE_GOV_SG_CALLBACK } from "~/lib/routes"
+import { ONE_GOV_SG_LOGIN_METHOD } from "~/lib/types/session"
 import { getBaseUrl } from "~/utils/getBaseUrl"
+
+import { db } from "../../database"
 
 export type OneGovSgSessionState = NonNullable<
   NonNullable<SessionData["oneGovSg"]>["sessionState"]
@@ -106,6 +109,64 @@ export const getAuthorizationUrl = async () => {
   })
 
   return { authorizationUrl, session }
+}
+
+// The sealed session cookie can be replayed, so each login also gets a
+// server-side row that the callback deletes exactly once before the exchange.
+// one.gov.sg identifiers never collide with OTP ones (`email|ip`).
+const ONE_GOV_SG_PENDING_LOGIN_PREFIX = `${ONE_GOV_SG_LOGIN_METHOD}|`
+
+export const recordPendingLogin = async ({
+  state,
+  expiresAt,
+}: OneGovSgSessionState) => {
+  await db.transaction().execute(async (tx) => {
+    // ponytail: expired rows are swept on each login start, add a cron if
+    // login traffic ever makes this scan noticeable.
+    await tx
+      .deleteFrom("VerificationToken")
+      .where("identifier", "like", `${ONE_GOV_SG_PENDING_LOGIN_PREFIX}%`)
+      .where("expires", "<", new Date())
+      .execute()
+
+    await tx
+      .insertInto("VerificationToken")
+      .values({
+        identifier: `${ONE_GOV_SG_PENDING_LOGIN_PREFIX}${state}`,
+        token: "",
+        expires: new Date(expiresAt),
+      })
+      .execute()
+  })
+}
+
+/** Atomically consumes the pending login; false if missing, used or expired. */
+export const consumePendingLogin = async (state: string): Promise<boolean> => {
+  const consumed = await db
+    .deleteFrom("VerificationToken")
+    .where("identifier", "=", `${ONE_GOV_SG_PENDING_LOGIN_PREFIX}${state}`)
+    .where("expires", ">", new Date())
+    .returning("identifier")
+    .executeTakeFirst()
+
+  return consumed !== undefined
+}
+
+/**
+ * A log-safe failure category. openid-client errors carry the raw id_token
+ * (`jwt`) and IdP-controlled text, so only fixed values are kept.
+ */
+export const describeOneGovSgError = (error: unknown): string => {
+  if (error instanceof errors.OPError) {
+    return `op_error:${error.error}`
+  }
+  if (error instanceof errors.RPError) {
+    return "id_token_validation"
+  }
+  if (error instanceof Error) {
+    return error.message
+  }
+  return "unknown"
 }
 
 interface ExchangeCodeParams {
