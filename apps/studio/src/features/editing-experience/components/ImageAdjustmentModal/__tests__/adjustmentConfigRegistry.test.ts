@@ -259,19 +259,25 @@ describe("resolveAdjustmentConfig", () => {
         label: "hero:block",
         block: { type: "hero", variant: "block" },
         fieldName: "backgroundUrl",
-        expectedHeight: 500,
+        expectedHeight: 860,
       },
       {
         label: "hero:largeImage",
         block: { type: "hero", variant: "largeImage" },
         fieldName: "backgroundUrl",
-        expectedHeight: 640,
+        expectedHeight: 1280,
       },
       {
         label: "infopic",
         block: { type: "infopic" },
         fieldName: "imageSrc",
-        expectedHeight: 400,
+        expectedHeight: 860,
+      },
+      {
+        label: "infopic:full",
+        block: { type: "infopic", variant: "full" },
+        fieldName: "imageSrc",
+        expectedHeight: 860,
       },
       {
         label: "infocards:cardsWithImages",
@@ -296,6 +302,30 @@ describe("resolveAdjustmentConfig", () => {
     }
   })
 
+  // Full and Block Infopic frames differ, so each variant gets its own config.
+  // `variant` is optional, so a block without one must still resolve to Block.
+  describe("infopic resolves a config per variant", () => {
+    const cases: { label: string; block: unknown; expected: string }[] = [
+      {
+        label: "full",
+        block: { type: "infopic", variant: "full" },
+        expected: "infopic:full",
+      },
+      {
+        label: "block",
+        block: { type: "infopic", variant: "block" },
+        expected: "infopic",
+      },
+      { label: "no variant", block: { type: "infopic" }, expected: "infopic" },
+    ]
+    for (const { label, block, expected } of cases) {
+      it(`${label} resolves "${expected}"`, () => {
+        const config = resolveAdjustmentConfig({ block, fieldName: "imageSrc" })
+        expect(config?.componentType).toBe(expected)
+      })
+    }
+  })
+
   // A focal point only does something when the frame changes shape across
   // breakpoints. A fixed crop or a contain frame gives it nothing to anchor.
   describe("focal point is offered only for breakpoint-reshaping (responsive cover) frames", () => {
@@ -314,6 +344,10 @@ describe("resolveAdjustmentConfig", () => {
           fieldName: "backgroundUrl",
         }, // square -> 2:1
         { block: { type: "infopic" }, fieldName: "imageSrc" }, // 5:4 -> 2:1 -> 3:1
+        {
+          block: { type: "infopic", variant: "full" },
+          fieldName: "imageSrc",
+        }, // 1:1 -> 2:1 -> 3:1
       ]
       for (const { block, fieldName } of responsiveBlocks) {
         const config = resolveAdjustmentConfig({ block, fieldName })
@@ -353,28 +387,11 @@ describe("resolveAdjustmentConfig", () => {
     })
   })
 
-  // contentpic and blockquote hardcode their maxRenderedWidthPx as literal
-  // copies of a Tailwind width class in packages/components — nothing binds
-  // them, so a renderer change would silently desync the warning. Pin both
-  // against the real rendered markup.
+  // blockquote hardcodes its maxRenderedWidthPx as a literal copy of a
+  // Tailwind width class in packages/components — nothing binds them, so a
+  // renderer change would silently desync the warning. Pin it against the real
+  // rendered markup.
   describe("pinned maxRenderedWidthPx values", () => {
-    it("contentpic's 200px matches the rendered sm:w-[200px] frame", () => {
-      const config = resolveAdjustmentConfig({
-        block: { type: "contentpic" },
-        fieldName: "imageSrc",
-      })
-      expect(config?.maxRenderedWidthPx).toBe(200)
-
-      const block = {
-        type: "contentpic",
-        imageSrc: "/a.png",
-        imageAlt: "a",
-        content: { type: "prose", content: [] },
-      }
-      const html = renderBlockHtml(block, "content")
-      expect(html).toContain("sm:w-[200px]")
-    })
-
     it("blockquote's 240px matches the rendered homepage w-60 frame", () => {
       const config = resolveAdjustmentConfig({
         block: { type: "blockquote" },
