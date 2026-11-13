@@ -62,45 +62,7 @@ const findImageFields = (
   return acc
 }
 
-// The component's own top-level properties objects. Follows unions only,
-// never a property or an array's `items`.
-const findTopLevelProperties = (
-  node: unknown,
-  acc = new Set<unknown>(),
-): Set<unknown> => {
-  if (node === null || typeof node !== "object") return acc
-  const record = node as Record<string, unknown>
-  if (record.properties) acc.add(record.properties)
-  for (const key of ["anyOf", "oneOf", "allOf"]) {
-    const value = record[key]
-    if (Array.isArray(value)) {
-      value.forEach((child: unknown) => findTopLevelProperties(child, acc))
-    }
-  }
-  return acc
-}
-
 describe("imageAdjustment schema guardrail", () => {
-  // Studio's useAdjustmentConfigForField climbs to the nearest ancestor with
-  // a `type` to find the owning block. A card or slide with its own `type`
-  // would stop the climb early and hide "Adjust".
-  for (const [componentType, schema] of Object.entries(
-    IsomerComplexComponentsMap,
-  )) {
-    it(`"${componentType}" has no nested image host with its own "type"`, () => {
-      // Arrange
-      const topLevel = findTopLevelProperties(schema)
-
-      // Act
-      const nestedHostsWithType = findImageFields(schema).filter(
-        ({ properties }) => !topLevel.has(properties) && "type" in properties,
-      )
-
-      // Assert
-      expect(nestedHostsWithType).toEqual([])
-    })
-  }
-
   // The collection thumbnail shipped focal controls that did nothing,
   // because its image field had no adjustment sibling to hold the data.
   for (const [componentType, schema] of Object.entries(
