@@ -1,3 +1,5 @@
+import type { OneGovSgLoginAttempt } from "~/lib/types/session"
+
 import type {
   AuditLogEvent,
   AuditLogExportReportType,
@@ -206,7 +208,7 @@ export const logRedirectEvent: AuditLogger<RedirectEventLogProps> = async (
 }
 
 interface LoginDelta {
-  before: VerificationToken
+  before: VerificationToken | OneGovSgLoginAttempt
   after: null
 }
 

@@ -1,5 +1,9 @@
 import type { NextApiRequest } from "next"
-import type { SessionData, SessionVerificationToken } from "~/lib/types/session"
+import type {
+  OneGovSgLoginAttempt,
+  SessionData,
+  SessionVerificationToken,
+} from "~/lib/types/session"
 import { TRPCError } from "@trpc/server"
 import { type Prisma, type PrismaClient } from "~prisma/generated/prisma/client"
 
@@ -57,7 +61,10 @@ export const verifyToken = async (
 interface RecordUserLoginParams {
   tx: Transaction<DB>
   userId: NonNullable<SessionData["userId"]>
-  verificationToken: SessionVerificationToken | VerificationToken
+  verificationToken:
+    | SessionVerificationToken
+    | VerificationToken
+    | OneGovSgLoginAttempt
 }
 
 export const recordUserLogin = async ({
@@ -86,11 +93,14 @@ export const recordUserLogin = async ({
     eventType: AuditLogEvent.Login,
     by: updatedUser,
     delta: {
-      before: {
-        ...verificationToken,
-        expires: new Date(verificationToken.expires),
-        attempts: verificationToken.attempts + 1,
-      },
+      before:
+        "method" in verificationToken
+          ? verificationToken
+          : {
+              ...verificationToken,
+              expires: new Date(verificationToken.expires),
+              attempts: verificationToken.attempts + 1,
+            },
       after: null,
     },
   })
