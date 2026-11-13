@@ -3,6 +3,7 @@ import posthog from "posthog-js"
 import { useEffect } from "react"
 import { FullscreenSpinner } from "~/components/FullscreenSpinner"
 import { useLoginState } from "~/features/auth"
+import { usePostHogCaptureOnceReady } from "~/hooks/usePostHogCaptureOnceReady"
 import { callbackUrlSchema } from "~/schemas/url"
 import { trpc } from "~/utils/trpc"
 
@@ -33,13 +34,19 @@ const CompleteOneGovSgLogin = (
 ): JSX.Element => {
   const router = useRouter()
   const utils = trpc.useUtils()
-  const { setHasLoginStateFlag } = useLoginState()
+  const { setHasLoginStateFlag, removeLoginStateFlag } = useLoginState()
 
   // A code can be exchanged only once, so never retry or refetch.
   const { data, error } = trpc.auth.oneGovSg.callback.useQuery(input, {
     retry: false,
     staleTime: Infinity,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
     refetchOnWindowFocus: false,
+  })
+
+  usePostHogCaptureOnceReady(!!data?.isLoggedIn, () => {
+    posthog.capture("user_logged_in", { method: "one.gov.sg" })
   })
 
   useEffect(() => {
@@ -47,20 +54,24 @@ const CompleteOneGovSgLogin = (
       return
     }
 
+    // The callback ended any Studio session, so a leftover flag is stale and
+    // would make the next sign-in page redirect away.
     if (data.isLoggedIn) {
       setHasLoginStateFlag()
       void utils.me.get.invalidate()
-      posthog.capture("user_logged_in", { method: "one.gov.sg" })
+    } else {
+      removeLoginStateFlag()
     }
 
     void router.replace(callbackUrlSchema.parse(data.redirectUrl))
-  }, [data, router, setHasLoginStateFlag, utils.me.get])
+  }, [data, removeLoginStateFlag, router, setHasLoginStateFlag, utils.me.get])
 
   useEffect(() => {
     if (error) {
+      removeLoginStateFlag()
       void router.replace(oneGovSgFailurePath(error.data?.code))
     }
-  }, [error, router])
+  }, [error, removeLoginStateFlag, router])
 
   return <FullscreenSpinner />
 }
