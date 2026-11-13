@@ -48,6 +48,19 @@ describe("useAdjustmentConfigForField", () => {
     expect(result.current.siblingPath).toBe("cards.0.imageUrlImageAdjustment")
   })
 
+  it("resolves a nested field to the root block even if the item has its own type", () => {
+    const card = { type: "card", imageUrl: "/1/uuid/card.png" }
+    const data = {
+      type: "infocards",
+      variant: "cardsWithImages",
+      cards: [card],
+    }
+    const { result } = renderWithData(data, "cards.0.imageUrl")
+
+    expect(result.current.block).toBe(data)
+    expect(result.current.fieldHost).toBe(card)
+  })
+
   it("returns undefined for a nested, unregistered field", () => {
     const data = {
       type: "infocards",
