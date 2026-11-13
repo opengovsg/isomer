@@ -315,16 +315,20 @@ const HERO_FLOATING_CONFIG: AdjustmentConfig = {
   cropMode: "fixed",
   focalEnabled: false,
   lockedRatios: [{ width: 3, height: 2 }],
-  // Full-width below lg (~1024px), 66.67% (~800px) at lg — the tablet regime
-  // is the widest frame.
-  maxRenderedWidthPx: 1024,
+  // Warn below the recommended 1920×1280 upload in preUploadCopy (the frame
+  // is ~1024px wide at most). Height follows the locked 3:2.
+  maxRenderedWidthPx: 1920,
   previewStates: responsivePreviewStates({
     mobile: { width: 3, height: 2 },
     tablet: { width: 3, height: 2 },
     desktop: { width: 3, height: 2 },
   }),
   preUploadCopy:
-    "Use a high-resolution image (at least 1500×1000px) with a 3:2 aspect ratio. Keep key subjects out of the bottom third — the text card floats over it.",
+    "Recommended 1920 × 1280 px (3:2). The whole image shows. Keep faces away from the bottom-left, where the text card sits.",
+  preUploadLinks: {
+    guideLabel: "Hero banner",
+    templateUrl: "/placeholder_no_image.png",
+  },
 }
 
 // Tier A — fixed 1:1 crop, no focal; crop is baked into the src like every
@@ -339,16 +343,20 @@ const BLOCKQUOTE_CONFIG: AdjustmentConfig = {
   cropMode: "fixed",
   focalEnabled: false,
   lockedRatios: [{ width: 1, height: 1 }],
-  // Masked avatar: 240px on the homepage (w-60), 96px elsewhere — warn
-  // against the larger.
-  maxRenderedWidthPx: 240,
+  // Warn below the recommended 400×400 upload in preUploadCopy (the avatar
+  // renders at 240px on the homepage, w-60, and 96px elsewhere).
+  maxRenderedWidthPx: 400,
   previewStates: responsivePreviewStates({
     mobile: { width: 1, height: 1 },
     tablet: { width: 1, height: 1 },
     desktop: { width: 1, height: 1 },
   }),
   preUploadCopy:
-    "Use a square (1:1) image, at least 240×240px. The subject should sit centered — this image is masked into a circle on most pages.",
+    "Recommended 400 × 400 px (1:1). Use a square headshot with the face centred. It's shown as a circle.",
+  preUploadLinks: {
+    guideLabel: "Quote",
+    templateUrl: "/placeholder_no_image.png",
+  },
 }
 
 // Tier C — InfoCards "cards with images". Per-card image cover-fit into a card
@@ -366,14 +374,11 @@ const INFOCARDS_WITH_IMAGES_CONFIG: AdjustmentConfig = {
   cropMode: "custom",
   focalEnabled: true,
   ownsImageFitField: true,
-  // Card width depends on column count (1200px at 1 column down to ~260px at 4);
-  // warn against a generous multi-column card width so the common 2–4 column
-  // grids don't false-warn on perfectly sharp images.
-  maxRenderedWidthPx: 640,
-  // Image frame is 3:2 (cardImageContainer aspect-[3/2]) → ~427px tall at
-  // 640px. Crop is free (custom), so height must be checked independently
-  // of width.
-  maxRenderedHeightPx: 427,
+  // Warn below the recommended 1200×800 (3:2) upload in preUploadCopy. Cards
+  // render 1200px wide at 1 column down to ~260px at 4. Crop is free (custom),
+  // so height is checked too.
+  maxRenderedWidthPx: 1200,
+  maxRenderedHeightPx: 800,
   buildSingleItemPreviewBlock: buildSingleCardPreviewBlock,
   // Only a pre-measure guess: PreviewFrame measures the real card's height.
   previewStates: responsivePreviewStates({
@@ -382,7 +387,11 @@ const INFOCARDS_WITH_IMAGES_CONFIG: AdjustmentConfig = {
     desktop: { width: 3, height: 2 },
   }),
   preUploadCopy:
-    "The card crops this image to fill its frame, and the frame's shape changes across screen sizes. Set a focal point so your key subject stays in view.",
+    "Recommended 1200 × 800 px (3:2). Keep the main subject centred with space on all sides.",
+  preUploadLinks: {
+    guideLabel: "Cards",
+    templateUrl: "/placeholder_no_image.png",
+  },
 }
 
 // Tier C — InfoCards "cards with full images". Same conditional crop/focal as
@@ -395,12 +404,10 @@ const INFOCARDS_WITH_FULL_IMAGE_CONFIG: AdjustmentConfig = {
   cropMode: "custom",
   focalEnabled: true,
   ownsImageFitField: true,
-  // Same column-dependent card width as cardsWithImages — warn against a
-  // generous multi-column width (see that config).
-  maxRenderedWidthPx: 640,
-  // Full-image cards are square on mobile, portrait at lg (lg:aspect-[2/3]);
-  // 640 is a conservative height representative (the square case at 640px).
-  maxRenderedHeightPx: 640,
+  // Warn below the recommended 800×1200 (2:3) upload in preUploadCopy. Cards
+  // are square on mobile and portrait at lg (lg:aspect-[2/3]).
+  maxRenderedWidthPx: 800,
+  maxRenderedHeightPx: 1200,
   // Renders the single card for real via buildSingleItemPreviewBlock.
   buildSingleItemPreviewBlock: buildSingleCardPreviewBlock,
   // Card is square up to lg, then 2:3 portrait at lg: square on mobile/tablet,
@@ -411,7 +418,11 @@ const INFOCARDS_WITH_FULL_IMAGE_CONFIG: AdjustmentConfig = {
     desktop: { width: 2, height: 3 },
   }),
   preUploadCopy:
-    "The card crops this image to fill its frame and overlays the title on a dark gradient at the bottom. Keep your key subject in the upper half and set a focal point to anchor it.",
+    "Recommended 800 × 1200 px (2:3). Keep the subject in the upper half, as the title covers the lower part.",
+  preUploadLinks: {
+    guideLabel: "Cards",
+    templateUrl: "/placeholder_no_image.png",
+  },
 }
 
 // Native Image block (P2a) — free-form crop. Unlike every framed component, the
