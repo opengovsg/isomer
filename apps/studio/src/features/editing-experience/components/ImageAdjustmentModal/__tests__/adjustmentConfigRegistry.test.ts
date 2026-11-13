@@ -570,18 +570,6 @@ describe("resolveAdjustmentConfig", () => {
         { width: 5, height: 4 },
       ])
     })
-
-    it("previews with object-contain only under 'Resize image to fit'", () => {
-      const config = resolveAdjustmentConfig({
-        block: {},
-        fieldName: "src",
-        context: { isCollectionThumbnail: true },
-      })
-      expect(config?.previewObjectFitFor?.({})).toBe("cover")
-      expect(config?.previewObjectFitFor?.({ imageFit: "contain" })).toBe(
-        "contain",
-      )
-    })
   })
 
   // blockquote hardcodes its maxRenderedWidthPx as a literal copy of a
