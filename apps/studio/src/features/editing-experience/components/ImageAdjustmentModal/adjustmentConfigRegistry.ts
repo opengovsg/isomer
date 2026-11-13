@@ -150,43 +150,44 @@ const HERO_BLOCK_CONFIG: AdjustmentConfig = {
 // the single slide being edited. The framed approximation with the hero-band
 // aspect ratios is the honest single-slide preview here (same reasoning as
 // IMAGE_GALLERY_CONFIG's array-nested skip).
-const heroCarouselConfig = (block: IsomerComponent): AdjustmentConfig => ({
-  componentType: "hero:carousel",
-  imageField: "backgroundUrl",
-  cropMode: "custom",
-  focalEnabled: true,
-  // Full-bleed in the gradient layout; no CSS width cap. Warn against the
-  // 1280px content ceiling as a conservative "looks soft on desktop" floor —
-  // same reasoning and value as HERO_GRADIENT_CONFIG.
-  maxRenderedWidthPx: 1280,
-  // lg:min-h-[31.25rem] (500px) — the carousel section's actual minimum rendered
-  // height (shared by both layouts' sections). Crop is free (custom), so width
-  // and height can fall short independently — both must be checked.
-  maxRenderedHeightPx: 500,
-  // Framed preview, so these set the tile shape directly. Gradient (default):
-  // closest common ratio to each hero band (375×240→16:10, 768×360→2:1,
-  // 1280×500→5:2), as in HERO_GRADIENT_CONFIG. Block: imageColumn is h-80 below
-  // lg and half-width at lg with min-h 500 (375×320→7:6, 768×320→12:5,
-  // 640×500→5:4).
-  previewStates: responsivePreviewStates(
+const heroCarouselConfig = (block: IsomerComponent): AdjustmentConfig => {
+  const isBlockLayout =
     block.type === "hero" &&
-      block.variant === "carousel" &&
-      block.carousel?.layout === "block"
-      ? {
-          mobile: { width: 7, height: 6 },
-          tablet: { width: 12, height: 5 },
-          desktop: { width: 5, height: 4 },
-        }
-      : {
-          mobile: { width: 16, height: 10 },
-          tablet: { width: 2, height: 1 },
-          desktop: { width: 5, height: 2 },
-        },
-  ),
-  skipRealComponentPreview: true,
-  preUploadCopy:
-    "Use a high-resolution image (at least 2560×500px) with an aspect ratio between 3:2 and 2:1, key subjects centered with ample bleed, and no text — the carousel may add a dark overlay for text contrast.",
-})
+    block.variant === "carousel" &&
+    block.carousel?.layout === "block"
+  // Slides use the same upload guidance and warning size as the standalone
+  // hero variant their layout mirrors.
+  const layoutConfig = isBlockLayout ? HERO_BLOCK_CONFIG : HERO_GRADIENT_CONFIG
+  return {
+    componentType: "hero:carousel",
+    imageField: "backgroundUrl",
+    cropMode: "custom",
+    focalEnabled: true,
+    maxRenderedWidthPx: layoutConfig.maxRenderedWidthPx,
+    maxRenderedHeightPx: layoutConfig.maxRenderedHeightPx,
+    // Framed preview, so these set the tile shape directly. Gradient (default):
+    // closest common ratio to each hero band (375×240→16:10, 768×360→2:1,
+    // 1280×500→5:2), as in HERO_GRADIENT_CONFIG. Block: imageColumn is h-80 below
+    // lg and half-width at lg with min-h 500 (375×320→7:6, 768×320→12:5,
+    // 640×500→5:4).
+    previewStates: responsivePreviewStates(
+      isBlockLayout
+        ? {
+            mobile: { width: 7, height: 6 },
+            tablet: { width: 12, height: 5 },
+            desktop: { width: 5, height: 4 },
+          }
+        : {
+            mobile: { width: 16, height: 10 },
+            tablet: { width: 2, height: 1 },
+            desktop: { width: 5, height: 2 },
+          },
+    ),
+    skipRealComponentPreview: true,
+    preUploadCopy: layoutConfig.preUploadCopy,
+    preUploadLinks: layoutConfig.preUploadLinks,
+  }
+}
 
 // Tier A — fixed 5:6 crop (aspect-[5/6]), no focal. The crop is baked into the
 // src, so the renderer needs nothing at runtime; the config only drives the
