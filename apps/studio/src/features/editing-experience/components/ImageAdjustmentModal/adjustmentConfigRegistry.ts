@@ -464,7 +464,6 @@ const buildCollectionThumbnailConfig = (
     cropMode: "custom",
     focalEnabled: true,
     ownsImageFitField: true,
-    previewObjectFitFor: imageFitPreviewObjectFit,
     // BlogCard's 2-column frame is wider (half a desktop row) than
     // CollectionCard's fixed 200px box.
     maxRenderedWidthPx: isBlogVariant ? 640 : 200,
