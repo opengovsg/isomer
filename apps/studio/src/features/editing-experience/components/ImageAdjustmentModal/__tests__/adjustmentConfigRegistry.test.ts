@@ -253,7 +253,7 @@ describe("resolveAdjustmentConfig", () => {
         label: "hero:gradient",
         block: { type: "hero", variant: "gradient" },
         fieldName: "backgroundUrl",
-        expectedHeight: 500,
+        expectedHeight: 1440,
       },
       {
         label: "hero:block",
@@ -410,29 +410,6 @@ describe("resolveAdjustmentConfig", () => {
       // Assert
       expect(ratio).toBeDefined()
       expect(html).toContain(`aspect-[${ratio?.width}/${ratio?.height}]`)
-    })
-
-    it("hero:gradient's height threshold matches the rendered lg:min-h band", () => {
-      // Arrange
-      const config = resolveAdjustmentConfig({
-        block: { type: "hero", variant: "gradient" },
-        fieldName: "backgroundUrl",
-      })
-      // No `actions` renders the default buttons layout, which sets the band.
-      const block = {
-        type: "hero",
-        variant: "gradient",
-        title: "Title",
-        backgroundUrl: "/a.png",
-      }
-
-      // Act
-      const html = renderBlockHtml(block, "homepage")
-
-      // Assert
-      expect(config?.maxRenderedHeightPx).toBeDefined()
-      const rem = (config?.maxRenderedHeightPx ?? 0) / 16
-      expect(html).toContain(`lg:min-h-[${rem}rem]`)
     })
   })
 })

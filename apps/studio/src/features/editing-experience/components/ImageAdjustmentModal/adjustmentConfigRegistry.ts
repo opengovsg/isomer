@@ -77,12 +77,11 @@ const HERO_GRADIENT_CONFIG: AdjustmentConfig = {
   imageField: "backgroundUrl",
   cropMode: "custom",
   focalEnabled: true,
-  // Full-bleed with no CSS width cap, so warn against the 1280px
-  // max-w-screen-xl content width.
-  maxRenderedWidthPx: 1280,
-  // lg:min-h-[31.25rem] is 500px, the image guidelines' minimum height for
-  // this variant. The crop is free, so check width and height separately.
-  maxRenderedHeightPx: 500,
+  // Warn below the recommended 2560×1440 (16:9) upload in preUploadCopy. The
+  // section is full-bleed with lg:min-h-[31.25rem] (500px). The crop is free,
+  // so check width and height separately.
+  maxRenderedWidthPx: 2560,
+  maxRenderedHeightPx: 1440,
   // Closest common ratio to the hero band at each breakpoint, 375×240,
   // 768×360 and 1280×500.
   previewStates: responsivePreviewStates({
@@ -90,8 +89,11 @@ const HERO_GRADIENT_CONFIG: AdjustmentConfig = {
     tablet: { width: 2, height: 1 },
     desktop: { width: 5, height: 2 },
   }),
-  preUploadCopy:
-    "Use a high-resolution image (at least 2560×500px) with an aspect ratio between 3:2 and 2:1, key subjects centered with ample bleed, and no text — this variant adds a gradient overlay.",
+  preUploadCopy: "Recommended 2560 × 1440 px (16:9).",
+  preUploadLinks: {
+    guideLabel: "Hero banner",
+    templateUrl: "/placeholder_no_image.png",
+  },
 }
 
 // Tier B — responsive layout that STACKS (text, then the 320px image band)
