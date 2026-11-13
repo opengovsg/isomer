@@ -1,11 +1,17 @@
 import { Box, Stack, Text, VStack } from "@chakra-ui/react"
 import { Infobox } from "@opengovsg/design-system-react"
-import { useMemo } from "react"
+import { useRouter } from "next/router"
+import { useEffect, useMemo } from "react"
 import { IsomerLogo } from "~/components/Svg"
 import { useEnv } from "~/hooks/useEnv"
 import { useIsSingpassEnabled } from "~/hooks/useIsSingpassEnabled"
 
+import {
+  ONE_GOV_SG_ERROR_QUERY_KEY,
+  oneGovSgSignInError,
+} from "../../oneGovSgRedirect"
 import { EmailLoginForm } from "../EmailLogin"
+import { OneGovSgLoginButton } from "../OneGovSgLogin"
 import { useSignInContext } from "../SignInContext"
 
 export const InitialLoginStep = (): JSX.Element => {
@@ -13,12 +19,24 @@ export const InitialLoginStep = (): JSX.Element => {
     env: { NEXT_PUBLIC_APP_NAME: title },
   } = useEnv()
   const { isSingpassEnabled } = useIsSingpassEnabled()
-  const { errorState } = useSignInContext()
+  const { errorState, setErrorState } = useSignInContext()
+  const router = useRouter()
+  const oneGovSgError = oneGovSgSignInError(
+    router.query[ONE_GOV_SG_ERROR_QUERY_KEY],
+  )
+
+  useEffect(() => {
+    if (oneGovSgError) {
+      setErrorState(oneGovSgError)
+    }
+  }, [oneGovSgError, setErrorState])
 
   const errorTitle = useMemo(() => {
     switch (errorState) {
       case "unauthorized":
         return "You don’t have access to Isomer Studio"
+      case "oneGovSgFailed":
+        return "We couldn’t log you in with one.gov.sg"
       default:
         const _: undefined = errorState
         return undefined
@@ -29,6 +47,8 @@ export const InitialLoginStep = (): JSX.Element => {
     switch (errorState) {
       case "unauthorized":
         return "If you think you should have access, ask the agency you are working with to whitelist your email address."
+      case "oneGovSgFailed":
+        return "Try again, or log in with your email address."
       default:
         const _: undefined = errorState
         return undefined
@@ -68,6 +88,8 @@ export const InitialLoginStep = (): JSX.Element => {
       </VStack>
 
       <EmailLoginForm />
+
+      <OneGovSgLoginButton />
     </Stack>
   )
 }
