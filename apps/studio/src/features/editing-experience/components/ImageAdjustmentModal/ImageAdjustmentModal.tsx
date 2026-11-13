@@ -499,8 +499,8 @@ export const ImageAdjustmentModal = ({
                   spacing="1rem"
                   w="100%"
                   h="100%"
-                  // Room for PersistentScrollbar's track.
-                  pr={{ md: SCROLLBAR_SIZE }}
+                  // Room for PersistentScrollbar's track, plus a gap.
+                  pr={{ md: `calc(${SCROLLBAR_SIZE} + 0.5rem)` }}
                   overflowY={{ base: "visible", md: "scroll" }}
                   // PersistentScrollbar replaces the native scrollbar.
                   sx={{
