@@ -404,6 +404,33 @@ describe("resolveAdjustmentConfig", () => {
       }
     })
 
+    it("hero carousel guidance and warning size follow the carousel layout", () => {
+      const resolve = (carousel?: { layout: string }) =>
+        resolveAdjustmentConfig({
+          block: { type: "hero", variant: "carousel", carousel },
+          fieldName: "backgroundUrl",
+        })
+      const heroBlock = resolveAdjustmentConfig({
+        block: { type: "hero", variant: "block" },
+        fieldName: "backgroundUrl",
+      })
+      const heroGradient = resolveAdjustmentConfig({
+        block: { type: "hero", variant: "gradient" },
+        fieldName: "backgroundUrl",
+      })
+      for (const [carousel, expected] of [
+        [{ layout: "block" }, heroBlock],
+        [{ layout: "gradient" }, heroGradient],
+        [undefined, heroGradient],
+      ] as const) {
+        const config = resolve(carousel)
+        expect(config?.preUploadCopy).toBe(expected?.preUploadCopy)
+        expect(config?.preUploadLinks).toEqual(expected?.preUploadLinks)
+        expect(config?.maxRenderedWidthPx).toBe(expected?.maxRenderedWidthPx)
+        expect(config?.maxRenderedHeightPx).toBe(expected?.maxRenderedHeightPx)
+      }
+    })
+
     it("hero carousel preview shapes follow the carousel layout (gradient when absent)", () => {
       const ratios = (carousel?: { layout: string }) =>
         Object.fromEntries(
