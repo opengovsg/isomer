@@ -382,11 +382,9 @@ const IMAGE_CONFIG: AdjustmentConfig = {
   imageField: "src",
   cropMode: "custom",
   focalEnabled: false,
-  // Widest the native image renders: the content column is full-width (col-span-12)
-  // just below the `lg` breakpoint, ~943px at a 1023px viewport (above `lg` it
-  // narrows to col-span-9). Round up to 960 so a sharp image at that width doesn't
-  // false-warn while genuinely soft crops below it still do.
-  maxRenderedWidthPx: 960,
+  // Warn below the recommended 1500px width in preUploadCopy (the content
+  // column renders it ~960px wide at most). Any shape, so no height check.
+  maxRenderedWidthPx: 1500,
   // Free-form crop: no fixed ratio, so previews carry no aspectRatio — the
   // caption shows width only and the real render is measured.
   previewStates: [
@@ -395,7 +393,11 @@ const IMAGE_CONFIG: AdjustmentConfig = {
     { id: "desktop", label: "Desktop", viewportWidth: 1280 },
   ],
   preUploadCopy:
-    "You can crop this image to any shape. Use a high-resolution image so the area you keep stays sharp at the size it displays on your page.",
+    "Recommended at least 1500 px wide, any shape. The whole image is shown, so nothing is cropped.",
+  preUploadLinks: {
+    guideLabel: "Image",
+    templateUrl: "/placeholder_no_image.png",
+  },
 }
 
 // ImageGallery (P2b) — array-nested, always letterboxed. Every gallery image
@@ -417,8 +419,10 @@ const IMAGE_GALLERY_CONFIG: AdjustmentConfig = {
   // because contain only upscales when the crop falls short on BOTH — so a wide
   // landscape or a tall portrait stays sharp and doesn't false-warn, while a
   // genuinely small crop still does (see computeLowResWarning).
-  maxRenderedWidthPx: 960,
-  maxRenderedHeightPx: 456,
+  // Warn below the recommended 1200×800 (3:2) upload in preUploadCopy. The
+  // slideshow renders ~960 wide and 456px tall, object-contain.
+  maxRenderedWidthPx: 1200,
+  maxRenderedHeightPx: 800,
   previewObjectFitFor: () => "contain",
   skipRealComponentPreview: true,
   // object-contain shows the whole image regardless of frame shape. The frame is
@@ -431,7 +435,11 @@ const IMAGE_GALLERY_CONFIG: AdjustmentConfig = {
     desktop: { width: 2, height: 1 },
   }),
   preUploadCopy:
-    "Gallery images are shown in full (letterboxed to fit the frame), never cropped to it. Crop here only to trim parts of the image you don't want to show.",
+    "Recommended 1200 × 800 px (3:2). Use the same shape for every image. Captions cover the bottom.",
+  preUploadLinks: {
+    guideLabel: "Image gallery",
+    templateUrl: "/placeholder_no_image.png",
+  },
 }
 
 // Collection item thumbnail (`page.image`) — a page-level field, not a
@@ -475,12 +483,10 @@ const buildCollectionThumbnailConfig = (
     cropMode: "custom",
     focalEnabled: true,
     ownsImageFitField: true,
-    // BlogCard's 2-column frame is wider (half a desktop row) than
-    // CollectionCard's fixed 200px box.
-    maxRenderedWidthPx: isBlogVariant ? 640 : 200,
-    // CollectionCard's box is a fixed 160px tall; BlogCard's 2:1 frame at
-    // that same width is shallower.
-    maxRenderedHeightPx: isBlogVariant ? 320 : 160,
+    // Warn below the recommended 1200×900 (4:3) upload in preUploadCopy, for
+    // both layouts (CollectionCard's 200×160 box, BlogCard's 2:1 frame).
+    maxRenderedWidthPx: 1200,
+    maxRenderedHeightPx: 900,
     skipRealComponentPreview: true,
     // Identical ratio at every breakpoint either way (CollectionCard's
     // `h-[160px] w-[200px]` and BlogCard's `aspect-[2/1]` both carry no
@@ -497,7 +503,11 @@ const buildCollectionThumbnailConfig = (
           desktop: { width: 5, height: 4 },
         }),
     preUploadCopy:
-      "This thumbnail appears on your collection listing. Choose whether it should fill the frame (cropped, with a focal point to anchor it) or fit within it (no cropping).",
+      "Recommended 1200 × 900 px (4:3). Use one clear subject centred. It's shown as a small box or a wide strip.",
+    preUploadLinks: {
+      guideLabel: "thumbnails",
+      templateUrl: "/placeholder_no_image.png",
+    },
   }
 }
 
