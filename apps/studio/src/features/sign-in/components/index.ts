@@ -10,3 +10,6 @@ export * from "./SignInContext"
 
 export * from "./SingpassLogin"
 export * from "./SingpassCallback"
+
+export * from "./OneGovSgLogin"
+export * from "./OneGovSgCallback"
