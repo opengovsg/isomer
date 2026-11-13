@@ -115,21 +115,30 @@ const HERO_BLOCK_CONFIG: AdjustmentConfig = {
   imageField: "backgroundUrl",
   cropMode: "custom",
   focalEnabled: true,
-  // Image band is half the viewport at lg (lg:w-1/2); ~960px on large desktop.
-  maxRenderedWidthPx: 960,
-  // lg:min-h-[31.25rem] (500px) on the image panel — same minimum height as
-  // HeroGradient, matching the Isomer image guidelines' 1280×500 minimum for
-  // this variant. Crop is free (custom), so height must be checked too.
-  maxRenderedHeightPx: 500,
+  // Warn below the recommended 1280×860 (3:2) upload in preUploadCopy, not
+  // the rendered frame (~960 wide, lg:min-h 500px). Crop is free (custom), so
+  // height is checked too.
+  maxRenderedWidthPx: 1280,
+  maxRenderedHeightPx: 860,
   // Closest common ratio to each breakpoint's hero band (375×240→16:10,
   // 768×360→2:1, 1280×500→5:2); the real tile height is still measured.
+  // These size the whole section, not the image column. Desktop 5:2 fits the
+  // side-by-side layout. Below lg the text stacks above the 320px image band,
+  // so the measured tile runs taller than 16:10 / 2:1 and grows on first
+  // measure. That's expected: height depends on the editor's copy, so no
+  // fixed ratio is exact, and nothing saved depends on the guess.
   previewStates: responsivePreviewStates({
     mobile: { width: 16, height: 10 },
     tablet: { width: 2, height: 1 },
     desktop: { width: 5, height: 2 },
   }),
   preUploadCopy:
-    "Use a high-resolution image (at least 1280×500px) with an aspect ratio between 3:2 and 2:1, key subjects centered with ample bleed, and no text.",
+    "Recommended 1280 × 860 px (3:2). Keep the main subject centred with space above and below, as phones show only the middle of the image.",
+  // Same placeholder new blocks start with (public/placeholder_no_image.png).
+  preUploadLinks: {
+    guideLabel: "Hero banner",
+    templateUrl: "/placeholder_no_image.png",
+  },
 }
 
 // Tier A — fixed 5:6 crop (aspect-[5/6]), no focal. The crop is baked into the
@@ -141,8 +150,9 @@ const CONTENTPIC_CONFIG: AdjustmentConfig = {
   cropMode: "fixed",
   focalEnabled: false,
   lockedRatios: [{ width: 5, height: 6 }],
-  // sm:w-[200px] fixes the frame at 200px wide from sm up.
-  maxRenderedWidthPx: 200,
+  // Warn below the recommended 500×600 upload in preUploadCopy (the rendered
+  // frame is only 200px wide, sm:w-[200px]). Height follows the locked 5:6.
+  maxRenderedWidthPx: 500,
   // Contentpic stacks below `sm` and sits side by side from `sm` up, so
   // Mobile shows the stacked layout. The ratios are first guesses only.
   previewStates: responsivePreviewStates({
@@ -151,22 +161,27 @@ const CONTENTPIC_CONFIG: AdjustmentConfig = {
     desktop: { width: 2, height: 1 },
   }),
   preUploadCopy:
-    "Use a high-resolution image (at least 400×480px) with a 5:6 (portrait) aspect ratio. Keep the key subject centered — the image is cropped to a fixed portrait frame beside your text.",
+    "Recommended 500 × 600 px (5:6). Use a portrait image with space above the head.",
+  preUploadLinks: {
+    guideLabel: "Image with text",
+    templateUrl: "/placeholder_no_image.png",
+  },
 }
 
-// Tier B — responsive image with text. Content-dependent cover: frame height
-// varies with copy length, so preview aspect ratios are approximations.
+// Tier B — Block Infopic: image in its own column beside the text. Registered
+// under bare `infopic` (not `infopic:block`) because `variant` is optional and
+// older blocks have none. Content-dependent cover: frame height varies with
+// copy length, so preview aspect ratios are approximations.
 const INFOPIC_CONFIG: AdjustmentConfig = {
   componentType: "infopic",
   imageField: "imageSrc",
   cropMode: "custom",
   focalEnabled: true,
-  // One of two columns at lg (lg:grid-cols-2); ~960px on large desktop.
-  maxRenderedWidthPx: 960,
-  // object-cover frame; image band is capped at 400px (max-h-[400px]) and the
-  // container floors at 360px — 400 is a conservative height floor. Crop is
-  // free (custom), so height must be checked independently of width.
-  maxRenderedHeightPx: 400,
+  // Warn below the recommended 1280×860 (3:2) upload in preUploadCopy, not
+  // the rendered frame (one lg:grid-cols-2 column, ~960 wide; image band
+  // max-h-[400px] below lg). Crop is free (custom), so height is checked too.
+  maxRenderedWidthPx: 1280,
+  maxRenderedHeightPx: 860,
   // Closest common ratio to each breakpoint's frame (375×300→5:4,
   // 768×400→2:1, 1280×450→3:1); the real tile height is still measured.
   previewStates: responsivePreviewStates({
@@ -175,7 +190,36 @@ const INFOPIC_CONFIG: AdjustmentConfig = {
     desktop: { width: 3, height: 1 },
   }),
   preUploadCopy:
-    "Use a high-resolution image (at least 1280×500px). Place the key subject on the side matching where the image sits (left or right) rather than centering it.",
+    "Recommended 1280 × 860 px (3:2). Keep the main subject centred and the description short.",
+  preUploadLinks: {
+    guideLabel: "Image with text",
+    templateUrl: "/placeholder_no_image.png",
+  },
+}
+
+// Tier B — Full Infopic: the image is a full-width CSS background behind the
+// whole section, so its preview shapes differ from Block's.
+const INFOPIC_FULL_CONFIG: AdjustmentConfig = {
+  componentType: "infopic:full",
+  imageField: "imageSrc",
+  cropMode: "custom",
+  focalEnabled: true,
+  // Same recommended 1280×860 (3:2) upload as Block. The section floors at
+  // 360px (min-h-[360px]) and grows with the copy.
+  maxRenderedWidthPx: 1280,
+  maxRenderedHeightPx: 860,
+  // Rough section shapes at the 360px floor; the real tile height is measured.
+  previewStates: responsivePreviewStates({
+    mobile: { width: 1, height: 1 },
+    tablet: { width: 2, height: 1 },
+    desktop: { width: 3, height: 1 },
+  }),
+  preUploadCopy:
+    "Recommended 1280 × 860 px (3:2). Keep the main subject centred and the description short.",
+  preUploadLinks: {
+    guideLabel: "Image with text",
+    templateUrl: "/placeholder_no_image.png",
+  },
 }
 
 // Tier B — responsive full-bleed image hero with the largest aspect-ratio swing
@@ -188,18 +232,23 @@ const HERO_LARGE_IMAGE_CONFIG: AdjustmentConfig = {
   imageField: "backgroundUrl",
   cropMode: "custom",
   focalEnabled: true,
-  // Full-bleed; warn against the 1280px content ceiling (same as hero:gradient).
-  maxRenderedWidthPx: 1280,
-  // Widest frame is 2:1 from md up (md:aspect-[2/1]) → 640px tall at 1280px.
-  // Crop is free (custom), so height must be checked independently of width.
-  maxRenderedHeightPx: 640,
+  // Warn below the recommended 2560×1280 (2:1) upload in preUploadCopy. The
+  // frame is 2:1 from md up (md:aspect-[2/1]). Crop is free (custom), so
+  // height is checked too.
+  maxRenderedWidthPx: 2560,
+  maxRenderedHeightPx: 1280,
   previewStates: responsivePreviewStates({
     mobile: { width: 1, height: 1 },
     tablet: { width: 2, height: 1 },
     desktop: { width: 2, height: 1 },
   }),
   preUploadCopy:
-    "Use a high-resolution image (at least 1280×500px) with an aspect ratio between 3:2 and 2:1, key subjects centered with ample bleed.",
+    "Recommended 2560 × 1280 px (2:1). Keep one clear subject centred. On phones the sides are cut off.",
+  // Same placeholder new blocks start with (public/placeholder_no_image.png).
+  preUploadLinks: {
+    guideLabel: "Hero banner",
+    templateUrl: "/placeholder_no_image.png",
+  },
 }
 
 // Tier A — fixed 3:2 crop (aspect-[3/2]), no focal; the image crop is the same
@@ -455,7 +504,8 @@ const buildCollectionThumbnailConfig = (
 // Every static config, matched by resolveAdjustmentConfig on
 // `type:variant` (or bare `type`) plus the image field name. The collection
 // thumbnail has no block `type`, so it is resolved explicitly before this
-// lookup.
+// lookup. The first match wins, so a `type:variant` entry must come before a
+// bare `type` entry for the same type.
 export const CONFIGS: AdjustmentConfig[] = [
   IMAGE_CONFIG,
   IMAGE_GALLERY_CONFIG,
@@ -464,6 +514,7 @@ export const CONFIGS: AdjustmentConfig[] = [
   HERO_BLOCK_CONFIG,
   HERO_FLOATING_CONFIG,
   CONTENTPIC_CONFIG,
+  INFOPIC_FULL_CONFIG,
   INFOPIC_CONFIG,
   BLOCKQUOTE_CONFIG,
   INFOCARDS_WITH_IMAGES_CONFIG,
