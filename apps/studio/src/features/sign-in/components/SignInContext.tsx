@@ -3,8 +3,8 @@ import { useGrowthBook } from "@growthbook/growthbook-react"
 import { createContext, useCallback, useContext, useState } from "react"
 import { useInterval } from "usehooks-ts"
 
-type SignInStateType = "initial" | "verification"
-type SignInErrorType = "unauthorized"
+type SignInStateType = "initial" | "verification" | "oneGovSg"
+export type SignInErrorType = "unauthorized" | "oneGovSgFailed"
 
 interface SignInState {
   timer: number
@@ -15,6 +15,7 @@ interface SignInState {
   vfnStepData: VfnStepData | undefined
   setVfnStepData: Dispatch<SetStateAction<VfnStepData | undefined>>
   proceedToVerification: () => void
+  proceedToOneGovSg: () => void
   backToInitial: () => void
 }
 
@@ -66,6 +67,11 @@ export const SignInContextProvider = ({
     setErrorState(undefined)
   }, [])
 
+  const proceedToOneGovSg = useCallback(() => {
+    setState("oneGovSg")
+    setErrorState(undefined)
+  }, [])
+
   const backToInitial = useCallback(() => {
     setState("initial")
     setVfnStepData(undefined)
@@ -88,6 +94,7 @@ export const SignInContextProvider = ({
         timer,
         resetTimer,
         proceedToVerification,
+        proceedToOneGovSg,
         backToInitial,
         state,
         errorState,
