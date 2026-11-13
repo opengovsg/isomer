@@ -80,6 +80,17 @@ const FOCAL_WIRING_CONFIGS: {
     resolve: { block: { type: "infopic" }, fieldName: "imageSrc" },
     componentPaths: [
       "packages/components/src/templates/next/components/complex/Infopic/components/BlockInfopic.tsx",
+    ],
+    storyPaths: [
+      "packages/components/src/templates/next/components/complex/Infopic/Infopic.adjustment.stories.tsx",
+    ],
+  },
+  {
+    resolve: {
+      block: { type: "infopic", variant: "full" },
+      fieldName: "imageSrc",
+    },
+    componentPaths: [
       "packages/components/src/templates/next/components/complex/Infopic/components/FullInfopic.tsx",
     ],
     storyPaths: [
