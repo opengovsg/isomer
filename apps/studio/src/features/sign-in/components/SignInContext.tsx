@@ -1,7 +1,19 @@
 import type { Dispatch, PropsWithChildren, SetStateAction } from "react"
 import { useGrowthBook } from "@growthbook/growthbook-react"
-import { createContext, useCallback, useContext, useState } from "react"
+import { useRouter } from "next/router"
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from "react"
 import { useInterval } from "usehooks-ts"
+
+import {
+  ONE_GOV_SG_ERROR_QUERY_KEY,
+  oneGovSgSignInError,
+} from "../oneGovSgRedirect"
 
 type SignInStateType = "initial" | "verification" | "oneGovSg"
 export type SignInErrorType = "unauthorized" | "oneGovSgFailed"
@@ -56,6 +68,18 @@ export const SignInContextProvider = ({
   const [timer, setTimer] = useState(delayForResendSeconds)
 
   const gb = useGrowthBook()
+  const router = useRouter()
+
+  // Read once per page load, not per step mount, so "Use a different email"
+  // does not bring back an old one.gov.sg error.
+  const oneGovSgError = oneGovSgSignInError(
+    router.query[ONE_GOV_SG_ERROR_QUERY_KEY],
+  )
+  useEffect(() => {
+    if (oneGovSgError) {
+      setErrorState(oneGovSgError)
+    }
+  }, [oneGovSgError])
 
   const resetTimer = useCallback(
     () => setTimer(delayForResendSeconds),

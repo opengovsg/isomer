@@ -1,15 +1,10 @@
 import { Box, Stack, Text, VStack } from "@chakra-ui/react"
 import { Infobox } from "@opengovsg/design-system-react"
-import { useRouter } from "next/router"
-import { useEffect, useMemo } from "react"
+import { useMemo } from "react"
 import { IsomerLogo } from "~/components/Svg"
 import { useEnv } from "~/hooks/useEnv"
 import { useIsSingpassEnabled } from "~/hooks/useIsSingpassEnabled"
 
-import {
-  ONE_GOV_SG_ERROR_QUERY_KEY,
-  oneGovSgSignInError,
-} from "../../oneGovSgRedirect"
 import { EmailLoginForm } from "../EmailLogin"
 import { OneGovSgLoginButton } from "../OneGovSgLogin"
 import { useSignInContext } from "../SignInContext"
@@ -19,17 +14,7 @@ export const InitialLoginStep = (): JSX.Element => {
     env: { NEXT_PUBLIC_APP_NAME: title },
   } = useEnv()
   const { isSingpassEnabled } = useIsSingpassEnabled()
-  const { errorState, setErrorState } = useSignInContext()
-  const router = useRouter()
-  const oneGovSgError = oneGovSgSignInError(
-    router.query[ONE_GOV_SG_ERROR_QUERY_KEY],
-  )
-
-  useEffect(() => {
-    if (oneGovSgError) {
-      setErrorState(oneGovSgError)
-    }
-  }, [oneGovSgError, setErrorState])
+  const { errorState } = useSignInContext()
 
   const errorTitle = useMemo(() => {
     switch (errorState) {

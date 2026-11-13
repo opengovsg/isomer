@@ -14,7 +14,7 @@ import { useSignInContext } from "../SignInContext"
 export const OneGovSgLoginStep = (): JSX.Element => {
   const router = useRouter()
   const { backToInitial } = useSignInContext()
-  const { setHasLoginStateFlag } = useLoginState()
+  const { setHasLoginStateFlag, removeLoginStateFlag } = useLoginState()
   const hasStarted = useRef(false)
 
   const { mutate } = trpc.auth.oneGovSg.login.useMutation({
@@ -28,6 +28,8 @@ export const OneGovSgLoginStep = (): JSX.Element => {
       await router.replace(callbackUrlSchema.parse(redirectUrl))
     },
     onError: async (error) => {
+      // A stale flag would make /sign-in redirect away before the error shows.
+      removeLoginStateFlag()
       backToInitial()
       await router.replace(oneGovSgFailurePath(error.data?.code))
     },
