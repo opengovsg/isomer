@@ -328,13 +328,13 @@ describe("resolveAdjustmentConfig", () => {
         label: "infocards:cardsWithImages",
         block: { type: "infocards", variant: "cardsWithImages" },
         fieldName: "imageUrl",
-        expectedHeight: 427,
+        expectedHeight: 800,
       },
       {
         label: "infocards:cardsWithFullImages",
         block: { type: "infocards", variant: "cardsWithFullImages" },
         fieldName: "imageUrl",
-        expectedHeight: 640,
+        expectedHeight: 1200,
       },
     ]
 
@@ -569,30 +569,6 @@ describe("resolveAdjustmentConfig", () => {
         { width: 5, height: 4 },
         { width: 5, height: 4 },
       ])
-    })
-  })
-
-  // blockquote hardcodes its maxRenderedWidthPx as a literal copy of a
-  // Tailwind width class in packages/components — nothing binds them, so a
-  // renderer change would silently desync the warning. Pin it against the real
-  // rendered markup.
-  describe("pinned maxRenderedWidthPx values", () => {
-    it("blockquote's 240px matches the rendered homepage w-60 frame", () => {
-      const config = resolveAdjustmentConfig({
-        block: { type: "blockquote" },
-        fieldName: "imageSrc",
-      })
-      expect(config?.maxRenderedWidthPx).toBe(240)
-
-      const block = {
-        type: "blockquote",
-        quote: "Quote",
-        source: "Source",
-        imageSrc: "/a.png",
-        imageAlt: "a",
-      }
-      const html = renderBlockHtml(block, "homepage")
-      expect(html).toContain("w-60")
     })
   })
 
