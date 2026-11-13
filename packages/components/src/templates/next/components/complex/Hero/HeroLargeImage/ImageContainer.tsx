@@ -1,15 +1,16 @@
 "use client"
 
-import type { ImageClientProps } from "~/interfaces"
+import type { ImageClientWithAdjustmentProps } from "~/interfaces"
 import { useEffect, useRef, useState } from "react"
 
-import { ImageClient } from "../../../internal/ImageClient"
+import { ImageClientWithAdjustment } from "../../../internal/ImageClient"
 import { ScrollForMoreButton } from "./ScrollForMoreButton"
 
 interface ImageContainerProps {
-  imageSrc: ImageClientProps["src"]
-  imageAlt: ImageClientProps["alt"]
-  assetsBaseUrl: ImageClientProps["assetsBaseUrl"]
+  imageSrc: ImageClientWithAdjustmentProps["src"]
+  imageAlt: ImageClientWithAdjustmentProps["alt"]
+  assetsBaseUrl: ImageClientWithAdjustmentProps["assetsBaseUrl"]
+  imageAdjustment?: ImageClientWithAdjustmentProps["imageAdjustment"]
 }
 
 // Arbitrary threshold to prevent the button from showing too early
@@ -19,6 +20,7 @@ export const ImageContainer = ({
   imageSrc,
   imageAlt,
   assetsBaseUrl,
+  imageAdjustment,
 }: ImageContainerProps) => {
   const imageRef = useRef<HTMLImageElement>(null)
   const [isFixed, setIsFixed] = useState(false)
@@ -57,12 +59,13 @@ export const ImageContainer = ({
 
   return (
     <div className="relative w-full">
-      <ImageClient
+      <ImageClientWithAdjustment
         ref={imageRef}
         src={imageSrc}
         alt={imageAlt}
         width="100%"
         className="aspect-square max-h-[60rem] w-full object-cover object-center md:aspect-[2/1]"
+        imageAdjustment={imageAdjustment}
         assetsBaseUrl={assetsBaseUrl}
         lazyLoading={false} // hero is always above the fold
       />

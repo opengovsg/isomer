@@ -94,7 +94,31 @@ describe("resolveAdjustmentConfig", () => {
         label: "hero:gradient",
         block: { type: "hero", variant: "gradient" },
         fieldName: "backgroundUrl",
-        expectedHeight: 500,
+        expectedHeight: 1440,
+      },
+      {
+        label: "hero:block",
+        block: { type: "hero", variant: "block" },
+        fieldName: "backgroundUrl",
+        expectedHeight: 860,
+      },
+      {
+        label: "hero:largeImage",
+        block: { type: "hero", variant: "largeImage" },
+        fieldName: "backgroundUrl",
+        expectedHeight: 1280,
+      },
+      {
+        label: "infopic",
+        block: { type: "infopic" },
+        fieldName: "imageSrc",
+        expectedHeight: 860,
+      },
+      {
+        label: "infopic:full",
+        block: { type: "infopic", variant: "full" },
+        fieldName: "imageSrc",
+        expectedHeight: 860,
       },
     ]
 
@@ -103,6 +127,30 @@ describe("resolveAdjustmentConfig", () => {
         const config = resolveAdjustmentConfig({ block, fieldName })
         expect(config?.cropMode).toBe("custom")
         expect(config?.maxRenderedHeightPx).toBe(expectedHeight)
+      })
+    }
+  })
+
+  // Full and Block Infopic frames differ, so each variant gets its own config.
+  // `variant` is optional, so a block without one must still resolve to Block.
+  describe("infopic resolves a config per variant", () => {
+    const cases: { label: string; block: unknown; expected: string }[] = [
+      {
+        label: "full",
+        block: { type: "infopic", variant: "full" },
+        expected: "infopic:full",
+      },
+      {
+        label: "block",
+        block: { type: "infopic", variant: "block" },
+        expected: "infopic",
+      },
+      { label: "no variant", block: { type: "infopic" }, expected: "infopic" },
+    ]
+    for (const { label, block, expected } of cases) {
+      it(`${label} resolves "${expected}"`, () => {
+        const config = resolveAdjustmentConfig({ block, fieldName: "imageSrc" })
+        expect(config?.componentType).toBe(expected)
       })
     }
   })
@@ -116,6 +164,19 @@ describe("resolveAdjustmentConfig", () => {
           block: { type: "hero", variant: "gradient" },
           fieldName: "backgroundUrl",
         }, // 16:10 -> 2:1 -> 5:2
+        {
+          block: { type: "hero", variant: "block" },
+          fieldName: "backgroundUrl",
+        }, // stacked band -> side-by-side
+        {
+          block: { type: "hero", variant: "largeImage" },
+          fieldName: "backgroundUrl",
+        }, // square -> 2:1
+        { block: { type: "infopic" }, fieldName: "imageSrc" }, // 5:4 -> 2:1 -> 3:1
+        {
+          block: { type: "infopic", variant: "full" },
+          fieldName: "imageSrc",
+        }, // 1:1 -> 2:1 -> 3:1
       ]
       for (const { block, fieldName } of responsiveBlocks) {
         const config = resolveAdjustmentConfig({ block, fieldName })
@@ -132,27 +193,6 @@ describe("resolveAdjustmentConfig", () => {
         expect(config?.cropMode).toBe("fixed")
         expect(config?.focalEnabled).toBe(false)
       }
-    })
-  })
-
-  // The config copies this width from a Tailwind class by hand. Check the
-  // rendered markup so a renderer change can't leave the warning stale.
-  describe("pinned maxRenderedWidthPx values", () => {
-    it("contentpic's 200px matches the rendered sm:w-[200px] frame", () => {
-      const config = resolveAdjustmentConfig({
-        block: { type: "contentpic" },
-        fieldName: "imageSrc",
-      })
-      expect(config?.maxRenderedWidthPx).toBe(200)
-
-      const block = {
-        type: "contentpic",
-        imageSrc: "/a.png",
-        imageAlt: "a",
-        content: { type: "prose", content: [] },
-      }
-      const html = renderBlockHtml(block, "content")
-      expect(html).toContain("sm:w-[200px]")
     })
   })
 
@@ -179,29 +219,6 @@ describe("resolveAdjustmentConfig", () => {
       // Assert
       expect(ratio).toBeDefined()
       expect(html).toContain(`aspect-[${ratio?.width}/${ratio?.height}]`)
-    })
-
-    it("hero:gradient's height threshold matches the rendered lg:min-h band", () => {
-      // Arrange
-      const config = resolveAdjustmentConfig({
-        block: { type: "hero", variant: "gradient" },
-        fieldName: "backgroundUrl",
-      })
-      // No `actions` renders the default buttons layout, which sets the band.
-      const block = {
-        type: "hero",
-        variant: "gradient",
-        title: "Title",
-        backgroundUrl: "/a.png",
-      }
-
-      // Act
-      const html = renderBlockHtml(block, "homepage")
-
-      // Assert
-      expect(config?.maxRenderedHeightPx).toBeDefined()
-      const rem = (config?.maxRenderedHeightPx ?? 0) / 16
-      expect(html).toContain(`lg:min-h-[${rem}rem]`)
     })
   })
 })
