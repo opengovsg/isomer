@@ -388,6 +388,10 @@ describe("resolveAdjustmentConfig", () => {
           block: { type: "hero", variant: "largeImage" },
           fieldName: "backgroundUrl",
         }, // square -> 2:1
+        {
+          block: { type: "hero", variant: "carousel" },
+          fieldName: "backgroundUrl",
+        }, // full-bleed band, 16:10 -> 5:2
         { block: { type: "infopic" }, fieldName: "imageSrc" }, // 5:4 -> 2:1 -> 3:1
         {
           block: { type: "infopic", variant: "full" },
@@ -398,6 +402,58 @@ describe("resolveAdjustmentConfig", () => {
         const config = resolveAdjustmentConfig({ block, fieldName })
         expect(config?.focalEnabled).toBe(true)
       }
+    })
+
+    it("hero carousel guidance and warning size follow the carousel layout", () => {
+      const resolve = (carousel?: { layout: string }) =>
+        resolveAdjustmentConfig({
+          block: { type: "hero", variant: "carousel", carousel },
+          fieldName: "backgroundUrl",
+        })
+      const heroBlock = resolveAdjustmentConfig({
+        block: { type: "hero", variant: "block" },
+        fieldName: "backgroundUrl",
+      })
+      const heroGradient = resolveAdjustmentConfig({
+        block: { type: "hero", variant: "gradient" },
+        fieldName: "backgroundUrl",
+      })
+      for (const [carousel, expected] of [
+        [{ layout: "block" }, heroBlock],
+        [{ layout: "gradient" }, heroGradient],
+        [undefined, heroGradient],
+      ] as const) {
+        const config = resolve(carousel)
+        expect(config?.preUploadCopy).toBe(expected?.preUploadCopy)
+        expect(config?.preUploadLinks).toEqual(expected?.preUploadLinks)
+        expect(config?.maxRenderedWidthPx).toBe(expected?.maxRenderedWidthPx)
+        expect(config?.maxRenderedHeightPx).toBe(expected?.maxRenderedHeightPx)
+      }
+    })
+
+    it("hero carousel preview shapes follow the carousel layout (gradient when absent)", () => {
+      const ratios = (carousel?: { layout: string }) =>
+        Object.fromEntries(
+          (
+            resolveAdjustmentConfig({
+              block: { type: "hero", variant: "carousel", carousel },
+              fieldName: "backgroundUrl",
+            })?.previewStates ?? []
+          ).map((s) => [s.id, s.aspectRatio]),
+        )
+      const gradient = {
+        mobile: { width: 16, height: 10 },
+        tablet: { width: 2, height: 1 },
+        desktop: { width: 5, height: 2 },
+      }
+
+      expect(ratios({ layout: "block" })).toEqual({
+        mobile: { width: 7, height: 6 },
+        tablet: { width: 12, height: 5 },
+        desktop: { width: 5, height: 4 },
+      })
+      expect(ratios({ layout: "gradient" })).toEqual(gradient)
+      expect(ratios()).toEqual(gradient)
     })
 
     it("fixed-crop (baked-once, same shape every breakpoint) components have focal disabled", () => {

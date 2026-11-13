@@ -134,6 +134,63 @@ const HERO_BLOCK_CONFIG: AdjustmentConfig = {
   },
 }
 
+// Tier B — full-bleed responsive carousel hero. Each slide's backgroundUrl is
+// rendered (object-cover) by the shared CarouselSlideImages, used by BOTH
+// carousel layouts (block = half-width image panel at lg; gradient = full-bleed
+// with a dark overlay). The editor resolves a single slide's backgroundUrl to
+// the owning carousel block. The thresholds below are shared by both layouts and
+// use the more generous full-bleed geometry (gradient, the widest the image ever
+// renders) so a sharp image doesn't false-warn under either; only the preview
+// shapes follow the block's carousel layout.
+// Focal anchors the subject as the band reshapes across breakpoints; crop is
+// free (custom), exactly like HERO_GRADIENT_CONFIG.
+//
+// Preview: skipRealComponentPreview — the carousel is an interactive client
+// component that refuses to render below HERO_CAROUSEL_SLIDE_LIMITS.minItems (2)
+// slides and rotates between them, so buildSingleItemPreviewBlock (which renders
+// the whole block with every item) would show the full rotating carousel, not
+// the single slide being edited. The framed approximation with the hero-band
+// aspect ratios is the honest single-slide preview here (same reasoning as
+// IMAGE_GALLERY_CONFIG's array-nested skip).
+const heroCarouselConfig = (block: IsomerComponent): AdjustmentConfig => {
+  const isBlockLayout =
+    block.type === "hero" &&
+    block.variant === "carousel" &&
+    block.carousel?.layout === "block"
+  // Slides use the same upload guidance and warning size as the standalone
+  // hero variant their layout mirrors.
+  const layoutConfig = isBlockLayout ? HERO_BLOCK_CONFIG : HERO_GRADIENT_CONFIG
+  return {
+    componentType: "hero:carousel",
+    imageField: "backgroundUrl",
+    cropMode: "custom",
+    focalEnabled: true,
+    maxRenderedWidthPx: layoutConfig.maxRenderedWidthPx,
+    maxRenderedHeightPx: layoutConfig.maxRenderedHeightPx,
+    // Framed preview, so these set the tile shape directly. Gradient (default):
+    // closest common ratio to each hero band (375×240→16:10, 768×360→2:1,
+    // 1280×500→5:2), as in HERO_GRADIENT_CONFIG. Block: imageColumn is h-80 below
+    // lg and half-width at lg with min-h 500 (375×320→7:6, 768×320→12:5,
+    // 640×500→5:4).
+    previewStates: responsivePreviewStates(
+      isBlockLayout
+        ? {
+            mobile: { width: 7, height: 6 },
+            tablet: { width: 12, height: 5 },
+            desktop: { width: 5, height: 4 },
+          }
+        : {
+            mobile: { width: 16, height: 10 },
+            tablet: { width: 2, height: 1 },
+            desktop: { width: 5, height: 2 },
+          },
+    ),
+    skipRealComponentPreview: true,
+    preUploadCopy: layoutConfig.preUploadCopy,
+    preUploadLinks: layoutConfig.preUploadLinks,
+  }
+}
+
 // Tier A — fixed 5:6 crop (aspect-[5/6]), no focal. The crop is baked into the
 // src, so the renderer needs nothing at runtime; the config only drives the
 // editor's fixed-ratio crop UI.
@@ -515,9 +572,10 @@ const buildCollectionThumbnailConfig = (
 
 // Every static config, matched by resolveAdjustmentConfig on
 // `type:variant` (or bare `type`) plus the image field name. The collection
-// thumbnail has no block `type`, so it is resolved explicitly before this
-// lookup. The first match wins, so a `type:variant` entry must come before a
-// bare `type` entry for the same type.
+// thumbnail (no block `type`) and the hero carousel (preview shapes follow
+// its layout) are resolved explicitly before this lookup. The first match
+// wins, so a `type:variant` entry must come before a bare `type` entry for the
+// same type.
 export const CONFIGS: AdjustmentConfig[] = [
   IMAGE_CONFIG,
   IMAGE_GALLERY_CONFIG,
@@ -556,6 +614,12 @@ export function resolveAdjustmentConfig(args: {
     "variant" in block && typeof block.variant === "string"
       ? block.variant
       : undefined
+  if (
+    block.type === "hero" &&
+    variant === "carousel" &&
+    fieldName === "backgroundUrl"
+  )
+    return heroCarouselConfig(block)
   // No match means not wired yet. The registry test asserts the deliberate
   // opt-outs.
   return CONFIGS.find(
