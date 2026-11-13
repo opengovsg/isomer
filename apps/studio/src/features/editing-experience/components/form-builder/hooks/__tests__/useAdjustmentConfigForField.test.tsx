@@ -31,6 +31,7 @@ describe("useAdjustmentConfigForField", () => {
     expect(result.current.fieldHost).toBe(data)
     expect(result.current.fieldName).toBe("backgroundUrl")
     expect(result.current.siblingPath).toBe("backgroundUrlImageAdjustment")
+    expect(result.current.config?.componentType).toBe("hero:floating")
   })
 
   it("resolves an array-nested card field to the InfoCards config, with fieldHost = the card", () => {
@@ -46,6 +47,9 @@ describe("useAdjustmentConfigForField", () => {
     expect(result.current.fieldHost).toBe(card)
     expect(result.current.fieldName).toBe("imageUrl")
     expect(result.current.siblingPath).toBe("cards.0.imageUrlImageAdjustment")
+    expect(result.current.config?.componentType).toBe(
+      "infocards:cardsWithImages",
+    )
   })
 
   it("resolves a nested field to the root block even if the item has its own type", () => {

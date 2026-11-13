@@ -5,6 +5,7 @@ import type {
   AdjustmentPreviewState,
   AdjustmentRenderContext,
   AspectRatio,
+  BuildSingleItemPreviewBlock,
 } from "./AdjustmentConfig"
 
 /** These component types never get image adjustment, by design. */
@@ -13,6 +14,29 @@ export const INTENTIONALLY_NOT_ADJUSTABLE = [
   "video",
   "navbar",
 ] as const
+
+// Builds the InfoCards block the real-component preview renders: ONLY the card
+// being edited, so it fills the tile (AdjustmentPreview forces the grid to one
+// column). Drops the section's title/subtitle/link button. Keeps
+// maxColumns/layout/variant so the card's per-breakpoint frame aspect (e.g.
+// lg:aspect-square) matches the live page.
+const buildSingleCardPreviewBlock: BuildSingleItemPreviewBlock = (
+  block,
+  card,
+) => {
+  if (block.type !== "infocards" || block.variant === "cardsWithoutImages")
+    return undefined
+  const editedCard = card as (typeof block.cards)[number]
+  const preview: typeof block = {
+    ...block,
+    title: "",
+    subtitle: undefined,
+    url: undefined,
+    label: undefined,
+    cards: [editedCard],
+  }
+  return preview
+}
 
 // The three breakpoint widths every editor preview uses. Only the aspect
 // ratio differs per component. A real-component preview uses the ratio as a
@@ -220,6 +244,133 @@ const HERO_LARGE_IMAGE_CONFIG: AdjustmentConfig = {
   },
 }
 
+// Tier A — fixed 3:2 crop (aspect-[3/2]), no focal; the image crop is the same
+// shape at every breakpoint. Like Contentpic, the crop is baked into the src so
+// the renderer needs nothing at runtime. Risk-first per the orchestration plan:
+// the floating text card overlaps the bottom of the image, so the real-component
+// preview (which renders the actual overlapping card) is what lets an editor
+// catch a subject hidden behind it. That overlap is breakpoint-specific — the
+// card sits -1.5rem into a full-width image below md, -10rem at md, then
+// -17.85rem over a 66.67%-wide image at lg — so preview all three regimes; a
+// single desktop state would hide how much the card covers on mobile/tablet.
+// The 3:2 aspectRatio is only the pre-measure flash guess (PreviewFrame measures
+// the real height, which includes the overlapping card).
+const HERO_FLOATING_CONFIG: AdjustmentConfig = {
+  componentType: "hero:floating",
+  imageField: "backgroundUrl",
+  cropMode: "fixed",
+  focalEnabled: false,
+  lockedRatios: [{ width: 3, height: 2 }],
+  // Warn below the recommended 1920×1280 upload in preUploadCopy (the frame
+  // is ~1024px wide at most). Height follows the locked 3:2.
+  maxRenderedWidthPx: 1920,
+  previewStates: responsivePreviewStates({
+    mobile: { width: 3, height: 2 },
+    tablet: { width: 3, height: 2 },
+    desktop: { width: 3, height: 2 },
+  }),
+  preUploadCopy:
+    "Recommended 1920 × 1280 px (3:2). The whole image shows. Keep faces away from the bottom-left, where the text card sits.",
+  preUploadLinks: {
+    guideLabel: "Hero banner",
+    templateUrl: "/placeholder_no_image.png",
+  },
+}
+
+// Tier A — fixed 1:1 crop, no focal; crop is baked into the src like every
+// other Tier A component. Blockquote renders the SAME 1:1 image two different
+// shapes depending on the page's layout — a circle (rounded-full, every
+// layout except homepage/notfound) or a square (homepage/notfound). The
+// real-component preview renders at the page's own layout, so it shows the
+// shape this page will publish without anything extra here.
+const BLOCKQUOTE_CONFIG: AdjustmentConfig = {
+  componentType: "blockquote",
+  imageField: "imageSrc",
+  cropMode: "fixed",
+  focalEnabled: false,
+  lockedRatios: [{ width: 1, height: 1 }],
+  // Warn below the recommended 400×400 upload in preUploadCopy (the avatar
+  // renders at 240px on the homepage, w-60, and 96px elsewhere).
+  maxRenderedWidthPx: 400,
+  previewStates: responsivePreviewStates({
+    mobile: { width: 1, height: 1 },
+    tablet: { width: 1, height: 1 },
+    desktop: { width: 1, height: 1 },
+  }),
+  preUploadCopy:
+    "Recommended 400 × 400 px (1:1). Use a square headshot with the face centred. It's shown as a circle.",
+  preUploadLinks: {
+    guideLabel: "Quote",
+    templateUrl: "/placeholder_no_image.png",
+  },
+}
+
+// Tier C — InfoCards "cards with images". Per-card image cover-fit into a card
+// whose aspect ratio swings across breakpoints (3:2 by default; some column
+// counts override it at lg), so this is the Tier-B cover+focal pattern (free
+// crop baked in, focal anchors the subject across the swing). Crop is always
+// offered; focal is offered only under imageFit "cover" (isFocalApplicable) —
+// under "contain" the image is letterboxed, so the focal control is hidden.
+// The preview renders the edited card for real (via
+// buildSingleItemPreviewBlock), so the real per-breakpoint frame shows without
+// this config having to replicate it.
+const INFOCARDS_WITH_IMAGES_CONFIG: AdjustmentConfig = {
+  componentType: "infocards:cardsWithImages",
+  imageField: "imageUrl",
+  cropMode: "custom",
+  focalEnabled: true,
+  ownsImageFitField: true,
+  // Warn below the recommended 1200×800 (3:2) upload in preUploadCopy. Cards
+  // render 1200px wide at 1 column down to ~260px at 4. Crop is free (custom),
+  // so height is checked too.
+  maxRenderedWidthPx: 1200,
+  maxRenderedHeightPx: 800,
+  buildSingleItemPreviewBlock: buildSingleCardPreviewBlock,
+  // Only a pre-measure guess: PreviewFrame measures the real card's height.
+  previewStates: responsivePreviewStates({
+    mobile: { width: 3, height: 2 },
+    tablet: { width: 3, height: 2 },
+    desktop: { width: 3, height: 2 },
+  }),
+  preUploadCopy:
+    "Recommended 1200 × 800 px (3:2). Keep the main subject centred with space on all sides.",
+  preUploadLinks: {
+    guideLabel: "Cards",
+    templateUrl: "/placeholder_no_image.png",
+  },
+}
+
+// Tier C — InfoCards "cards with full images". Same conditional crop/focal as
+// the default variant, but the image fills the whole card (square on mobile →
+// 2:3 portrait at lg) with a dark bottom gradient the title sits over. The
+// preview renders the real card, so the real gradient/title show directly.
+const INFOCARDS_WITH_FULL_IMAGE_CONFIG: AdjustmentConfig = {
+  componentType: "infocards:cardsWithFullImages",
+  imageField: "imageUrl",
+  cropMode: "custom",
+  focalEnabled: true,
+  ownsImageFitField: true,
+  // Warn below the recommended 800×1200 (2:3) upload in preUploadCopy. Cards
+  // are square on mobile and portrait at lg (lg:aspect-[2/3]).
+  maxRenderedWidthPx: 800,
+  maxRenderedHeightPx: 1200,
+  // Renders the single card for real via buildSingleItemPreviewBlock.
+  buildSingleItemPreviewBlock: buildSingleCardPreviewBlock,
+  // Card is square up to lg, then 2:3 portrait at lg: square on mobile/tablet,
+  // portrait on desktop.
+  previewStates: responsivePreviewStates({
+    mobile: { width: 1, height: 1 },
+    tablet: { width: 1, height: 1 },
+    desktop: { width: 2, height: 3 },
+  }),
+  preUploadCopy:
+    "Recommended 800 × 1200 px (2:3). Keep the subject in the upper half, as the title covers the lower part.",
+  preUploadLinks: {
+    guideLabel: "Cards",
+    templateUrl: "/placeholder_no_image.png",
+  },
+}
+
 // resolveAdjustmentConfig matches these on `type:variant` or bare `type`,
 // plus the image field name. The first match wins, so a `type:variant` entry
 // must come before a bare `type` entry for the same type.
@@ -227,9 +378,13 @@ export const CONFIGS: AdjustmentConfig[] = [
   HERO_GRADIENT_CONFIG,
   HERO_LARGE_IMAGE_CONFIG,
   HERO_BLOCK_CONFIG,
+  HERO_FLOATING_CONFIG,
   CONTENTPIC_CONFIG,
   INFOPIC_FULL_CONFIG,
   INFOPIC_CONFIG,
+  BLOCKQUOTE_CONFIG,
+  INFOCARDS_WITH_IMAGES_CONFIG,
+  INFOCARDS_WITH_FULL_IMAGE_CONFIG,
 ]
 
 /**
