@@ -72,6 +72,15 @@ vi.mock(
   () => ({ fetchImageBlob: vi.fn() }),
 )
 
+// No tRPC provider here; stub the queries the collection thumbnail lookup declares
+vi.mock("~/utils/trpc", () => ({
+  trpc: {
+    resource: { getParentOf: { useQuery: () => ({ data: undefined }) } },
+    folder: { getIndexpage: { useQuery: () => ({ data: undefined }) } },
+    page: { readPageAndBlob: { useQuery: () => ({ data: undefined }) } },
+  },
+}))
+
 const renderers: JsonFormsRendererRegistryEntry[] = [
   { tester: jsonFormsImageControlTester, renderer: JsonFormsImageControl },
   {

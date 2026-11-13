@@ -384,11 +384,9 @@ const IMAGE_CONFIG: AdjustmentConfig = {
   imageField: "src",
   cropMode: "custom",
   focalEnabled: false,
-  // Widest the native image renders: the content column is full-width (col-span-12)
-  // just below the `lg` breakpoint, ~943px at a 1023px viewport (above `lg` it
-  // narrows to col-span-9). Round up to 960 so a sharp image at that width doesn't
-  // false-warn while genuinely soft crops below it still do.
-  maxRenderedWidthPx: 960,
+  // Warn below the recommended 1500px width in preUploadCopy (the content
+  // column renders it ~960px wide at most). Any shape, so no height check.
+  maxRenderedWidthPx: 1500,
   // Free-form crop: no fixed ratio, so previews carry no aspectRatio — the
   // caption shows width only and the real render is measured.
   previewStates: [
@@ -397,7 +395,11 @@ const IMAGE_CONFIG: AdjustmentConfig = {
     { id: "desktop", label: "Desktop", viewportWidth: 1280 },
   ],
   preUploadCopy:
-    "You can crop this image to any shape. Use a high-resolution image so the area you keep stays sharp at the size it displays on your page.",
+    "Recommended at least 1500 px wide, any shape. The whole image is shown, so nothing is cropped.",
+  preUploadLinks: {
+    guideLabel: "Image",
+    templateUrl: "/placeholder_no_image.png",
+  },
 }
 
 // ImageGallery (P2b) — array-nested, always letterboxed. Every gallery image
@@ -419,8 +421,10 @@ const IMAGE_GALLERY_CONFIG: AdjustmentConfig = {
   // because contain only upscales when the crop falls short on BOTH — so a wide
   // landscape or a tall portrait stays sharp and doesn't false-warn, while a
   // genuinely small crop still does (see computeLowResWarning).
-  maxRenderedWidthPx: 960,
-  maxRenderedHeightPx: 456,
+  // Warn below the recommended 1200×800 (3:2) upload in preUploadCopy. The
+  // slideshow renders ~960 wide and 456px tall, object-contain.
+  maxRenderedWidthPx: 1200,
+  maxRenderedHeightPx: 800,
   previewObjectFitFor: () => "contain",
   skipRealComponentPreview: true,
   // object-contain shows the whole image regardless of frame shape. The frame is
@@ -433,12 +437,87 @@ const IMAGE_GALLERY_CONFIG: AdjustmentConfig = {
     desktop: { width: 2, height: 1 },
   }),
   preUploadCopy:
-    "Gallery images are shown in full (letterboxed to fit the frame), never cropped to it. Crop here only to trim parts of the image you don't want to show.",
+    "Recommended 1200 × 800 px (3:2). Use the same shape for every image. Captions cover the bottom.",
+  preUploadLinks: {
+    guideLabel: "Image gallery",
+    templateUrl: "/placeholder_no_image.png",
+  },
 }
 
-// resolveAdjustmentConfig matches these on `type:variant` or bare `type`,
-// plus the image field name. The first match wins, so a `type:variant` entry
-// must come before a bare `type` entry for the same type.
+// Collection item thumbnail (`page.image`) — a page-level field, not a
+// content-block field, so it has no block `type` discriminator for the
+// registry to key off (see resolveAdjustmentConfig's isCollectionThumbnail
+// branch). The same source image also feeds a homepage CollectionBlock
+// embed, whose frame depends on the live collection item count at render
+// time (3:2, or 2:1 at desktop for exactly 2 items) — genuinely unknowable
+// here, and out of scope for this editor; the preview only reflects the
+// collection's own index-page listing.
+// That listing's frame IS knowable: the collection's index page already has
+// a "Layout" setting (JsonFormsCollectionVariantControl, format
+// "collection-variant") picking CollectionCard ("1-column", a fixed 200x160
+// / 5:4 box) or BlogCard ("2-column", a fixed aspect-[2/1] box) — see
+// CollectionResults.tsx. useAdjustmentConfigForField fetches that setting
+// and passes it as `collectionVariant`, so the preview mimics every other
+// component here: one resolved frame, no version picker. Unresolved
+// (query still loading, or this control somehow renders outside a page
+// editor) falls back to the schema's own "collection" (1-column) default.
+// ChildrenPages was considered but ruled out: it only ever reads the
+// immediate children of the page it's placed on, and a collection's items
+// are children of the Collection resource, one level below that — so a
+// ChildrenPages block can never reach an individual item's thumbnail (at
+// most it would show the Collection's own page.image, a different field).
+// cropMode is "custom" (not a locked ratio) and ownsImageFitField is set so
+// editors can choose "Resize image to fit" (contain, no cropping) instead of
+// the default cover crop — same fit/fill toggle InfoCards already offers,
+// with focal hidden under "contain" for the same reason (nothing to anchor
+// once the image is letterboxed). The real render context is a different
+// page (the collection index) than the one being edited — skip the
+// real-component preview in favour of the framed approximation, as
+// ImageGallery does for the same reason.
+const buildCollectionThumbnailConfig = (
+  collectionVariant?: "collection" | "blog",
+): AdjustmentConfig => {
+  const isBlogVariant = collectionVariant === "blog"
+
+  return {
+    componentType: "collection:thumbnail",
+    imageField: "src",
+    cropMode: "custom",
+    focalEnabled: true,
+    ownsImageFitField: true,
+    // Warn below the recommended 1200×900 (4:3) upload in preUploadCopy, for
+    // both layouts (CollectionCard's 200×160 box, BlogCard's 2:1 frame).
+    maxRenderedWidthPx: 1200,
+    maxRenderedHeightPx: 900,
+    skipRealComponentPreview: true,
+    // Identical ratio at every breakpoint either way (CollectionCard's
+    // `h-[160px] w-[200px]` and BlogCard's `aspect-[2/1]` both carry no
+    // md:/lg: override), so all three preview states share one ratio.
+    previewStates: isBlogVariant
+      ? responsivePreviewStates({
+          mobile: { width: 2, height: 1 },
+          tablet: { width: 2, height: 1 },
+          desktop: { width: 2, height: 1 },
+        })
+      : responsivePreviewStates({
+          mobile: { width: 5, height: 4 },
+          tablet: { width: 5, height: 4 },
+          desktop: { width: 5, height: 4 },
+        }),
+    preUploadCopy:
+      "Recommended 1200 × 900 px (4:3). Use one clear subject centred. It's shown as a small box or a wide strip.",
+    preUploadLinks: {
+      guideLabel: "thumbnails",
+      templateUrl: "/placeholder_no_image.png",
+    },
+  }
+}
+
+// Every static config, matched by resolveAdjustmentConfig on
+// `type:variant` (or bare `type`) plus the image field name. The collection
+// thumbnail has no block `type`, so it is resolved explicitly before this
+// lookup. The first match wins, so a `type:variant` entry must come before a
+// bare `type` entry for the same type.
 export const CONFIGS: AdjustmentConfig[] = [
   IMAGE_CONFIG,
   IMAGE_GALLERY_CONFIG,
@@ -464,6 +543,13 @@ export function resolveAdjustmentConfig(args: {
   fieldName: string
   context?: AdjustmentRenderContext
 }): AdjustmentConfig | undefined {
+  // Page-level thumbnail field (no block-type ancestor) on a confirmed
+  // collection item — see buildCollectionThumbnailConfig. Checked before the
+  // block-type lookup below since this field's host has no `type`
+  // discriminator for that lookup to key off.
+  if (args.context?.isCollectionThumbnail)
+    return buildCollectionThumbnailConfig(args.context.collectionVariant)
+
   const { block, fieldName } = args
   if (!block) return undefined
   const variant =

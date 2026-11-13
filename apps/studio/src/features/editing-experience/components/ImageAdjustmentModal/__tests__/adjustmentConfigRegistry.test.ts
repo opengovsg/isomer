@@ -7,7 +7,10 @@ import { renderComponent } from "@opengovsg/isomer-components"
 import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it } from "vitest"
 
-import type { AdjustmentRenderContext } from "../AdjustmentConfig"
+import type {
+  AdjustmentConfig,
+  AdjustmentRenderContext,
+} from "../AdjustmentConfig"
 import {
   INTENTIONALLY_NOT_ADJUSTABLE,
   resolveAdjustmentConfig as resolveAdjustmentConfigTyped,
@@ -447,6 +450,96 @@ describe("resolveAdjustmentConfig", () => {
         expect(config?.focalEnabled).toBe(true)
         expect(config?.ownsImageFitField).toBe(true)
       }
+    })
+  })
+
+  describe("collection item thumbnail (page-level, context-resolved)", () => {
+    // The page-level thumbnail has no block-type ancestor, so it's never
+    // keyed off `block` -- it's resolved purely from the
+    // `isCollectionThumbnail` context flag (set by useAdjustmentConfigForField
+    // from the editor's resource type, since the field's own data has no
+    // discriminator to distinguish a collection item from any other page
+    // that happens to compose the same `image` field shape).
+    it("resolves when isCollectionThumbnail is set, regardless of block shape", () => {
+      const config = resolveAdjustmentConfig({
+        block: { layout: "article" },
+        fieldName: "src",
+        context: { isCollectionThumbnail: true },
+      })
+      expect(config).toBeDefined()
+      expect(config?.cropMode).toBe("custom")
+      expect(config?.focalEnabled).toBe(true)
+      expect(config?.ownsImageFitField).toBe(true)
+      expect(config?.skipRealComponentPreview).toBe(true)
+    })
+
+    it("does not resolve for a similar-looking page without the collection-item signal", () => {
+      // A content/index/database page composes the identical `image` field
+      // shape for its own unrelated page thumbnail -- without the context
+      // flag (i.e. not a confirmed CollectionPage/CollectionLink resource),
+      // it must not light up the collection-item config.
+      expect(
+        resolveAdjustmentConfig({
+          block: { layout: "content" },
+          fieldName: "src",
+        }),
+      ).toBeUndefined()
+      expect(
+        resolveAdjustmentConfig({
+          block: { layout: "content" },
+          fieldName: "src",
+          context: { isCollectionThumbnail: false },
+        }),
+      ).toBeUndefined()
+    })
+
+    // The homepage CollectionBlock embed also consumes this image, but its
+    // frame depends on the live collection item count at render time -- this
+    // editor genuinely cannot know that, so it's out of scope: the preview
+    // only ever shows the collection's own index-page listing.
+    const aspectRatiosFor = (config: AdjustmentConfig) =>
+      config.previewStates.map((s) => s.aspectRatio)
+
+    it("models the 1-column (CollectionCard) layout as a fixed 5:4 frame at every breakpoint", () => {
+      const config = resolveAdjustmentConfig({
+        block: {},
+        fieldName: "src",
+        context: {
+          isCollectionThumbnail: true,
+          collectionVariant: "collection",
+        },
+      })
+      expect(aspectRatiosFor(config!)).toEqual([
+        { width: 5, height: 4 },
+        { width: 5, height: 4 },
+        { width: 5, height: 4 },
+      ])
+    })
+
+    it("models the 2-column (BlogCard) layout as a fixed 2:1 frame at every breakpoint", () => {
+      const config = resolveAdjustmentConfig({
+        block: {},
+        fieldName: "src",
+        context: { isCollectionThumbnail: true, collectionVariant: "blog" },
+      })
+      expect(aspectRatiosFor(config!)).toEqual([
+        { width: 2, height: 1 },
+        { width: 2, height: 1 },
+        { width: 2, height: 1 },
+      ])
+    })
+
+    it("defaults to the 1-column (CollectionCard) layout when the variant is unresolved", () => {
+      const config = resolveAdjustmentConfig({
+        block: {},
+        fieldName: "src",
+        context: { isCollectionThumbnail: true },
+      })
+      expect(aspectRatiosFor(config!)).toEqual([
+        { width: 5, height: 4 },
+        { width: 5, height: 4 },
+        { width: 5, height: 4 },
+      ])
     })
   })
 

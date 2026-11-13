@@ -1,6 +1,7 @@
 import type {
   ArticlePagePageProps,
   CollectionPagePageProps,
+  ImageAdjustment,
   IsomerSitemap,
   LinkRefPageProps,
 } from "@opengovsg/isomer-components"
@@ -30,6 +31,8 @@ type ResourceDto = Omit<
   parentId: string | null
   summary?: string
   thumbnail?: string
+  thumbnailImageFit?: "cover" | "contain" | null
+  thumbnailAdjustment?: ImageAdjustment | null
   category?: string
   tagged?: string | null
   dateTagged?: string | null
@@ -141,6 +144,8 @@ const getSitemapTreeFromArray = (
         image: {
           src: resource.thumbnail ?? "",
           alt: "",
+          imageFit: resource.thumbnailImageFit ?? undefined,
+          imageAdjustment: resource.thumbnailAdjustment ?? undefined,
         },
         firstImage,
       }
@@ -160,6 +165,8 @@ const getSitemapTreeFromArray = (
         image: {
           src: resource.thumbnail ?? "",
           alt: "",
+          imageFit: resource.thumbnailImageFit ?? undefined,
+          imageAdjustment: resource.thumbnailAdjustment ?? undefined,
         },
         firstImage,
         ref: "/",
