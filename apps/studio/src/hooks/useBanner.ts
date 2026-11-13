@@ -9,7 +9,8 @@ export const getBannerHeightInPx = (): number => {
 }
 
 type BannerFeature = Pick<BannerProps, "variant"> & {
-  message: BannerProps["children"]
+  // Rendered as markdown
+  message: string
 }
 export const useBanner = () => {
   return useFeatureValue<BannerFeature | null>(BANNER_FEATURE_KEY, null)

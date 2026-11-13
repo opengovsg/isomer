@@ -78,6 +78,18 @@ export const WithBanner: Story = {
   },
 }
 
+export const WithMarkdownBanner: Story = {
+  parameters: {
+    growthbook: [
+      createBannerGbParameters({
+        variant: "info",
+        message:
+          "Scheduled maintenance on **14 Nov**. See [the status page](https://status.isomer.gov.sg) for details.",
+      }),
+    ],
+  },
+}
+
 export const PageSettings: Story = {
   play: async (context) => {
     const { canvasElement } = context
