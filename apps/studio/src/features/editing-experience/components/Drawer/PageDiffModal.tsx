@@ -21,7 +21,7 @@ import { useCallback, useEffect, useState } from "react"
 import { BiX } from "react-icons/bi"
 import Suspense from "~/components/Suspense"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
-import { useSiteThemeCssVars } from "~/features/preview/hooks/useSiteThemeCssVars"
+import { useSiteThemeCssVars } from "~/hooks/useSiteThemeCssVars"
 import { trpc } from "~/utils/trpc"
 
 import { PreviewIframe } from "../preview/PreviewIframe"

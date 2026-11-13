@@ -77,6 +77,10 @@ export const edgesMovedBy = (handle: HandlePosition) => ({
  * moves and the rect never exceeds the unit square — no separate bounds clamp
  * needed (unlike moveRect, shifting x/y here would move the anchor, which is
  * wrong for a resize).
+ *
+ * Pass `imageAspect`, the source's pixel width / height, for any non-square
+ * source. The baked pixel ratio is `(rect.width / rect.height) * imageAspect`,
+ * so the rect's own ratio is `lockedRatio / imageAspect`.
  */
 export const resizeRectByHandle = (
   rect: CropRectNormalized,
@@ -84,6 +88,7 @@ export const resizeRectByHandle = (
   pointerX: number,
   pointerY: number,
   lockedRatio?: { width: number; height: number },
+  imageAspect = 1,
 ): CropRectNormalized => {
   const edges = edgesMovedBy(handle)
   const px = clampUnit(pointerX)
@@ -100,7 +105,7 @@ export const resizeRectByHandle = (
   if (edges.movesBottom) bottom = Math.max(py, top + MIN_CROP_SIZE)
 
   if (lockedRatio && CORNER_HANDLES.includes(handle)) {
-    const ratio = lockedRatio.width / lockedRatio.height
+    const ratio = lockedRatio.width / lockedRatio.height / imageAspect
     const anchorX = edges.movesLeft ? right : left
     const anchorY = edges.movesTop ? bottom : top
     const maxWidth = edges.movesLeft ? anchorX : 1 - anchorX
@@ -143,13 +148,18 @@ export const resizeRectByHandle = (
 /**
  * Default starting rect: for a locked ratio, the largest centered rect of
  * that ratio that fits the unit square; otherwise the full image.
+ *
+ * `imageAspect` works as it does in `resizeRectByHandle`.
  */
-export const defaultCropRect = (lockedRatio?: {
-  width: number
-  height: number
-}): CropRectNormalized => {
+export const defaultCropRect = (
+  lockedRatio?: {
+    width: number
+    height: number
+  },
+  imageAspect = 1,
+): CropRectNormalized => {
   if (!lockedRatio) return { x: 0, y: 0, width: 1, height: 1 }
-  const ratio = lockedRatio.width / lockedRatio.height
+  const ratio = lockedRatio.width / lockedRatio.height / imageAspect
   let width = 1
   let height = width / ratio
   if (height > 1) {
@@ -171,3 +181,33 @@ export const clientDeltaToNormalized = (
   dx: boxRect.width > 0 ? dxPx / boxRect.width : 0,
   dy: boxRect.height > 0 ? dyPx / boxRect.height : 0,
 })
+
+export interface NormalizedRect {
+  x: number
+  y: number
+  width: number
+  height: number
+}
+
+/**
+ * Where an `object-fit: contain` image renders inside its box, normalized to
+ * the box. Crop and focal values are normalized to the image, so map box
+ * coordinates through this rect first.
+ */
+export const getContainedImageBounds = (
+  box: { width: number; height: number },
+  imageAspect: number,
+): NormalizedRect => {
+  if (box.width <= 0 || box.height <= 0 || !Number.isFinite(imageAspect)) {
+    return { x: 0, y: 0, width: 1, height: 1 }
+  }
+  const boxAspect = box.width / box.height
+  if (imageAspect > boxAspect) {
+    // Wider than the box, so bars sit above and below.
+    const height = boxAspect / imageAspect
+    return { x: 0, y: (1 - height) / 2, width: 1, height }
+  }
+  // Narrower than the box, so bars sit left and right.
+  const width = imageAspect / boxAspect
+  return { x: (1 - width) / 2, y: 0, width, height: 1 }
+}

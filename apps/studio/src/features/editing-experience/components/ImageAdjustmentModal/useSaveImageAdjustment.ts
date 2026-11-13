@@ -72,10 +72,12 @@ export const chooseBakeMime = (
  * for unscanned/just-uploaded or post-conversion-deleted originals. Throws on a
  * non-ok response so a 403 XML body is never mistaken for image bytes.
  * @param key - The image key with leading slash (e.g. "/site/uuid/file.png")
+ * @param maxBytes - Fetch only the first N bytes (HTTP Range), for header sniffing
  */
 export const fetchImageBlob = async (
   key: string,
   signal?: AbortSignal,
+  maxBytes?: number,
 ): Promise<Blob> => {
   const originalUrl = generateOriginalAssetUrl(key)
   const plainUrl = generateAssetUrl(key)
@@ -100,10 +102,14 @@ export const fetchImageBlob = async (
   // Force the webp variant (not avif) on the fallback: the CDN picks the format
   // from Accept, and the baker only accepts jpeg/png/webp (BAKEABLE_FORMAT_BY_MIME),
   // so a default */* (avif) fetch would be rejected downstream.
+  const range = maxBytes ? { Range: `bytes=0-${maxBytes - 1}` } : undefined
   const blob =
-    (await tryFetch(originalUrl, { signal })) ??
+    (await tryFetch(originalUrl, { headers: range, signal })) ??
     (plainUrl !== originalUrl
-      ? await tryFetch(plainUrl, { headers: { Accept: "image/webp" }, signal })
+      ? await tryFetch(plainUrl, {
+          headers: { Accept: "image/webp", ...range },
+          signal,
+        })
       : null)
   // tryFetch swallows the abort, so surface the deadline's own reason here.
   signal?.throwIfAborted()

@@ -5,6 +5,7 @@ import type {
 import { useJsonForms } from "@jsonforms/react"
 import { get } from "lodash-es"
 import { useMemo } from "react"
+import { useOptionalEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { resolveAdjustmentConfig } from "~/features/editing-experience/components/ImageAdjustmentModal/adjustmentConfigRegistry"
 
 /**
@@ -21,34 +22,66 @@ import { resolveAdjustmentConfig } from "~/features/editing-experience/component
 export const useAdjustmentConfigForField = (path: string) => {
   const ctx = useJsonForms()
   const rootData: unknown = ctx.core?.data
-
+  // Settings forms like Navbar and Footer have no EditorDrawerProvider, so
+  // pageLayout is undefined there.
+  const editorDrawerContext = useOptionalEditorDrawerContext()
+  const pageLayout = editorDrawerContext?.previewPageState.layout
   const pathParts = path.split(".")
   const fieldName = pathParts.pop() ?? ""
   const parentPath = pathParts.join(".")
-  const siblingPath = [parentPath, "imageAdjustment"].filter(Boolean).join(".")
 
-  // Per-block editor forms (e.g. HeroEditorDrawer) mount the form with the
-  // block itself as the data root, so the image field is top-level and
-  // parentPath is empty -- in that case the block IS rootData.
-  const block: unknown = parentPath ? get(rootData, parentPath) : rootData
+  // Matches the key generateAdjustableImageFields emits. A per-field key lets
+  // one component carry two image fields.
+  const siblingKey = `${fieldName}ImageAdjustment`
+  const siblingPath = [parentPath, siblingKey].filter(Boolean).join(".")
+
+  // The object that holds the field. That is the block for a root-level
+  // field and the card for a nested one, such as an InfoCards card.
+  // Per-block forms like HeroEditorDrawer use the block as the data root, so
+  // parentPath is empty and the host is rootData.
+  const rawFieldHost: unknown = parentPath
+    ? get(rootData, parentPath)
+    : rootData
+  const fieldHost =
+    typeof rawFieldHost === "object" && rawFieldHost !== null
+      ? (rawFieldHost as Record<string, unknown>)
+      : undefined
+
+  // The owning block is the form root. Block editors (ComplexEditorStateDrawer,
+  // HeroEditorDrawer) pass the block itself as the form data, as other controls
+  // like JsonFormsMaxColumnsControl assume. Other forms (page metadata, navbar,
+  // footer) have no `type` at the root, so no block resolves.
+  const ownerBlock =
+    typeof rootData === "object" &&
+    rootData !== null &&
+    typeof (rootData as { type?: unknown }).type === "string"
+      ? (rootData as IsomerComponent)
+      : undefined
+
   const currentAdjustment = get(rootData, siblingPath) as
     | ImageAdjustment
     | undefined
 
-  const config = resolveAdjustmentConfig({ block, fieldName })
-  // resolveAdjustmentConfig only matches type/variant discriminators, not the
-  // full component schema -- this cast isn't runtime-verified, so callers
-  // still need their own fallback for a malformed block (see AdjustmentPreview).
-  const typedBlock = config ? (block as IsomerComponent) : undefined
-
   return useMemo(
     () => ({
-      block: typedBlock,
+      block: ownerBlock,
+      fieldHost,
       fieldName,
       siblingPath,
       currentAdjustment,
-      config,
+      config: resolveAdjustmentConfig({
+        block: ownerBlock,
+        fieldName,
+        context: { pageLayout },
+      }),
     }),
-    [typedBlock, fieldName, siblingPath, currentAdjustment, config],
+    [
+      ownerBlock,
+      fieldHost,
+      fieldName,
+      siblingPath,
+      currentAdjustment,
+      pageLayout,
+    ],
   )
 }
