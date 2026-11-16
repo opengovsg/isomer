@@ -62,6 +62,11 @@
               {
                 "name": "@intercom/messenger-js-sdk",
                 "message": "Use `~/lib/intercom` instead so calls fall back to a console.log when NEXT_PUBLIC_INTERCOM_APP_ID is absent (e.g. on staging)."
+              },
+              {
+                "name": "posthog-js",
+                "allowTypeImports": true,
+                "message": "Use `captureSiteEvent` or `captureEvent` from `~/lib/posthogCapture` instead so site-scoped events keep their site group."
               }
             ]
           }
