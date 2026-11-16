@@ -21,12 +21,12 @@ import {
   ModalCloseButton,
   useToast,
 } from "@opengovsg/design-system-react"
-import posthog from "posthog-js"
 import { useEffect } from "react"
 import { Controller } from "react-hook-form"
 import { BiLink } from "react-icons/bi"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useZodForm } from "~/lib/form"
+import { captureSiteEvent } from "~/lib/posthogCapture"
 import { createCollectionSchema } from "~/schemas/collection"
 import {
   MAX_FOLDER_PERMALINK_LENGTH,
@@ -93,8 +93,7 @@ const CreateCollectionModalContent = ({
   const toast = useToast()
   const { mutate, isPending } = trpc.collection.create.useMutation({
     onSuccess: async () => {
-      posthog.capture("collection_created", {
-        site_id: siteId,
+      captureSiteEvent("collection_created", siteId, {
         has_parent_folder: !!parentFolderId,
       })
       await utils.resource.listWithoutRoot.invalidate()

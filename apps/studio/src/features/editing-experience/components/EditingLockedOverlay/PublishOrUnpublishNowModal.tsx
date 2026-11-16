@@ -12,8 +12,8 @@ import {
   Text,
 } from "@chakra-ui/react"
 import { useToast } from "@opengovsg/design-system-react"
-import posthog from "posthog-js"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
+import { captureSiteEvent } from "~/lib/posthogCapture"
 import { trpc } from "~/utils/trpc"
 
 import { UnpublishRedirectWarning } from "../UnpublishRedirectWarning"
@@ -130,8 +130,7 @@ export const PublishOrUnpublishNowModal = ({
       onSuccess: () => {
         // "scheduled_override" sets this apart from the more-actions flow: the
         // user brought a scheduled unpublish forward, cancelling the schedule.
-        posthog.capture("page_unpublished", {
-          site_id: siteId,
+        captureSiteEvent("page_unpublished", siteId, {
           redirect_count: redirectCount,
           source: "scheduled_override",
         })
