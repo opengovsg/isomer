@@ -501,6 +501,9 @@ model Asset {
   AssetLink      AssetLink[]
 
   @@index([siteId])
+  // Serves folder lookups (`s3Key LIKE '<siteId>/<uuid>/%'`), which the
+  // collation-aware unique index cannot
+  @@index([s3Key(ops: raw("text_pattern_ops"))])
 }
 
 // One row per (asset, content source). Rows persist when both usage flags are

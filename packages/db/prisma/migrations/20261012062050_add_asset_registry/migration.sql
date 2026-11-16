@@ -39,6 +39,9 @@ CREATE UNIQUE INDEX "Asset_s3Key_key" ON "Asset"("s3Key");
 CREATE INDEX "Asset_siteId_idx" ON "Asset"("siteId");
 
 -- CreateIndex
+CREATE INDEX "Asset_s3Key_idx" ON "Asset"("s3Key" text_pattern_ops);
+
+-- CreateIndex
 CREATE INDEX "AssetLink_resourceId_idx" ON "AssetLink"("resourceId");
 
 -- CreateIndex
