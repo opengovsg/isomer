@@ -29,9 +29,9 @@ import {
   useToast,
 } from "@opengovsg/design-system-react"
 import { isFocalApplicable } from "@opengovsg/isomer-components"
-import posthog from "posthog-js"
 import { useEffect, useMemo, useRef, useState } from "react"
 import { BiInfoCircle, BiReset } from "react-icons/bi"
+import { captureSiteEvent } from "~/lib/posthogCapture"
 
 import type { AdjustmentConfig } from "./AdjustmentConfig"
 import { DiscardChangesModal } from "../DiscardChangesModal/DiscardChangesModal"
@@ -204,8 +204,7 @@ export const ImageAdjustmentModal = ({
   const trackToolUsed = (tool: "crop" | "focal") => {
     if (trackedToolsRef.current.has(tool)) return
     trackedToolsRef.current.add(tool)
-    posthog.capture("image_adjustment_tool_used", {
-      site_id: siteId,
+    captureSiteEvent("image_adjustment_tool_used", siteId, {
       resource_id: resourceId,
       tool,
     })
@@ -296,8 +295,7 @@ export const ImageAdjustmentModal = ({
         draft,
         originalFile,
       })
-      posthog.capture("image_adjustment_saved", {
-        site_id: siteId,
+      captureSiteEvent("image_adjustment_saved", siteId, {
         resource_id: resourceId,
       })
       onSave({

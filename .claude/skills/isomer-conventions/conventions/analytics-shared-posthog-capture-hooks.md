@@ -17,8 +17,12 @@ component with a hand-rolled `useEffect` + `useRef` fire-once guard:
   step is bypassed, so "saw it and abandoned" is distinguishable from "never
   saw it".
 
-A one-off `posthog.capture` in an event handler (e.g. a mutation `onSuccess`) is
-fine — the hooks are for render-driven captures that must not double-count.
+A one-off capture in an event handler (e.g. a mutation `onSuccess`) is fine —
+the hooks are for render-driven captures that must not double-count. Use
+`captureSiteEvent` from `~/lib/posthogCapture` for site-scoped events, and pass
+`siteId` to the hooks, so the event keeps its site after navigation. Site-less
+events (login, logout) use `captureEvent`. Lint forbids importing `posthog-js`
+directly.
 
 ## Why
 
@@ -44,9 +48,10 @@ useEffect(() => {
 ```tsx
 usePostHogOptionalStep({
   event: "unpublish_redirect_warning",
+  siteId,
   isReady: !isPending && !isError,
   isBypassed: redirectCount === 0,
-  properties: { site_id: siteId, redirect_count: redirectCount ?? 0 },
+  properties: { redirect_count: redirectCount ?? 0 },
 })
 ```
 

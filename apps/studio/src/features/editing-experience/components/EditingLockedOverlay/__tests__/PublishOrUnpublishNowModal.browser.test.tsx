@@ -1,6 +1,7 @@
 import type { UseDisclosureReturn } from "@chakra-ui/react"
 import { ThemeProvider } from "@opengovsg/design-system-react"
 import { fireEvent, render, screen } from "@testing-library/react"
+// oxlint-disable-next-line no-restricted-imports
 import posthog from "posthog-js"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { theme } from "~/theme"
