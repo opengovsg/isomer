@@ -1,6 +1,5 @@
 import { Portal, useDisclosure } from "@chakra-ui/react"
 import { Button, Menu, TouchableTooltip } from "@opengovsg/design-system-react"
-import posthog from "posthog-js"
 import { BiData, BiFileBlank, BiFolder, BiHomeAlt } from "react-icons/bi"
 import { z } from "zod"
 import { PermissionsBoundary } from "~/components/AuthWrappers"
@@ -16,6 +15,7 @@ import { CreatePageModal } from "~/features/editing-experience/components/Create
 import { MoveResourceModal } from "~/features/editing-experience/components/MoveResourceModal"
 import { Can } from "~/features/permissions"
 import { useQueryParse } from "~/hooks/useQueryParse"
+import { captureSiteEvent } from "~/lib/posthogCapture"
 import { type NextPageWithLayout } from "~/lib/types"
 import { SiteEditorLayout } from "~/templates/layouts/SiteEditorLayout"
 import { ResourceType } from "~prisma/generated/generatedEnums"
@@ -117,22 +117,19 @@ const SitePage: NextPageWithLayout = () => {
         buttons={
           <HomepageMenuButton
             onPageCreateModalOpen={() => {
-              posthog.capture("page_create_modal_opened", {
-                site_id: siteId,
+              captureSiteEvent("page_create_modal_opened", siteId, {
                 parent_type: "site",
               })
               onPageCreateModalOpen()
             }}
             onFolderCreateModalOpen={() => {
-              posthog.capture("folder_create_modal_opened", {
-                site_id: siteId,
+              captureSiteEvent("folder_create_modal_opened", siteId, {
                 parent_type: "site",
               })
               onFolderCreateModalOpen()
             }}
             onCollectionCreateModalOpen={() => {
-              posthog.capture("collection_create_modal_opened", {
-                site_id: siteId,
+              captureSiteEvent("collection_create_modal_opened", siteId, {
                 parent_type: "site",
               })
               onCollectionCreateModalOpen()
