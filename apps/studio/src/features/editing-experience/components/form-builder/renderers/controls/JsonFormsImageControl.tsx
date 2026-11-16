@@ -22,7 +22,6 @@ import {
   IMAGE_FIT,
 } from "@opengovsg/isomer-components"
 import dynamic from "next/dynamic"
-import posthog from "posthog-js"
 import { useEffect, useRef, useState } from "react"
 import { AttachmentData } from "~/components/AttachmentData"
 import { FileAttachment } from "~/components/PageEditor/FileAttachment"
@@ -39,6 +38,7 @@ import {
   isAnimatedImageBlob,
   mimeFromKeyExtension,
 } from "~/lib/imageBake"
+import { captureSiteEvent } from "~/lib/posthogCapture"
 import { generateAssetUrl } from "~/utils/generateAssetUrl"
 
 import { useAdjustmentConfigForField } from "../../hooks/useAdjustmentConfigForField"
@@ -204,8 +204,7 @@ function JsonFormsImageControl({
     if (!animationResolved) return
     justUploadedRef.current = false
     if (canAdjust) {
-      posthog.capture("image_adjustment_modal_opened", {
-        site_id: siteId,
+      captureSiteEvent("image_adjustment_modal_opened", siteId, {
         resource_id: resourceId,
         source: "post_upload",
       })
@@ -239,8 +238,7 @@ function JsonFormsImageControl({
       pendingFileRef.current = file
     },
     onUploadSuccess: () => {
-      posthog.capture("image_upload_completed", {
-        site_id: siteId,
+      captureSiteEvent("image_upload_completed", siteId, {
         resource_id: resourceId,
       })
     },
@@ -340,8 +338,7 @@ function JsonFormsImageControl({
             onEdit={
               canAdjust
                 ? () => {
-                    posthog.capture("image_adjustment_modal_opened", {
-                      site_id: siteId,
+                    captureSiteEvent("image_adjustment_modal_opened", siteId, {
                       resource_id: resourceId,
                       source: "manual_edit",
                     })
