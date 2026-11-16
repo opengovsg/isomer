@@ -523,6 +523,9 @@ const PreviewFrame = ({
       height={viewportHeight * scale}
     >
       <Box
+        // Blocks clicks, focus and scrolling inside the preview, even where a
+        // component re-enables pointer events. React 18 types lack `inert`.
+        {...{ inert: "" }}
         style={{
           width: viewportWidth,
           height: viewportHeight,
