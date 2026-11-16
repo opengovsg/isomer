@@ -1,9 +1,6 @@
 import type { z } from "zod"
 import type { getPresignedPutUrlSchema } from "~/schemas/asset"
-import {
-  IMAGE_ACCEPTED_MIME_TYPE_MAPPING,
-  SUPPORTED_OPTIMIZABLE_FORMATS,
-} from "@opengovsg/isomer-components"
+import { IMAGE_ACCEPTED_MIME_TYPE_MAPPING } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
 import { create as createContentDisposition } from "content-disposition"
 import { randomUUID } from "crypto"
@@ -15,7 +12,7 @@ import {
   deleteFile,
   generateSignedGetUrl,
   generateSignedPutUrl,
-  isNotFoundError,
+  listObjectKeys,
   putObjectDirect,
 } from "~/lib/s3"
 import { getServerDomPurify } from "~/lib/server-dom-purify"
@@ -155,35 +152,17 @@ export const getPresignedPutUrl = async ({
   return { presignedPutUrl, contentType, contentDisposition }
 }
 
-// Best-effort delete: the derived format may not exist for every asset
-// (e.g. it was never generated), so a missing key is not an error.
-const deleteFileIfExists = async ({ Key }: { Key: string }) => {
-  try {
-    await deleteFile({ Key, Bucket: bucket })
-  } catch (error) {
-    if (!isNotFoundError(error)) throw error
-  }
-}
-
-// NOTE: Check if the key ends in one of our image optimisation formats.
-// If it does, we need to also delete all of the related formats.
+// Tags every object in the asset's folder, not just the original: CloudFront
+// serves the .webp/.avif renditions in its place, so an untagged rendition
+// keeps the asset live. The original is tagged even if the listing misses it,
+// so a missing key still fails loudly.
 export const markFileAsDeleted = async ({ key }: { key: string }) => {
-  const _suffix = key.split(".").pop()
-  const suffix = _suffix === "jpg" ? "jpeg" : _suffix
-  if (!suffix) return
+  const folder = key.slice(0, key.lastIndexOf("/") + 1)
+  const folderKeys = await listObjectKeys({ Bucket: bucket, Prefix: folder })
 
-  if (
-    SUPPORTED_OPTIMIZABLE_FORMATS.includes(
-      suffix as (typeof SUPPORTED_OPTIMIZABLE_FORMATS)[number],
-    )
-  ) {
-    // NOTE: We only convert to webp and avif
-    const prefix = key.substring(0, key.lastIndexOf("."))
-    await deleteFileIfExists({ Key: `${prefix}.webp` })
-    await deleteFileIfExists({ Key: `${prefix}.avif` })
+  for (const Key of new Set([key, ...folderKeys])) {
+    await deleteFile({ Key, Bucket: bucket })
   }
-
-  await deleteFile({ Key: key, Bucket: bucket })
 }
 
 export interface DeleteAssetByUrlResult {

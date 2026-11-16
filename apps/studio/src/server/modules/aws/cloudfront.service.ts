@@ -15,17 +15,15 @@ export interface InvalidationResult {
   error?: string
 }
 
-// Invalidates the exact CDN path for each deleted asset so CloudFront stops
-// serving it immediately, without evicting unrelated cached objects on the
-// same site. The S3 access-point policy already blocks reads of
-// deletedAt-tagged objects at origin, but edge caches can still serve a
-// stale copy for the remainder of the cache TTL without this.
+// Invalidates each deleted asset's folder so CloudFront stops serving it
+// immediately, without evicting unrelated cached objects on the same site. The
+// S3 access-point policy already blocks reads of deletedAt-tagged objects at
+// origin, but edge caches can still serve a stale copy for the remainder of
+// the cache TTL without this. The folder wildcard also covers the .webp/.avif
+// renditions, which the viewer-request function caches under their own paths.
 //
-// CLOUDFRONT_ASSETS_DISTRIBUTION_ID is not yet provisioned in
-// isomer-next-infra (no SSM param, no IAM permission for this app's task
-// role to call cloudfront:CreateInvalidation) — until that lands, this
-// degrades to a reported failure rather than throwing, so asset tagging
-// still succeeds on its own.
+// A missing CLOUDFRONT_ASSETS_DISTRIBUTION_ID degrades to a reported failure
+// rather than throwing, so asset tagging still succeeds on its own.
 export const invalidateAssetPaths = async (
   logger: Logger<string>,
   keys: Set<string> | string[],
@@ -43,7 +41,11 @@ export const invalidateAssetPaths = async (
     }
   }
 
-  const paths = uniqueKeys.map((key) => `/${key}`)
+  const paths = Array.from(
+    new Set(
+      uniqueKeys.map((key) => `/${key.slice(0, key.lastIndexOf("/") + 1)}*`),
+    ),
+  )
 
   try {
     const response = await client.send(

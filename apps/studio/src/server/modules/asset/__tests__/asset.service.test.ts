@@ -1,6 +1,6 @@
 import { TRPCError } from "@trpc/server"
 import { beforeEach, describe, expect, it, vi } from "vitest"
-import { deleteFile } from "~/lib/s3"
+import { deleteFile, listObjectKeys } from "~/lib/s3"
 
 import {
   deleteAssetsByUrl,
@@ -16,6 +16,7 @@ import {
 vi.mock("~/lib/s3", () => ({
   deleteFile: vi.fn().mockResolvedValue(undefined),
   isNotFoundError: vi.fn().mockReturnValue(false),
+  listObjectKeys: vi.fn().mockResolvedValue([]),
 }))
 
 describe("asset.service", () => {
@@ -419,9 +420,34 @@ describe("asset.service", () => {
         { url: urls[0], key: `36/${UUID_1}/a.png`, success: true },
         { url: urls[1], key: `37/${UUID_2}/b.png`, success: true },
       ])
-      // .png is an optimizable format, so each key also deletes its .webp
-      // and .avif derivatives alongside the original: 3 calls per key.
-      expect(deleteFile).toHaveBeenCalledTimes(6)
+      expect(deleteFile).toHaveBeenCalledTimes(2)
+    })
+
+    it("should mark every object in the asset's folder as deleted, whatever its extension's case", async () => {
+      // Arrange
+      vi.mocked(listObjectKeys).mockResolvedValueOnce([
+        `36/${UUID_1}/Photo.JPG`,
+        `36/${UUID_1}/Photo.webp`,
+        `36/${UUID_1}/Photo.avif`,
+      ])
+
+      // Act
+      await deleteAssetsByUrl([
+        `https://${ASSET_DOMAIN}/36/${UUID_1}/Photo.JPG`,
+      ])
+
+      // Assert
+      expect(listObjectKeys).toHaveBeenCalledWith(
+        expect.objectContaining({ Prefix: `36/${UUID_1}/` }),
+      )
+      expect(vi.mocked(deleteFile).mock.calls.map(([{ Key }]) => Key)).toEqual(
+        expect.arrayContaining([
+          `36/${UUID_1}/Photo.JPG`,
+          `36/${UUID_1}/Photo.webp`,
+          `36/${UUID_1}/Photo.avif`,
+        ]),
+      )
+      expect(deleteFile).toHaveBeenCalledTimes(3)
     })
 
     it("should report failure for an invalid URL without calling deleteFile", async () => {
