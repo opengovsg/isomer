@@ -28,9 +28,10 @@ export const UnpublishRedirectWarning = ({
   // from "nothing to warn about". An errored check stays un-fired (unknown).
   usePostHogOptionalStep({
     event: "unpublish_redirect_warning",
+    siteId,
     isReady: !isPending && !isError,
     isBypassed: redirectCount === 0,
-    properties: { site_id: siteId, redirect_count: redirectCount ?? 0 },
+    properties: { redirect_count: redirectCount ?? 0 },
   })
 
   // A pending or failed check must not read as "no redirects" — show both.

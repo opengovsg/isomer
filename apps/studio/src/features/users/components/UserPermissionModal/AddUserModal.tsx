@@ -21,11 +21,11 @@ import {
 } from "@opengovsg/design-system-react"
 import { useDebounce } from "@uidotdev/usehooks"
 import { useAtomValue, useSetAtom } from "jotai"
-import posthog from "posthog-js"
 import { useCallback, useEffect, useMemo } from "react"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useIsSingpassEnabled } from "~/hooks/useIsSingpassEnabled"
 import { useZodForm } from "~/lib/form"
+import { captureSiteEvent } from "~/lib/posthogCapture"
 import { createUserInputSchema } from "~/schemas/user"
 import { isGovEmail } from "~/utils/email"
 import { trpc } from "~/utils/trpc"
@@ -83,9 +83,9 @@ export const AddUserModal = () => {
   )
 
   const { mutate: createUser, isPending } = trpc.user.create.useMutation({
-    onSuccess: (createdUsers) => {
-      posthog.capture("site_user_invited", {
-        site_id: siteId,
+    onSuccess: (createdUsers, variables) => {
+      // Closing the modal resets its siteId, so read the one this request used.
+      captureSiteEvent("site_user_invited", variables.siteId, {
         invited_user_count: createdUsers.length,
         role: getValues("role"),
       })
