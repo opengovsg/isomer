@@ -16,10 +16,7 @@ import { trpc } from "~/utils/trpc"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import { pageSchema } from "../../schema"
-import {
-  CHANGES_SAVED_PLEASE_PUBLISH_MESSAGE,
-  PLACEHOLDER_IMAGE_FILENAME,
-} from "../constants"
+import { CHANGES_SAVED_PLEASE_PUBLISH_MESSAGE } from "../constants"
 import { DeleteBlockModal } from "../DeleteBlockModal"
 import { DiscardChangesModal } from "../DiscardChangesModal"
 import { ErrorProvider, useBuilderErrors } from "../form-builder/ErrorProvider"
@@ -75,8 +72,6 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
 
   const { mutateAsync: uploadAsset, isPending: isUploadingAsset } =
     useUploadAssetMutation({ siteId, resourceId: String(pageId) })
-  const { mutate: deleteAssets, isPending: isDeletingAssets } =
-    trpc.asset.deleteAssets.useMutation()
 
   const handleDeleteBlock = useCallback(() => {
     const currentBlock = savedPageState.content[currActiveIdx]
@@ -173,8 +168,6 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
   const handleSave = useCallback(async () => {
     let newPageState = previewPageState
 
-    let assetsToDelete: string[] = []
-
     if (modifiedAssets.length > 0) {
       const updatedBlocks = Array.from(previewPageState.content)
       const newBlock = cloneDeep(updatedBlocks[currActiveIdx])
@@ -214,16 +207,6 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
       if (!isUploadingSuccessful) {
         return
       }
-
-      // Collect the original asset keys so they can be deleted after the page
-      // save succeeds.
-      assetsToDelete = modifiedAssets.reduce<string[]>((acc, { src }) => {
-        const fileKey = src?.slice(1)
-        if (fileKey !== undefined && fileKey !== PLACEHOLDER_IMAGE_FILENAME) {
-          acc.push(fileKey)
-        }
-        return acc
-      }, [])
     }
 
     savePage(
@@ -239,19 +222,11 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
           setSavedPageState(newPageState)
           setDrawerState({ state: "root" })
           setAddedBlockIndex(null)
-          if (assetsToDelete.length > 0) {
-            deleteAssets({
-              siteId,
-              resourceId: String(pageId),
-              fileKeys: assetsToDelete,
-            })
-          }
         },
       },
     )
   }, [
     currActiveIdx,
-    deleteAssets,
     modifiedAssets,
     pageId,
     previewPageState,
@@ -266,7 +241,7 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
     uploadAsset,
   ])
 
-  const isLoading = isSavingPage || isUploadingAsset || isDeletingAssets
+  const isLoading = isSavingPage || isUploadingAsset
 
   const component = previewPageState.content[currActiveIdx]
   const componentType = component?.type
