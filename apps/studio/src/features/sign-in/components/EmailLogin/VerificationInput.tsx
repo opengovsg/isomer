@@ -12,7 +12,6 @@ import {
   Input,
 } from "@opengovsg/design-system-react"
 import { useRouter } from "next/router"
-import posthog from "posthog-js"
 import { useState } from "react"
 import { Controller } from "react-hook-form"
 import { useInterval } from "usehooks-ts"
@@ -21,6 +20,7 @@ import { useLoginState } from "~/features/auth"
 import { useIsSingpassEnabled } from "~/hooks/useIsSingpassEnabled"
 import { OTP_LENGTH } from "~/lib/auth"
 import { useZodForm } from "~/lib/form"
+import { captureEvent } from "~/lib/posthogCapture"
 import { SIGN_IN_SINGPASS } from "~/lib/routes"
 import { emailVerifyOtpSchema } from "~/schemas/auth/email/sign-in"
 import { callbackUrlSchema } from "~/schemas/url"
@@ -65,7 +65,7 @@ export const VerificationInput = (): JSX.Element | null => {
       if (isSingpassEnabled) {
         await router.push(SIGN_IN_SINGPASS)
       } else {
-        posthog.capture("user_logged_in", { method: "email" })
+        captureEvent("user_logged_in", { method: "email" })
         setHasLoginStateFlag()
         await utils.me.get.invalidate()
         // accessing router.query values returns decoded URI params automatically,
