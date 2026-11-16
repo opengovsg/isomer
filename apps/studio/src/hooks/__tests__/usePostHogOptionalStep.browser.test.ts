@@ -36,6 +36,23 @@ describe("usePostHogOptionalStep", () => {
     expect(capture).toHaveBeenCalledWith("my_step", { site_id: 1 })
   })
 
+  it("pins the site group when siteId is given", () => {
+    renderHook(() =>
+      usePostHogOptionalStep({
+        event: "my_step",
+        siteId: 1,
+        isBypassed: true,
+        properties: { redirect_count: 0 },
+      }),
+    )
+    expect(capture).toHaveBeenCalledWith("my_step", {
+      site_id: "1",
+      $groups: { site: "1" },
+      redirect_count: 0,
+      skipped: true,
+    })
+  })
+
   it("waits until isReady before capturing", () => {
     const { rerender } = renderHook(
       ({ ready }) =>
