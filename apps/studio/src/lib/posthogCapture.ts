@@ -1,7 +1,13 @@
 import type { Properties } from "posthog-js"
+// oxlint-disable-next-line no-restricted-imports
 import posthog from "posthog-js"
 
 import { SITE_GROUP_TYPE } from "./posthog"
+
+/** Captures an event not tied to any site, e.g. login and logout. */
+export const captureEvent = (event: string, properties?: Properties) => {
+  posthog.capture(event, properties)
+}
 
 /**
  * Captures an event tied to a site. The event-level `$groups` overrides the
@@ -14,7 +20,7 @@ export const captureSiteEvent = (
   properties?: Properties,
 ) => {
   const site = String(siteId)
-  posthog.capture(event, {
+  captureEvent(event, {
     ...properties,
     site_id: site,
     $groups: { [SITE_GROUP_TYPE]: site },

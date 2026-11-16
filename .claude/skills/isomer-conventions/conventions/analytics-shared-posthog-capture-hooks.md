@@ -20,7 +20,9 @@ component with a hand-rolled `useEffect` + `useRef` fire-once guard:
 A one-off capture in an event handler (e.g. a mutation `onSuccess`) is fine —
 the hooks are for render-driven captures that must not double-count. Use
 `captureSiteEvent` from `~/lib/posthogCapture` for site-scoped events, and pass
-`siteId` to the hooks, so the event keeps its site after navigation.
+`siteId` to the hooks, so the event keeps its site after navigation. Site-less
+events (login, logout) use `captureEvent`. Lint forbids importing `posthog-js`
+directly.
 
 ## Why
 

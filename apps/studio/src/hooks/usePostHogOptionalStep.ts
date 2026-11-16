@@ -1,5 +1,4 @@
-import posthog from "posthog-js"
-import { captureSiteEvent } from "~/lib/posthogCapture"
+import { captureEvent, captureSiteEvent } from "~/lib/posthogCapture"
 
 import { usePostHogCaptureOnceReady } from "./usePostHogCaptureOnceReady"
 
@@ -33,7 +32,7 @@ export const usePostHogOptionalStep = ({
       : (properties ?? {})
 
     if (siteId === undefined) {
-      posthog.capture(event, stepProperties)
+      captureEvent(event, stepProperties)
       return
     }
 
