@@ -26,8 +26,21 @@ const gradientCarouselStyles = tv({
     contentInner: `${ComponentContent} grid grid-cols-[minmax(0,1fr)_auto] gap-x-4 gap-y-16 py-16 pb-9 text-start text-base-content-inverse lg:pb-16`,
     copy: "col-span-2 row-start-1 flex min-w-0 flex-col",
     actions: "flex flex-wrap justify-start gap-x-5 gap-y-4 [&>*]:h-auto",
+    pinnedPause: "",
+    pinnedPosition: "",
   },
   variants: {
+    // A title-only group is shorter than the banner, so justify-end leaves the
+    // title low. Equal tracks put it on the midline; controls stay at the bottom.
+    titleOnly: {
+      true: {
+        contentInner:
+          "h-full flex-1 grid-rows-[minmax(0,1fr)_auto_minmax(0,1fr)] pb-16",
+        copy: "row-start-2",
+        pinnedPause: "row-start-3 self-end",
+        pinnedPosition: "row-start-3 self-end",
+      },
+    },
     contentAlignment: {
       [HERO_CAROUSEL_CONTENT_ALIGNMENT.left]: {
         contentPanel:
@@ -75,8 +88,18 @@ export const HeroCarouselGradientClient = ({
     politeness,
     sectionProps,
   } = useRotation(slides.length)
-  const styles = gradientCarouselStyles({ contentAlignment })
   const isCentered = contentAlignment === HERO_CAROUSEL_CONTENT_ALIGNMENT.center
+  // Any subtitle or button makes the shared slide row tall enough that the
+  // bottom-aligned group already fills the banner.
+  const isTitleOnly =
+    !isCentered &&
+    slides.every(
+      (slide) => !slide.subtitle && !(slide.primaryLabel && slide.primaryHref),
+    )
+  const styles = gradientCarouselStyles({
+    contentAlignment,
+    titleOnly: isTitleOnly,
+  })
 
   return (
     <section
@@ -101,6 +124,7 @@ export const HeroCarouselGradientClient = ({
             currentIndex={currentIndex}
             rotation={controlProps.rotation}
             isCenteredOnTablet={isCentered}
+            className={styles.pinnedPause()}
           />
           <div className={styles.copy()}>
             <CarouselSlideContent
@@ -119,6 +143,7 @@ export const HeroCarouselGradientClient = ({
             onPrev={controlProps.onPrev}
             onNext={controlProps.onNext}
             isCenteredOnTablet={isCentered}
+            className={styles.pinnedPosition()}
           />
         </div>
       </div>

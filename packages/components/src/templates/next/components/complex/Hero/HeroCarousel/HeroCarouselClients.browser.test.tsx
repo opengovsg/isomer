@@ -1,7 +1,7 @@
 import { act, fireEvent, render, screen } from "@testing-library/react"
 import { useState } from "react"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
-import { userEvent } from "vitest/browser"
+import { page, userEvent } from "vitest/browser"
 import {
   HERO_BLOCK_IMAGE_POSITION,
   HERO_CAROUSEL_CONTENT_ALIGNMENT,
@@ -97,6 +97,88 @@ const indexedSlides = [
 ]
 
 const liveRegion = () => screen.getByText(/Slide \d of \d:/)
+
+const titleOnlySlides = [
+  { backgroundUrl: "/a.png", title: "Alpha" },
+  { backgroundUrl: "/b.png", title: "Beta" },
+]
+
+const midpointDelta = (outer: HTMLElement, inner: HTMLElement) => {
+  const outerBox = outer.getBoundingClientRect()
+  const innerBox = inner.getBoundingClientRect()
+  return (
+    innerBox.top + innerBox.height / 2 - (outerBox.top + outerBox.height / 2)
+  )
+}
+
+describe("gradient carousel title position", () => {
+  // lg min-height is where a short title sits visibly low.
+  let previousWidth = 0
+  let previousHeight = 0
+
+  beforeEach(async () => {
+    previousWidth = window.innerWidth
+    previousHeight = window.innerHeight
+    await page.viewport(1280, 800)
+  })
+
+  afterEach(async () => {
+    await page.viewport(previousWidth, previousHeight)
+  })
+
+  it("centers the title when every slide has only a title", () => {
+    // Arrange
+    const view = render(
+      <HeroCarouselGradientClient
+        headingTag="h1"
+        inactiveHeadingTag="h2"
+        slides={titleOnlySlides}
+      />,
+    )
+    const section = view.container.querySelector("section")
+    const title = screen.getByRole("heading", { name: "Alpha" })
+    const position = screen.getByText("1 of 2")
+    if (!section) {
+      throw new Error("Expected a carousel section")
+    }
+
+    // Act
+    const titleDelta = midpointDelta(section, title)
+    const positionTop =
+      position.getBoundingClientRect().top - section.getBoundingClientRect().top
+
+    // Assert
+    expect(Math.abs(titleDelta)).toBeLessThanOrEqual(8)
+    expect(positionTop).toBeGreaterThan(
+      section.getBoundingClientRect().height * 0.7,
+    )
+  })
+
+  it("keeps the title above centre when a slide has a subtitle and button", () => {
+    // Arrange
+    const view = render(
+      <HeroCarouselGradientClient
+        headingTag="h1"
+        inactiveHeadingTag="h2"
+        slides={[
+          shortSlide,
+          { ...shortSlide, backgroundUrl: "/b.png", title: "Beta" },
+        ]}
+      />,
+    )
+    const section = view.container.querySelector("section")
+    const title = screen.getByRole("heading", { name: "Short" })
+    if (!section) {
+      throw new Error("Expected a carousel section")
+    }
+
+    // Act
+    const titleDelta = midpointDelta(section, title)
+
+    // Assert
+    expect(titleDelta).toBeLessThan(-24)
+  })
+})
 
 describe("hero carousel preview index", () => {
   it("changes its own slide when next is pressed and no preview provider is present", async () => {
