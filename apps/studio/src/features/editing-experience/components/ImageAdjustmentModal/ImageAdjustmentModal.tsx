@@ -180,9 +180,7 @@ export const ImageAdjustmentModal = ({
   const focalEnabled =
     config.focalEnabled && (!hasImageFitControl || isFocalApplicable(imageFit))
   const previewObjectFit = hasImageFitControl
-    ? imageFit === "contain"
-      ? "contain"
-      : "cover"
+    ? imageFit
     : (config.previewObjectFitFor?.(fieldHost) ?? "cover")
   const [draft, setDraft] = useState<ImageAdjustment | undefined>(value)
   // Undefined until CropFocalControl loads the image.
