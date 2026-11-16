@@ -14,10 +14,10 @@ import {
 } from "@chakra-ui/react"
 import { Button, IconButton } from "@opengovsg/design-system-react"
 import { useRouter } from "next/router"
-import posthog from "posthog-js"
 import { BiDotsHorizontalRounded, BiHide, BiHistory } from "react-icons/bi"
 import { Can } from "~/features/permissions"
 import { withSuspense } from "~/hocs/withSuspense"
+import { captureSiteEvent } from "~/lib/posthogCapture"
 import { trpc } from "~/utils/trpc"
 import { ResourceType, ScheduledAction } from "~prisma/generated/generatedEnums"
 
@@ -155,9 +155,7 @@ const SuspendablePageMoreActionsButton = ({
           <Popover
             placement="bottom-end"
             onOpen={() =>
-              posthog.capture("unpublish_more_actions_opened", {
-                site_id: siteId,
-              })
+              captureSiteEvent("unpublish_more_actions_opened", siteId)
             }
           >
             {({ onClose }) => (
@@ -251,9 +249,10 @@ const SuspendablePageMoreActionsButton = ({
                               isLoading={isBlockInfoLoading}
                               leftIcon={<Icon as={BiHide} boxSize="1rem" />}
                               onClick={() => {
-                                posthog.capture("unpublish_modal_opened", {
-                                  site_id: siteId,
-                                })
+                                captureSiteEvent(
+                                  "unpublish_modal_opened",
+                                  siteId,
+                                )
                                 onClose()
                                 unpublishModalDisclosure.onOpen()
                               }}
