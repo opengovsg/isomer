@@ -1,4 +1,5 @@
 import type { PropsWithChildren } from "react"
+import { useRouter } from "next/router"
 import {
   createContext,
   useCallback,
@@ -8,7 +9,8 @@ import {
 } from "react"
 import { LOGGED_IN_KEY } from "~/constants/localStorage"
 import { useLocalStorage } from "~/hooks/useLocalStorage"
-import { withPosthog } from "~/lib/posthog"
+import { SITE_GROUP_TYPE, withPosthog } from "~/lib/posthog"
+import { normalizeEmail } from "~/utils/email"
 import { trpc } from "~/utils/trpc"
 
 interface LoginStateContextReturn {
@@ -32,6 +34,7 @@ export const LoginStateProvider = ({ children }: PropsWithChildren) => {
   return (
     <LoginStateContext.Provider value={loginState}>
       <PostHogIdentity />
+      <PostHogSiteGroup />
       {children}
     </LoginStateContext.Provider>
   )
@@ -81,12 +84,48 @@ const PostHogIdentity = () => {
 
       posthog.identify(user.id, {
         email: user.email,
+        email_domain: normalizeEmail(user.email).split("@")[1],
         ...(user.name ? { name: user.name } : {}),
         site_roles: sites.map((site) => `${site.id}:${site.role}`),
       })
       identifiedUserId.current = user.id
     })
   }, [user, sites, hasLoginStateFlag])
+
+  return null
+}
+
+const PostHogSiteGroup = () => {
+  const { hasLoginStateFlag } = useLoginState()
+  const { isReady, query } = useRouter()
+  const siteId = typeof query.siteId === "string" ? query.siteId : undefined
+  const { data: sites } = trpc.site.list.useQuery(undefined, {
+    enabled: hasLoginStateFlag,
+  })
+
+  useEffect(() => {
+    if (!isReady) {
+      return
+    }
+
+    void withPosthog((posthog) => {
+      // Only group sites the user can access, so mistyped or unauthorised
+      // URLs don't create junk groups. Isomer admins get every site.
+      if (
+        hasLoginStateFlag &&
+        siteId &&
+        sites?.some((site) => String(site.id) === siteId)
+      ) {
+        posthog.group(SITE_GROUP_TYPE, siteId)
+        return
+      }
+
+      // resetGroups reloads feature flags, so skip it when there's nothing to clear.
+      if (posthog.getGroups()[SITE_GROUP_TYPE]) {
+        posthog.resetGroups()
+      }
+    })
+  }, [isReady, siteId, sites, hasLoginStateFlag])
 
   return null
 }
