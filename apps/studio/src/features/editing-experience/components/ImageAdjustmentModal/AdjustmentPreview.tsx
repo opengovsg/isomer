@@ -20,17 +20,13 @@ import Suspense from "~/components/Suspense"
 import { PreviewIframe } from "~/features/editing-experience/components/preview/PreviewIframe"
 import { useSiteThemeCssVars } from "~/hooks/useSiteThemeCssVars"
 import { bakeImage, isAnimatedImageBlob } from "~/lib/imageBake"
-import {
-  ASSETS_BASE_URL,
-  generateAssetUrl,
-  generateOriginalAssetUrl,
-} from "~/utils/generateAssetUrl"
+import { ASSETS_BASE_URL, generateAssetUrl } from "~/utils/generateAssetUrl"
 
 import type {
   AdjustmentPreviewState,
   BuildSingleItemPreviewBlock,
 } from "./AdjustmentConfig"
-import { chooseBakeMime } from "./useSaveImageAdjustment"
+import { chooseBakeMime, fetchImageBlob } from "./useSaveImageAdjustment"
 
 // Site stub for a single-block preview. It fills only the fields the block
 // reads, as PreviewWithCustomSitemap.tsx does.
@@ -46,12 +42,6 @@ const useOriginalImageBlob = (originalSrc: string, originalFile?: Blob) => {
   const [originalBlob, setOriginalBlob] = useState<Blob | null>(null)
   const [fetchError, setFetchError] = useState(false)
 
-  // The transcoded variant can be downscaled or have a generic type the
-  // bake rejects, so fetch the pristine original as the save path does.
-  const originalFetchUrl = generateOriginalAssetUrl(originalSrc)
-  // Fallback when ?original 403s. Ask for webp because the baker rejects avif.
-  const plainFetchUrl = generateAssetUrl(originalSrc)
-
   useEffect(() => {
     let cancelled = false
     if (originalFile) {
@@ -60,35 +50,21 @@ const useOriginalImageBlob = (originalSrc: string, originalFile?: Blob) => {
     }
     const fetchOriginal = async () => {
       setFetchError(false)
-      // ?original can 403, and a CORS-opaque 403 makes fetch throw. Catch per
-      // attempt so a throw still reaches the plain-variant fallback.
-      const tryFetch = async (
-        url: string,
-        init?: RequestInit,
-      ): Promise<Blob | null> => {
-        try {
-          const response = await fetch(url, init)
-          return response.ok ? await response.blob() : null
-        } catch {
-          return null
-        }
-      }
-      const blob =
-        (await tryFetch(originalFetchUrl)) ??
-        (plainFetchUrl !== originalFetchUrl
-          ? await tryFetch(plainFetchUrl, { headers: { Accept: "image/webp" } })
-          : null)
-      if (!blob) {
+      // The transcoded variant can be downscaled, so fetch the pristine
+      // original like the save path does.
+      const blob = await fetchImageBlob(originalSrc).catch(() => {
         console.debug("Failed to fetch original image for preview bake")
-        if (!cancelled) setFetchError(true)
-      }
-      if (!cancelled) setOriginalBlob(blob)
+        return null
+      })
+      if (cancelled) return
+      if (!blob) setFetchError(true)
+      setOriginalBlob(blob)
     }
     void fetchOriginal()
     return () => {
       cancelled = true
     }
-  }, [originalFile, originalFetchUrl, plainFetchUrl])
+  }, [originalFile, originalSrc])
 
   return { originalBlob, fetchError }
 }
