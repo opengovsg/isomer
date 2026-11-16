@@ -11,6 +11,7 @@ import type { IframeCallbackFnProps } from "~/types/dom"
 import { Box, Flex, Skeleton, Text, VStack } from "@chakra-ui/react"
 import {
   getFocalObjectPosition,
+  HeroCarouselPreviewProvider,
   renderComponent,
 } from "@opengovsg/isomer-components"
 import { useCallback, useEffect, useRef, useState } from "react"
@@ -31,6 +32,13 @@ import type {
   BuildSingleItemPreviewBlock,
 } from "./AdjustmentConfig"
 import { chooseBakeMime } from "./useSaveImageAdjustment"
+
+// Holds a hero carousel on its first slide. Other components ignore it.
+const STATIC_HERO_CAROUSEL = {
+  activeIndex: 0,
+  setActiveIndex: () => undefined,
+  autoplay: false,
+}
 
 // Site stub for a single-block preview. It fills only the fields the block
 // reads, as PreviewWithCustomSitemap.tsx does.
@@ -325,13 +333,15 @@ export const AdjustmentPreview = ({
           isNestedField ? " [&_.auto-rows-max]:!grid-cols-1" : ""
         }`}
       >
-        {renderComponent({
-          component,
-          layout: pageLayout ?? "content",
-          site: PREVIEW_SITE_STUB,
-          permalink: "",
-          headingLevel: 1,
-        })}
+        <HeroCarouselPreviewProvider value={STATIC_HERO_CAROUSEL}>
+          {renderComponent({
+            component,
+            layout: pageLayout ?? "content",
+            site: PREVIEW_SITE_STUB,
+            permalink: "",
+            headingLevel: 1,
+          })}
+        </HeroCarouselPreviewProvider>
       </div>
     )
   }

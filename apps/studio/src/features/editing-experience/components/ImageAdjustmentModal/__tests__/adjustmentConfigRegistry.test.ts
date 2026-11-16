@@ -431,6 +431,26 @@ describe("resolveAdjustmentConfig", () => {
       }
     })
 
+    it("hero carousel previews the edited slide in the real component", () => {
+      const block = {
+        type: "hero",
+        variant: "carousel",
+        carousel: { layout: "gradient" },
+        slides: [{ title: "First" }, { title: "Second" }, { title: "Third" }],
+      }
+      const config = resolveAdjustmentConfig({
+        block,
+        fieldName: "backgroundUrl",
+      })
+      const edited = { title: "Second", backgroundUrl: "/baked.webp" }
+
+      expect(config?.skipRealComponentPreview).toBeFalsy()
+      // HeroCarousel renders nothing below two slides, so the slide repeats.
+      expect(
+        config?.buildSingleItemPreviewBlock?.(block as never, edited),
+      ).toMatchObject({ slides: [edited, edited] })
+    })
+
     it("hero carousel preview shapes follow the carousel layout (gradient when absent)", () => {
       const ratios = (carousel?: { layout: string }) =>
         Object.fromEntries(

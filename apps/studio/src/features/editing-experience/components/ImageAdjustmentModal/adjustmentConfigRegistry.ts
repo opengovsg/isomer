@@ -38,6 +38,17 @@ const buildSingleCardPreviewBlock: BuildSingleItemPreviewBlock = (
   return preview
 }
 
+// Builds the carousel block the real-component preview renders. HeroCarousel
+// renders nothing below two slides, so the edited slide appears twice.
+const buildSingleSlidePreviewBlock: BuildSingleItemPreviewBlock = (
+  block,
+  slide,
+) => {
+  if (block.type !== "hero" || block.variant !== "carousel") return undefined
+  const editedSlide = slide as (typeof block.slides)[number]
+  return { ...block, slides: [editedSlide, editedSlide] }
+}
+
 // The three breakpoint widths every editor preview uses. Only the aspect
 // ratio differs per component. A real-component preview uses the ratio as a
 // first guess before it measures. A framed preview uses it as the tile shape.
@@ -144,14 +155,7 @@ const HERO_BLOCK_CONFIG: AdjustmentConfig = {
 // shapes follow the block's carousel layout.
 // Focal anchors the subject as the band reshapes across breakpoints; crop is
 // free (custom), exactly like HERO_GRADIENT_CONFIG.
-//
-// Preview: skipRealComponentPreview — the carousel is an interactive client
-// component that refuses to render below HERO_CAROUSEL_SLIDE_LIMITS.minItems (2)
-// slides and rotates between them, so buildSingleItemPreviewBlock (which renders
-// the whole block with every item) would show the full rotating carousel, not
-// the single slide being edited. The framed approximation with the hero-band
-// aspect ratios is the honest single-slide preview here (same reasoning as
-// IMAGE_GALLERY_CONFIG's array-nested skip).
+// The preview renders the edited slide for real, text overlay included.
 const heroCarouselConfig = (block: IsomerComponent): AdjustmentConfig => {
   const isBlockLayout =
     block.type === "hero" &&
@@ -167,7 +171,7 @@ const heroCarouselConfig = (block: IsomerComponent): AdjustmentConfig => {
     focalEnabled: true,
     maxRenderedWidthPx: layoutConfig.maxRenderedWidthPx,
     maxRenderedHeightPx: layoutConfig.maxRenderedHeightPx,
-    // Framed preview, so these set the tile shape directly. Gradient (default):
+    // Only a pre-measure guess for the real preview. Gradient (default):
     // closest common ratio to each hero band (375×240→16:10, 768×360→2:1,
     // 1280×500→5:2), as in HERO_GRADIENT_CONFIG. Block: imageColumn is h-80 below
     // lg and half-width at lg with min-h 500 (375×320→7:6, 768×320→12:5,
@@ -185,7 +189,7 @@ const heroCarouselConfig = (block: IsomerComponent): AdjustmentConfig => {
             desktop: { width: 5, height: 2 },
           },
     ),
-    skipRealComponentPreview: true,
+    buildSingleItemPreviewBlock: buildSingleSlidePreviewBlock,
     preUploadCopy: layoutConfig.preUploadCopy,
     preUploadLinks: layoutConfig.preUploadLinks,
   }
