@@ -20,7 +20,6 @@ import {
   ISOMER_USABLE_PAGE_LAYOUTS,
   schema,
 } from "@opengovsg/isomer-components"
-import posthog from "posthog-js"
 import { useCallback, useMemo, useState } from "react"
 import {
   BiCog,
@@ -38,7 +37,7 @@ import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { CanManageCollectionFilters } from "~/features/editing-experience/hooks/canManageCollectionFilters"
 import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
 import { useQueryParse } from "~/hooks/useQueryParse"
-import { siteEventProps } from "~/lib/posthog"
+import { captureSiteEvent } from "~/lib/posthogCapture"
 import { ajv } from "~/utils/ajv"
 import { trpc } from "~/utils/trpc"
 import { IsomerAdminRole, ResourceType } from "~prisma/generated/generatedEnums"
@@ -236,7 +235,7 @@ export default function RootStateDrawer() {
   const { mutate: savePage, isPending: isSavingPage } =
     trpc.page.updatePageBlob.useMutation({
       onSuccess: async () => {
-        posthog.capture("page_changes_saved", siteEventProps(siteId))
+        captureSiteEvent("page_changes_saved", siteId)
         await utils.page.readPageAndBlob.invalidate({ pageId, siteId })
         await utils.page.readPage.invalidate({ pageId, siteId })
         if (type === ResourceType.CollectionPage) {

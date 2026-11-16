@@ -1,7 +1,6 @@
 import { useDisclosure } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
 import { useSetAtom } from "jotai"
-import posthog from "posthog-js"
 import { BiData } from "react-icons/bi"
 import { z } from "zod"
 import { PermissionsBoundary } from "~/components/AuthWrappers"
@@ -21,7 +20,7 @@ import { CreateCollectionPageModal } from "~/features/editing-experience/compone
 import { MoveResourceModal } from "~/features/editing-experience/components/MoveResourceModal"
 import { useEgazetteInfo } from "~/hooks/useEgazetteInfo"
 import { useQueryParse } from "~/hooks/useQueryParse"
-import { siteEventProps } from "~/lib/posthog"
+import { captureSiteEvent } from "~/lib/posthogCapture"
 import { type NextPageWithLayout } from "~/lib/types"
 import { SiteEditorLayout } from "~/templates/layouts/SiteEditorLayout"
 import { getCollectionHref } from "~/utils/resource"
@@ -81,10 +80,7 @@ const CollectionResourceListPage: NextPageWithLayout = () => {
             </Button>
             <Button
               onClick={() => {
-                posthog.capture(
-                  "collection_page_create_modal_opened",
-                  siteEventProps(siteId),
-                )
+                captureSiteEvent("collection_page_create_modal_opened", siteId)
                 onPageCreateModalOpen()
               }}
               size="md"

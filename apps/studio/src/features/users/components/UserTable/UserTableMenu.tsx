@@ -7,7 +7,6 @@ import {
 } from "@chakra-ui/react"
 import { useToast } from "@opengovsg/design-system-react"
 import { useSetAtom } from "jotai"
-import posthog from "posthog-js"
 import { useContext } from "react"
 import {
   BiDotsVerticalRounded,
@@ -20,7 +19,7 @@ import { SINGPASS_DISABLED_ERROR_MESSAGE } from "~/constants/customErrorMessage"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { UserManagementContext } from "~/features/users"
 import { useIsSingpassEnabled } from "~/hooks/useIsSingpassEnabled"
-import { siteEventProps } from "~/lib/posthog"
+import { captureSiteEvent } from "~/lib/posthogCapture"
 import { trpc } from "~/utils/trpc"
 
 import type { UserTableData } from "./types"
@@ -57,7 +56,7 @@ export const UserTableMenu = ({
   const { mutate: resendInvite, isPending: isResendingInvite } =
     trpc.user.resendInvite.useMutation({
       onSuccess: (result) => {
-        posthog.capture("user_invite_resent", siteEventProps(siteId))
+        captureSiteEvent("user_invite_resent", siteId)
         toast({
           status: "success",
           title: `Invite resent to ${result.email}`,

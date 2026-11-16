@@ -1,7 +1,6 @@
 import { Center, Text, useDisclosure, Link, VStack } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
 import { useRouter } from "next/router"
-import posthog from "posthog-js"
 import { Suspense, useEffect } from "react"
 import { BiData, BiPlus } from "react-icons/bi"
 import { z } from "zod"
@@ -18,7 +17,7 @@ import { useMe } from "~/features/me/api/useMe"
 import { useEgazetteInfo } from "~/hooks/useEgazetteInfo"
 import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
 import { useQueryParse } from "~/hooks/useQueryParse"
-import { siteEventProps } from "~/lib/posthog"
+import { captureSiteEvent } from "~/lib/posthogCapture"
 import { type NextPageWithLayout } from "~/lib/types"
 import { SiteMinimalLayout } from "~/templates/layouts/SiteMinimalLayout"
 import { IsomerAdminRole, ResourceType } from "~prisma/generated/generatedEnums"
@@ -95,10 +94,7 @@ const GazettesPage: NextPageWithLayout = () => {
                 size="md"
                 leftIcon={<BiPlus fontSize="1.25rem" />}
                 onClick={() => {
-                  posthog.capture(
-                    "gazette_create_modal_opened",
-                    siteEventProps(siteId),
-                  )
+                  captureSiteEvent("gazette_create_modal_opened", siteId)
                   onOpen()
                 }}
               >

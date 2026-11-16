@@ -11,10 +11,9 @@ import {
 } from "@chakra-ui/react"
 import { Button, useToast } from "@opengovsg/design-system-react"
 import { useAtomValue, useSetAtom } from "jotai"
-import posthog from "posthog-js"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useIsSingpassEnabled } from "~/hooks/useIsSingpassEnabled"
-import { siteEventProps } from "~/lib/posthog"
+import { captureSiteEvent } from "~/lib/posthogCapture"
 import { trpc } from "~/utils/trpc"
 
 import {
@@ -38,7 +37,7 @@ export const RemoveUserModal = () => {
     onSettled: onClose,
     onSuccess: (result, variables) => {
       // Closing the modal resets its siteId, so read the one this request used.
-      posthog.capture("site_user_removed", siteEventProps(variables.siteId))
+      captureSiteEvent("site_user_removed", variables.siteId)
       void utils.user.list.invalidate()
       void utils.user.count.invalidate()
       toast({

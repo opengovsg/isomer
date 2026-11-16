@@ -4,7 +4,6 @@ import { Box, Flex, Icon, Skeleton, Text, VStack } from "@chakra-ui/react"
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd"
 import { Button, useToast } from "@opengovsg/design-system-react"
 import { isEqual } from "lodash-es"
-import posthog from "posthog-js"
 import { useCallback, useMemo } from "react"
 import { BiInfoCircle } from "react-icons/bi"
 import { UsageTooltip } from "~/components/PageEditor/UsageTooltip"
@@ -12,7 +11,7 @@ import Suspense from "~/components/Suspense"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { useQueryParse } from "~/hooks/useQueryParse"
-import { siteEventProps } from "~/lib/posthog"
+import { captureSiteEvent } from "~/lib/posthogCapture"
 import { getIcon } from "~/utils/resources"
 import { trpc } from "~/utils/trpc"
 import { ResourceType } from "~prisma/generated/generatedEnums"
@@ -188,7 +187,7 @@ export default function SiderailOrderingEditorStateDrawer(): JSX.Element {
 
   const { mutate, isPending } = trpc.page.updatePageBlob.useMutation({
     onSuccess: async () => {
-      posthog.capture("page_changes_saved", siteEventProps(siteId))
+      captureSiteEvent("page_changes_saved", siteId)
       await utils.page.readPageAndBlob.invalidate({ pageId, siteId })
       await utils.page.readPage.invalidate({ pageId, siteId })
       toast({

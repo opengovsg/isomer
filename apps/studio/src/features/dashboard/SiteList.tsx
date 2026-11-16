@@ -12,11 +12,10 @@ import {
 } from "@chakra-ui/react"
 import { Link } from "@opengovsg/design-system-react"
 import NextLink from "next/link"
-import posthog from "posthog-js"
 import { NoResultIcon } from "~/components/Svg/NoResultIcon"
 import { ISOMER_SUPPORT_LINK } from "~/constants/misc"
 import { withSuspense } from "~/hocs/withSuspense"
-import { siteEventProps } from "~/lib/posthog"
+import { captureSiteEvent } from "~/lib/posthogCapture"
 import { generateAssetUrl } from "~/utils/generateAssetUrl"
 import { trpc } from "~/utils/trpc"
 
@@ -42,7 +41,7 @@ const Site = ({
             return
           }
 
-          posthog.capture("site_selected", siteEventProps(siteId))
+          captureSiteEvent("site_selected", siteId)
         }}
       >
         <Flex key={siteId} flexDirection="column" gap="1rem" width="100%">

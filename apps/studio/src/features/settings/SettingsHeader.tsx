@@ -3,8 +3,7 @@ import { Center, Flex, Icon, Text } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
 import { isEmpty } from "lodash-es"
 import { useRouter } from "next/router"
-import posthog from "posthog-js"
-import { siteEventProps } from "~/lib/posthog"
+import { captureSiteEvent } from "~/lib/posthogCapture"
 
 import { useBuilderErrors } from "../editing-experience/components/form-builder/ErrorProvider"
 import { Can } from "../permissions"
@@ -50,8 +49,7 @@ export const SettingsHeader = ({
           type="submit"
           isLoading={isLoading}
           onClick={() => {
-            posthog.capture("settings_saved", {
-              ...siteEventProps(String(router.query.siteId)),
+            captureSiteEvent("settings_saved", String(router.query.siteId), {
               settings_section: router.pathname.split("/").pop(),
             })
             onClick()

@@ -17,7 +17,6 @@ import {
   useToast,
 } from "@opengovsg/design-system-react"
 import { add, format, isSameDay } from "date-fns"
-import posthog from "posthog-js"
 import { useRef, useState } from "react"
 import { FormProvider } from "react-hook-form"
 import { BiSolidInfoCircle } from "react-icons/bi"
@@ -26,7 +25,7 @@ import {
   BRIEF_TOAST_SETTINGS,
 } from "~/constants/toast"
 import { useZodForm } from "~/lib/form"
-import { siteEventProps } from "~/lib/posthog"
+import { captureSiteEvent } from "~/lib/posthogCapture"
 import {
   MINIMUM_SCHEDULE_LEAD_TIME_MINUTES,
   schedulePublishClientSchema,
@@ -155,7 +154,7 @@ export const PublishOrUnpublishModal = ({
         onClose()
       },
       onSuccess: () => {
-        posthog.capture("page_published", siteEventProps(siteId))
+        captureSiteEvent("page_published", siteId)
         fireContentEditSurveyEvent(PUBLISHED_AFTER_EDITING_EVENT)
         toast({
           status: "success",
@@ -226,8 +225,7 @@ export const PublishOrUnpublishModal = ({
         onClose()
       },
       onSuccess: () => {
-        posthog.capture("page_unpublished", {
-          site_id: siteId,
+        captureSiteEvent("page_unpublished", siteId, {
           redirect_count: redirectCount,
           source: "more_actions",
         })
@@ -262,8 +260,7 @@ export const PublishOrUnpublishModal = ({
       onClose()
     },
     onSuccess: () => {
-      posthog.capture("page_unpublish_scheduled", {
-        site_id: siteId,
+      captureSiteEvent("page_unpublish_scheduled", siteId, {
         redirect_count: redirectCount,
         source: "more_actions",
       })

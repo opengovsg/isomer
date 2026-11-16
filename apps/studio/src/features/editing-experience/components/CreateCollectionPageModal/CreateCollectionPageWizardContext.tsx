@@ -4,12 +4,11 @@ import type { PropsWithChildren } from "react"
 import type { z } from "zod"
 import { merge } from "lodash-es"
 import { useRouter } from "next/router"
-import posthog from "posthog-js"
 import { createContext, useContext, useMemo, useState } from "react"
 import articleLayoutPreview from "~/features/editing-experience/data/articleLayoutPreview.json"
 import collectionLinkPreview from "~/features/editing-experience/data/collectionLinkPreview.json"
 import { useZodForm } from "~/lib/form"
-import { siteEventProps } from "~/lib/posthog"
+import { captureSiteEvent } from "~/lib/posthogCapture"
 import { createCollectionPageFormSchema } from "~/schemas/page"
 import { getResourceSubpath } from "~/utils/resource"
 import { trpc } from "~/utils/trpc"
@@ -107,8 +106,7 @@ const useCreateCollectionPageWizardContext = ({
         },
         {
           onSuccess: ({ pageId }) => {
-            posthog.capture("collection_page_created", {
-              ...siteEventProps(siteId),
+            captureSiteEvent("collection_page_created", siteId, {
               resource_type: values.type,
             })
             const nextType = getResourceSubpath(type)

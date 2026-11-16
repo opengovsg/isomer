@@ -1,7 +1,6 @@
 import { Portal, useDisclosure } from "@chakra-ui/react"
 import { Button, Menu } from "@opengovsg/design-system-react"
 import { useSetAtom } from "jotai"
-import posthog from "posthog-js"
 import { BiData, BiFileBlank, BiFolder } from "react-icons/bi"
 import { z } from "zod"
 import { PermissionsBoundary } from "~/components/AuthWrappers"
@@ -20,7 +19,7 @@ import { CreateFolderModal } from "~/features/editing-experience/components/Crea
 import { CreatePageModal } from "~/features/editing-experience/components/CreatePageModal"
 import { MoveResourceModal } from "~/features/editing-experience/components/MoveResourceModal"
 import { useQueryParse } from "~/hooks/useQueryParse"
-import { siteEventProps } from "~/lib/posthog"
+import { captureSiteEvent } from "~/lib/posthogCapture"
 import { type NextPageWithLayout } from "~/lib/types"
 import { SiteEditorLayout } from "~/templates/layouts/SiteEditorLayout"
 import { getFolderHref } from "~/utils/resource"
@@ -98,10 +97,13 @@ const FolderPage: NextPageWithLayout = () => {
                     <Menu.List>
                       <Menu.Item
                         onClick={() => {
-                          posthog.capture("folder_create_modal_opened", {
-                            ...siteEventProps(siteId),
-                            parent_type: "folder",
-                          })
+                          captureSiteEvent(
+                            "folder_create_modal_opened",
+                            siteId,
+                            {
+                              parent_type: "folder",
+                            },
+                          )
                           onFolderCreateModalOpen()
                         }}
                         icon={<BiFolder fontSize="1rem" />}
@@ -110,8 +112,7 @@ const FolderPage: NextPageWithLayout = () => {
                       </Menu.Item>
                       <Menu.Item
                         onClick={() => {
-                          posthog.capture("page_create_modal_opened", {
-                            ...siteEventProps(siteId),
+                          captureSiteEvent("page_create_modal_opened", siteId, {
                             parent_type: "folder",
                           })
                           onPageCreateModalOpen()
@@ -122,10 +123,13 @@ const FolderPage: NextPageWithLayout = () => {
                       </Menu.Item>
                       <Menu.Item
                         onClick={() => {
-                          posthog.capture("collection_create_modal_opened", {
-                            ...siteEventProps(siteId),
-                            parent_type: "folder",
-                          })
+                          captureSiteEvent(
+                            "collection_create_modal_opened",
+                            siteId,
+                            {
+                              parent_type: "folder",
+                            },
+                          )
                           onCollectionCreateModalOpen()
                         }}
                         icon={<BiData fontSize="1rem" />}

@@ -1,9 +1,11 @@
 import posthog from "posthog-js"
+import { captureSiteEvent } from "~/lib/posthogCapture"
 
 import { usePostHogCaptureOnceReady } from "./usePostHogCaptureOnceReady"
 
 export interface OptionalStepOptions {
   event: string
+  siteId?: number | string
   // Set when the bypass decision depends on data that loads asynchronously
   // (e.g. a count query), so the capture waits until that data has resolved.
   isReady?: boolean
@@ -20,14 +22,21 @@ export interface OptionalStepOptions {
  */
 export const usePostHogOptionalStep = ({
   event,
+  siteId,
   isReady = true,
   isBypassed,
   properties,
 }: OptionalStepOptions): void => {
   usePostHogCaptureOnceReady(isReady, () => {
-    posthog.capture(
-      event,
-      isBypassed ? { ...properties, skipped: true } : (properties ?? {}),
-    )
+    const stepProperties = isBypassed
+      ? { ...properties, skipped: true }
+      : (properties ?? {})
+
+    if (siteId === undefined) {
+      posthog.capture(event, stepProperties)
+      return
+    }
+
+    captureSiteEvent(event, siteId, stepProperties)
   })
 }

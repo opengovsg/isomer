@@ -1,10 +1,9 @@
 import type { ButtonProps } from "@opengovsg/design-system-react"
 import { Skeleton, useDisclosure } from "@chakra-ui/react"
 import { Button, TouchableTooltip } from "@opengovsg/design-system-react"
-import posthog from "posthog-js"
 import { Can } from "~/features/permissions"
 import { withSuspense } from "~/hocs/withSuspense"
-import { siteEventProps } from "~/lib/posthog"
+import { captureSiteEvent } from "~/lib/posthogCapture"
 import { trpc } from "~/utils/trpc"
 import { ScheduledAction } from "~prisma/generated/generatedEnums"
 
@@ -82,10 +81,7 @@ const SuspendablePublishButton = ({
                 size="sm"
                 isDisabled={!!disabledReason || !isAllowed}
                 onClick={() => {
-                  posthog.capture(
-                    "publish_modal_opened",
-                    siteEventProps(siteId),
-                  )
+                  captureSiteEvent("publish_modal_opened", siteId)
                   publishDisclosure.onOpen()
                 }}
                 {...rest}

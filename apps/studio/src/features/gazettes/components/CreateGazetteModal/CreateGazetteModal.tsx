@@ -13,12 +13,11 @@ import {
   useToast,
 } from "@opengovsg/design-system-react"
 import { format, parse } from "date-fns"
-import posthog from "posthog-js"
 import { useState } from "react"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useUploadGazetteMutation } from "~/hooks/useUploadGazetteMutation"
 import { useZodForm } from "~/lib/form"
-import { siteEventProps } from "~/lib/posthog"
+import { captureSiteEvent } from "~/lib/posthogCapture"
 import { createGazetteSchema } from "~/schemas/gazette"
 import { trpc } from "~/utils/trpc"
 
@@ -129,8 +128,7 @@ const CreateGazetteModalContent = ({
         scheduledAt,
       })
 
-      posthog.capture("gazette_created", {
-        ...siteEventProps(siteId),
+      captureSiteEvent("gazette_created", siteId, {
         category: data.category,
         has_subcategory: !!data.subcategory,
         is_scheduled: scheduledAt > new Date(),

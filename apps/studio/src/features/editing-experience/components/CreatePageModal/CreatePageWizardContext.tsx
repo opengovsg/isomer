@@ -3,13 +3,12 @@ import type { IsomerSchema } from "@opengovsg/isomer-components"
 import type { PropsWithChildren } from "react"
 import { merge } from "lodash-es"
 import { useRouter } from "next/router"
-import posthog from "posthog-js"
 import { createContext, useContext, useMemo, useState } from "react"
 import articleLayoutPreview from "~/features/editing-experience/data/articleLayoutPreview.json"
 import contentLayoutPreview from "~/features/editing-experience/data/contentLayoutPreview.json"
 import databaseLayoutPreview from "~/features/editing-experience/data/databaseLayoutPreview.json"
 import { useZodForm } from "~/lib/form"
-import { siteEventProps } from "~/lib/posthog"
+import { captureSiteEvent } from "~/lib/posthogCapture"
 import { createPageSchema } from "~/schemas/page"
 import { trpc } from "~/utils/trpc"
 
@@ -115,8 +114,7 @@ const useCreatePageWizardContext = ({
       },
       {
         onSuccess: ({ pageId }) => {
-          posthog.capture("page_created", {
-            ...siteEventProps(siteId),
+          captureSiteEvent("page_created", siteId, {
             has_parent_folder: !!folderId,
             layout: values.layout,
           })

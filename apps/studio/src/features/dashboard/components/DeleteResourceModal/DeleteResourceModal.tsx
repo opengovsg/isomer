@@ -17,10 +17,9 @@ import {
 } from "@opengovsg/design-system-react"
 import { useAtom } from "jotai"
 import { upperFirst } from "lodash-es"
-import posthog from "posthog-js"
 import { useState } from "react"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
-import { siteEventProps } from "~/lib/posthog"
+import { captureSiteEvent } from "~/lib/posthogCapture"
 import { isAllowedToHaveChildren } from "~/utils/resources"
 import { trpc } from "~/utils/trpc"
 import { ResourceType } from "~prisma/generated/generatedEnums"
@@ -109,8 +108,7 @@ const DeleteResourceModalContent = ({
   const { mutate, isPending } = trpc.resource.delete.useMutation({
     onSettled: onClose,
     onSuccess: async () => {
-      posthog.capture("resource_deleted", {
-        ...siteEventProps(siteId),
+      captureSiteEvent("resource_deleted", siteId, {
         resource_type: resourceType,
         has_redirects: redirectCount > 0,
       })
