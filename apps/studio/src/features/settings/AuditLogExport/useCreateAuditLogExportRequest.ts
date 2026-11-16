@@ -1,7 +1,7 @@
 import { useToast } from "@opengovsg/design-system-react"
-import posthog from "posthog-js"
 import { ISOMER_SUPPORT_EMAIL } from "~/constants/misc"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
+import { captureSiteEvent } from "~/lib/posthogCapture"
 import { AuditLogExportRequestedReportType } from "~/schemas/audit"
 import { trpc } from "~/utils/trpc"
 
@@ -26,10 +26,11 @@ export const useCreateAuditLogExportRequest = ({
   return trpc.audit.createExportRequest.useMutation({
     onSuccess: (_data, { scope, reportType: requestedReportType, month }) => {
       if (requestedReportType === AuditLogExportRequestedReportType.Access) {
-        posthog.capture("user_access_log_requested", { site_id: siteId, scope })
+        captureSiteEvent("user_access_log_requested", siteId, {
+          scope,
+        })
       } else {
-        posthog.capture("audit_log_requested", {
-          site_id: siteId,
+        captureSiteEvent("audit_log_requested", siteId, {
           month,
           scope,
         })
