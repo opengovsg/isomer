@@ -12,9 +12,12 @@ let queue: Promise<void> = Promise.resolve()
  */
 export const withPosthog = (fn: (posthog: typeof PostHogInstance) => void) => {
   queue = queue
+    // oxlint-disable-next-line no-restricted-imports
     .then(() => import("posthog-js"))
     .then(({ default: posthog }) => {
       fn(posthog)
     })
   return queue
 }
+
+export const SITE_GROUP_TYPE = "site"
