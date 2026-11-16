@@ -13,23 +13,32 @@ const SENSITIVE_KEYS = new Set([
 
 const isSensitiveKey = (key: string) => SENSITIVE_KEYS.has(key.toLowerCase())
 
-export const redactLogInput = (input: unknown): unknown => {
-  if (input === null || input === undefined) {
+// `seen` maps each input object to its copy, so shared references (superjson
+// `referentialEqualities`) are copied once and cycles terminate.
+export const redactLogInput = (
+  input: unknown,
+  seen = new WeakMap<object, unknown>(),
+): unknown => {
+  if (input === null || typeof input !== "object") {
     return input
   }
 
+  const copied = seen.get(input)
+  if (copied !== undefined) {
+    return copied
+  }
+
   if (Array.isArray(input)) {
-    return input.map(redactLogInput)
+    const result: unknown[] = []
+    seen.set(input, result)
+    for (const value of input) result.push(redactLogInput(value, seen))
+    return result
   }
 
-  if (typeof input === "object") {
-    return Object.fromEntries(
-      Object.entries(input).map(([key, value]) => [
-        key,
-        isSensitiveKey(key) ? REDACTED : redactLogInput(value),
-      ]),
-    )
+  const result: Record<string, unknown> = {}
+  seen.set(input, result)
+  for (const [key, value] of Object.entries(input)) {
+    result[key] = isSensitiveKey(key) ? REDACTED : redactLogInput(value, seen)
   }
-
-  return input
+  return result
 }

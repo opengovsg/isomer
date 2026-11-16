@@ -80,4 +80,31 @@ describe("redactLogInput", () => {
     expect(nullResult).toBeNull()
     expect(undefinedResult).toBeUndefined()
   })
+
+  it("copies a shared object once, so a reference chain stays linear", () => {
+    // Arrange: 30 levels, each referencing the level below twice (2^30 paths)
+    let node: unknown = { token: "secret" }
+    for (let i = 0; i < 30; i++) node = [node, node]
+
+    // Act
+    const start = performance.now()
+    const result = redactLogInput(node) as unknown[]
+
+    // Assert
+    expect(performance.now() - start).toBeLessThan(100)
+    expect(result[0]).toBe(result[1])
+  })
+
+  it("terminates on a cycle", () => {
+    // Arrange
+    const input: Record<string, unknown> = { password: "p" }
+    input.self = input
+
+    // Act
+    const result = redactLogInput(input) as Record<string, unknown>
+
+    // Assert
+    expect(result.password).toBe("[REDACTED]")
+    expect(result.self).toBe(result)
+  })
 })
