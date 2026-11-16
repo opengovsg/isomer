@@ -1,7 +1,6 @@
 import type { ButtonProps } from "@chakra-ui/react"
 import { Button, Tooltip } from "@chakra-ui/react"
 import { useSetAtom } from "jotai"
-import posthog from "posthog-js"
 import { useContext } from "react"
 import { BiPlus } from "react-icons/bi"
 import { UserManagementContext } from "~/features/users"
@@ -10,6 +9,7 @@ import {
   DEFAULT_ADD_USER_MODAL_STATE,
 } from "~/features/users/atoms"
 import { useIsSingpassEnabled } from "~/hooks/useIsSingpassEnabled"
+import { captureSiteEvent } from "~/lib/posthogCapture"
 
 import { SingpassConditionalTooltip } from "./SingpassConditionalTooltip"
 
@@ -35,7 +35,7 @@ export const AddNewUserButton = ({
       variant="solid"
       leftIcon={<BiPlus />}
       onClick={() => {
-        posthog.capture("add_user_modal_opened", { site_id: siteId })
+        captureSiteEvent("add_user_modal_opened", siteId)
         setAddUserModalState({ ...DEFAULT_ADD_USER_MODAL_STATE, siteId })
       }}
       isDisabled={isButtonDisabled}
