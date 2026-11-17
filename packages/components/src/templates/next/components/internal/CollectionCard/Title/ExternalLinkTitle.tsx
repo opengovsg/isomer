@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react"
 import { BiLinkExternal } from "react-icons/bi"
+import { island } from "~/islands/island"
 import { getHeadingTag } from "~/utils/getHeadingTag"
 
 import { collectionCardLinkStyle } from "./collectionCardLinkStyle"
@@ -9,7 +10,7 @@ import { collectionCardLinkStyle } from "./collectionCardLinkStyle"
 // This is needed because we want the external link icon to always be visible
 // When title is not truncated, we show the external link icon at the end of the title
 // When title is truncated, we show the external link icon below the title in a new line
-export const ExternalLinkTitle = ({
+const ExternalLinkTitleComponent = ({
   title,
   headingLevel,
 }: {
@@ -53,3 +54,9 @@ export const ExternalLinkTitle = ({
     </Tag>
   )
 }
+
+export const ExternalLinkTitle = island(
+  "ExternalLinkTitle",
+  ExternalLinkTitleComponent,
+  { hydrate: "load" },
+)

@@ -2,6 +2,7 @@
 
 import type { DateFilterDisplayEntry } from "~/interfaces/internal/DateFilter"
 import { useMemo } from "react"
+import { island } from "~/islands/island"
 
 import { EventStatusPill } from "./EventStatusPill"
 import { getDateFilterCardsFromEntries } from "./utils/getDateFilterCardsFromEntries"
@@ -10,7 +11,7 @@ interface DateFilterStatusClientProps {
   entries?: DateFilterDisplayEntry[]
 }
 
-export const DateFilterStatusClient = ({
+const DateFilterStatusClientComponent = ({
   entries,
 }: DateFilterStatusClientProps) => {
   const dateFilterCards = useMemo(
@@ -41,3 +42,9 @@ export const DateFilterStatusClient = ({
     </div>
   )
 }
+
+export const DateFilterStatusClient = island(
+  "DateFilterStatusClient",
+  DateFilterStatusClientComponent,
+  { hydrate: "load" },
+)

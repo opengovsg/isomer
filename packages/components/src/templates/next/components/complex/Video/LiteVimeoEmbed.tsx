@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { island } from "~/islands/island"
 import { twMerge } from "~/lib/twMerge"
 
 import { ImageClient } from "../../internal/ImageClient"
@@ -19,7 +20,7 @@ export interface LiteVimeoEmbedProps {
 }
 
 // Referenced https://github.com/luwes/lite-vimeo-embed
-export const LiteVimeoEmbed = ({
+const LiteVimeoEmbedComponent = ({
   src,
   videoId,
   title,
@@ -120,4 +121,10 @@ const VimeoPlayButton = () => (
       }}
     />
   </span>
+)
+
+export const LiteVimeoEmbed = island(
+  "LiteVimeoEmbed",
+  LiteVimeoEmbedComponent,
+  { hydrate: "visible" },
 )

@@ -8,6 +8,7 @@ import type { IsomerSiteProps } from "~/types"
 import { useEffect, useState } from "react"
 import { useDismissedCentralNotification } from "~/hooks/useDismissedCentralNotification"
 import { CENTRAL_NOTIFICATION_FILE_NAME } from "~/interfaces"
+import { island } from "~/islands/island"
 import { getTextAsHtml } from "~/utils/getTextAsHtml"
 
 import { Prose } from "../../native/Prose"
@@ -24,7 +25,7 @@ interface CentralNotificationClientProps {
 const normaliseUrl = (url: string) =>
   url.trim().toLowerCase().replace(/\/+$/, "")
 
-export const CentralNotificationClient = ({
+const CentralNotificationClientComponent = ({
   assetsBaseUrl,
   siteUrl,
 }: CentralNotificationClientProps) => {
@@ -99,3 +100,9 @@ export const CentralNotificationClient = ({
     </NotificationBanner>
   )
 }
+
+export const CentralNotificationClient = island(
+  "CentralNotificationClient",
+  CentralNotificationClientComponent,
+  { hydrate: "load" },
+)

@@ -4,12 +4,12 @@ import { getTextAsHtml } from "~/utils/getTextAsHtml"
 import { Prose } from "../../native/Prose"
 import { hasContent } from "../../native/Prose/utils"
 import { BaseParagraph } from "../BaseParagraph"
-import { NotificationBanner } from "./NotificationBanner"
+import { NotificationClient } from "./NotificationClient"
 
 export const Notification = ({ site, ...notification }: NotificationProps) => {
   if (notification.type === "antiscam") {
     return (
-      <NotificationBanner title="Government officials will never ask you to transfer money over a phone call.">
+      <NotificationClient title="Government officials will never ask you to transfer money over a phone call.">
         <BaseParagraph
           content={getTextAsHtml({
             site,
@@ -39,7 +39,7 @@ export const Notification = ({ site, ...notification }: NotificationProps) => {
           })}
           className="prose-body-base"
         />
-      </NotificationBanner>
+      </NotificationClient>
     )
   }
 
@@ -59,5 +59,5 @@ export const Notification = ({ site, ...notification }: NotificationProps) => {
         <Prose {...content} site={site} headingLevel={3} />
       )
     )
-  return <NotificationBanner title={title}>{body}</NotificationBanner>
+  return <NotificationClient title={title}>{body}</NotificationClient>
 }

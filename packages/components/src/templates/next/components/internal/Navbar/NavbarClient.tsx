@@ -10,6 +10,7 @@ import {
 } from "react"
 import { BiMenu, BiSearch, BiX } from "react-icons/bi"
 import { useResizeObserver } from "usehooks-ts"
+import { island } from "~/islands/island"
 import { tv } from "~/lib/tv"
 import { isExternalUrl } from "~/utils/isExternalUrl"
 import { focusVisibleHighlight } from "~/utils/tailwind"
@@ -77,7 +78,7 @@ const createNavbarStyles = tv({
 
 const navbarStyles = createNavbarStyles()
 
-export const NavbarClient = ({
+const NavbarClientComponent = ({
   layout,
   search,
   items,
@@ -315,3 +316,7 @@ export const NavbarClient = ({
     </div>
   )
 }
+
+export const NavbarClient = island("NavbarClient", NavbarClientComponent, {
+  hydrate: "load",
+})

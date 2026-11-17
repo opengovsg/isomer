@@ -5,6 +5,7 @@ import type {
   NavbarSearchSGInputBoxProps,
   SearchSGInputBoxProps,
 } from "~/interfaces"
+import { island } from "~/islands/island"
 import { twMerge } from "~/lib/twMerge"
 
 import { useSearchSGScript } from "../../../../../hooks/useSearchSGScript"
@@ -36,7 +37,7 @@ export const NavbarSearchSGInputBox = ({
   return <BaseSearchSGInputBox clientId={clientId} shouldLoadScript={isOpen} />
 }
 
-export const HomepageSearchSGInputBox = ({
+const HomepageSearchSGInputBoxComponent = ({
   clientId,
   className,
 }: Omit<HomepageSearchSGInputBoxProps, "type">) => {
@@ -48,3 +49,9 @@ export const HomepageSearchSGInputBox = ({
     />
   )
 }
+
+export const HomepageSearchSGInputBox = island(
+  "HomepageSearchSGInputBox",
+  HomepageSearchSGInputBoxComponent,
+  { hydrate: "load" },
+)

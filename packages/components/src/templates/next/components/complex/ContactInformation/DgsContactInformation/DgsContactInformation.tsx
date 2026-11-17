@@ -10,11 +10,12 @@ import { omit, pick } from "lodash-es"
 import { useMemo } from "react"
 import { transformDgsField, useDgsData } from "~/hooks/useDgsData"
 import { InjectableContactInformationKeys } from "~/interfaces/complex/ContactInformation/constants"
+import { island } from "~/islands/island"
 import { safeJsonParse } from "~/utils/safeJsonParse"
 
 import { ContactInformationUI } from "../components"
 
-export const DgsContactInformation = ({
+const DgsContactInformationComponent = ({
   dataSource: { resourceId, filters },
   ...rest
 }: DgsContactInformationProps) => {
@@ -93,3 +94,9 @@ export const DgsTransformedContactInformation = ({
     />
   )
 }
+
+export const DgsContactInformation = island(
+  "DgsContactInformation",
+  DgsContactInformationComponent,
+  { hydrate: "load" },
+)

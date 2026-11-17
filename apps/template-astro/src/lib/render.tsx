@@ -12,6 +12,7 @@ import { renderToString } from "react-dom/server"
 
 import { serializeForInlineScript } from "@isomer/validators"
 
+import { IslandServerProvider } from "../islands/server"
 import {
   assetsBaseUrl,
   config,
@@ -22,8 +23,11 @@ import {
 } from "./site"
 
 // Each top-level render gets its own prefix so useId values never collide across renders.
+// IslandServerProvider makes island() components render with their props for hydration.
 const toHtml = (node: ReactNode, identifierPrefix: string) =>
-  renderToString(<>{node}</>, { identifierPrefix })
+  renderToString(<IslandServerProvider>{node}</IslandServerProvider>, {
+    identifierPrefix,
+  })
 
 const siteJsonLd = serializeForInlineScript(
   getSiteJsonLd({ site: { ...config.site, assetsBaseUrl }, footer, sitemap }),

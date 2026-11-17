@@ -4,6 +4,7 @@ import type { SupportedBrowserBannerProps } from "~/utils/isSupportedBrowser"
 import { useEffect, useState } from "react"
 import { BiInfoCircle, BiX } from "react-icons/bi"
 import { useSessionStorage } from "usehooks-ts"
+import { island } from "~/islands/island"
 import { isSupportedBrowser } from "~/utils/isSupportedBrowser"
 
 import { IconButton } from "../IconButton"
@@ -13,12 +14,14 @@ import { Link } from "../Link"
 const supportedBrowserDocumentLink =
   "https://github.com/opengovsg/isomer/blob/main/packages/components/browser-support.md"
 
-export const UnsupportedBrowserBanner = ({
+const UnsupportedBrowserBannerComponent = ({
   userAgent: initialUserAgent,
 }: SupportedBrowserBannerProps) => {
+  // Read after mount, so the first client render matches the server HTML (hydration).
   const [isDismissed, setIsDismissed] = useSessionStorage(
     "unsupported-browser-banner-dismissed",
     false,
+    { initializeWithValue: false },
   )
   const [navigatorUserAgent, setNavigatorUserAgent] = useState(
     initialUserAgent || "",
@@ -79,3 +82,9 @@ export const UnsupportedBrowserBanner = ({
     </div>
   )
 }
+
+export const UnsupportedBrowserBanner = island(
+  "UnsupportedBrowserBanner",
+  UnsupportedBrowserBannerComponent,
+  { hydrate: "idle" },
+)

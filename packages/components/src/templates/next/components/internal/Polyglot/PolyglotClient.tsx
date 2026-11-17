@@ -3,9 +3,10 @@
 import type { PolyglotClientProps } from "~/interfaces"
 import { useInteractionScriptLoader } from "~/hooks/useInteractionScriptLoader"
 import { useQueryParams } from "~/hooks/useQueryParams"
+import { island } from "~/islands/island"
 
 // Reference: https://polyglot.gov.sg
-export const PolyglotClient = ({ scriptUrl }: PolyglotClientProps) => {
+const PolyglotClientComponent = ({ scriptUrl }: PolyglotClientProps) => {
   const [queryParams] = useQueryParams()
 
   useInteractionScriptLoader({
@@ -15,3 +16,9 @@ export const PolyglotClient = ({ scriptUrl }: PolyglotClientProps) => {
 
   return <div id="polyglot-widget" />
 }
+
+export const PolyglotClient = island(
+  "PolyglotClient",
+  PolyglotClientComponent,
+  { hydrate: "load" },
+)

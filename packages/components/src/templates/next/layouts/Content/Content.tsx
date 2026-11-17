@@ -72,7 +72,9 @@ export const ContentLayout = ({
         </div>
         <div className={compoundStyles.siderailContainer()}>
           {sideRail && <Siderail {...sideRail} />}
-          <BackToTopLink />
+          {/* No top margin when it's first in the column. Not a `first:` variant: as an island it
+              sits in a wrapper element, where `first:` would always match. */}
+          <BackToTopLink className={sideRail ? undefined : "mt-0"} />
         </div>
       </div>
     </Skeleton>

@@ -1,6 +1,6 @@
 --- a/apps/template-astro/astro.config.ts
 +++ b/apps/template-astro/astro.config.ts
-@@ -14,6 +14,16 @@
+@@ -12,6 +12,16 @@
    "react/jsx-dev-runtime": "preact/jsx-dev-runtime",
    react: "preact/compat",
  }
@@ -17,7 +17,7 @@
  const USE_PREACT = process.env.ISLANDS_RUNTIME !== "react"
  
  export default defineConfig({
-@@ -62,7 +72,7 @@
+@@ -38,7 +48,7 @@
          applyToEnvironment: (env) =>
            env.name === "client" && env.config.command === "build" && USE_PREACT,
          resolveId(source, importer, options) {
@@ -28,28 +28,28 @@
                  ...options,
 --- a/apps/template-astro/src/lib/render.tsx
 +++ b/apps/template-astro/src/lib/render.tsx
-@@ -12,6 +12,7 @@
+@@ -8,6 +8,7 @@
+   RenderEngine,
+   RenderPageHead,
+ } from "@opengovsg/isomer-components"
++import { island } from "@opengovsg/isomer-components/islands"
+ import { renderToString } from "react-dom/server"
  
  import { serializeForInlineScript } from "@isomer/validators"
- 
-+import { renderIsland } from "../islands/render-island"
- import {
-   assetsBaseUrl,
-   config,
-@@ -50,6 +51,12 @@
+@@ -54,6 +55,12 @@
    "h",
  )
  
 +// EXPERIMENT: ISLANDS_MODE=whole-tree hydrates the entire page as one island.
 +const Engine =
 +  process.env.ISLANDS_MODE === "whole-tree"
-+    ? renderIsland(RenderEngine, "engine/render.js#RenderEngine")
++    ? island("RenderEngine", RenderEngine, { hydrate: "load" })
 +    : RenderEngine
 +
  export const renderPage = (
    schema: IsomerPageSchemaType,
    { withPageJsonLd = true } = {},
-@@ -58,7 +65,7 @@
+@@ -62,7 +69,7 @@
    return {
      head: toHtml(<RenderPageHead {...renderSchema} />, "m"),
      headScripts,
@@ -58,18 +58,27 @@
      appScripts,
      siteJsonLd,
      pageJsonLd: withPageJsonLd
---- a/apps/template-astro/src/islands/vite-plugin.ts
-+++ b/apps/template-astro/src/islands/vite-plugin.ts
-@@ -95,7 +95,11 @@
- 
- /** `export const loaders = { "<module key>": () => import("<file>"), ... }` */
- const registryModule = () => {
--  const entries = allIslandModules().map(
-+  const modules = allIslandModules()
-+  // EXPERIMENT: ISLANDS_MODE=whole-tree (the PR #1751 approach) makes RenderEngine one island.
-+  if (process.env.ISLANDS_MODE === "whole-tree")
-+    modules.push(path.join(COMPONENTS_DIST, "engine/render.js"))
-+  const entries = modules.map(
-     (file) =>
-       `  ${JSON.stringify(moduleKey(file))}: () => import(${JSON.stringify(file)}),`,
+--- a/apps/template-astro/src/islands/client.ts
++++ b/apps/template-astro/src/islands/client.ts
+@@ -59,6 +59,12 @@
    )
+ }
+ 
++// EXPERIMENT: loader for ISLANDS_MODE=whole-tree (see render.tsx).
++const EXPERIMENT_LOADERS: Record<string, () => Promise<unknown>> = {
++  RenderEngine: () =>
++    import("@opengovsg/isomer-components").then((m) => m.RenderEngine),
++}
++
+ const importReact = () =>
+   Promise.all([import("react"), import("react-dom/client")])
+ 
+@@ -82,7 +88,7 @@
+     )
+ 
+     const hydrate = async () => {
+-      const load = islandLoaders[name]
++      const load = islandLoaders[name] ?? EXPERIMENT_LOADERS[name]
+       if (!load) throw new Error(`[isomer-islands] unknown island ${name}`)
+       const [[{ createElement }, { hydrateRoot }], Component] =
+         await Promise.all([react, load()])

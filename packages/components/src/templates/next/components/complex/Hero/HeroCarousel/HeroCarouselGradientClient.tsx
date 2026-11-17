@@ -3,6 +3,7 @@
 import type { HeroCarouselContentAlignment } from "~/interfaces/complex/Hero"
 import type { HeadingTag } from "~/utils/getHeadingTag"
 import { HERO_CAROUSEL_CONTENT_ALIGNMENT } from "~/interfaces/complex/Hero"
+import { island } from "~/islands/island"
 import { tv } from "~/lib/tv"
 
 import type { HeroCarouselSlideView } from "./CarouselSlides"
@@ -55,7 +56,7 @@ const gradientCarouselStyles = tv({
   },
 })
 
-export const HeroCarouselGradientClient = ({
+const HeroCarouselGradientClientComponent = ({
   contentAlignment = HERO_CAROUSEL_CONTENT_ALIGNMENT.left,
   headingTag,
   inactiveHeadingTag,
@@ -132,3 +133,9 @@ export const HeroCarouselGradientClient = ({
     </section>
   )
 }
+
+export const HeroCarouselGradientClient = island(
+  "HeroCarouselGradientClient",
+  HeroCarouselGradientClientComponent,
+  { hydrate: "visible" },
+)

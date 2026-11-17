@@ -2,8 +2,9 @@
 
 import type { VicaWidgetClientProps } from "~/interfaces"
 import { useInteractionScriptLoader } from "~/hooks/useInteractionScriptLoader"
+import { island } from "~/islands/island"
 
-export const VicaWidgetClient = ({
+const VicaWidgetClientComponent = ({
   scriptUrl,
   ...vicaProps
 }: VicaWidgetClientProps) => {
@@ -11,3 +12,9 @@ export const VicaWidgetClient = ({
 
   return <div id="webchat" {...vicaProps} />
 }
+
+export const VicaWidgetClient = island(
+  "VicaWidgetClient",
+  VicaWidgetClientComponent,
+  { hydrate: "idle" },
+)

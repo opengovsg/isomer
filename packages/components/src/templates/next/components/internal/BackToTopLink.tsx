@@ -1,18 +1,21 @@
+"use client"
+
 import { BiUpArrowAlt } from "react-icons/bi"
+import { island } from "~/islands/island"
 import { tv } from "~/lib/tv"
 import { twMerge } from "~/lib/twMerge"
 import { focusVisibleHighlight } from "~/utils/tailwind"
 
 const buttonStyle = tv({
   extend: focusVisibleHighlight,
-  base: "prose-body-base sticky top-8 mb-8 mt-16 inline-flex cursor-pointer items-center text-link underline-offset-4 first:mt-0 hover:underline",
+  base: "prose-body-base sticky top-8 mb-8 mt-16 inline-flex cursor-pointer items-center text-link underline-offset-4 hover:underline",
 })
 
 interface BackToTopLinkProps {
   className?: string
 }
 
-export const BackToTopLink = ({
+const BackToTopLinkComponent = ({
   className,
 }: BackToTopLinkProps): JSX.Element => {
   // "Back to top" scrolls the page — it is an action, not navigation — so it
@@ -27,8 +30,6 @@ export const BackToTopLink = ({
   return (
     <button
       type="button"
-      // Hook for hosts that render this without hydrating (apps/template-astro's static-behaviours.js).
-      data-isomer-back-to-top
       className={twMerge(buttonStyle(), className)}
       onClick={handleClick}
     >
@@ -37,3 +38,7 @@ export const BackToTopLink = ({
     </button>
   )
 }
+
+export const BackToTopLink = island("BackToTopLink", BackToTopLinkComponent, {
+  hydrate: "load",
+})

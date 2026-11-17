@@ -3,8 +3,9 @@
 import type { MicrosoftClarityProps } from "~/interfaces"
 import { useEffect } from "react"
 import { useInteractionScriptLoader } from "~/hooks/useInteractionScriptLoader"
+import { island } from "~/islands/island"
 
-export const MicrosoftClarity = ({ msClarityId }: MicrosoftClarityProps) => {
+const MicrosoftClarityComponent = ({ msClarityId }: MicrosoftClarityProps) => {
   // Step 1: insert the tiny inline init function
   // If code calls window.clarity() before the script loads, it would fail because window.clarity doesn't exist yet.
   // The function below (taken from the Clarity docs) implements a queue pattern:
@@ -33,3 +34,9 @@ export const MicrosoftClarity = ({ msClarityId }: MicrosoftClarityProps) => {
 
   return null
 }
+
+export const MicrosoftClarity = island(
+  "MicrosoftClarity",
+  MicrosoftClarityComponent,
+  { hydrate: "idle" },
+)

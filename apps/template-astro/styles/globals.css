@@ -6,13 +6,3 @@
 :root {
   --font-inter: "Inter Variable";
 }
-
-/* Island markers are layout-transparent (same approach as Astro's <astro-island>). */
-isomer-island {
-  display: contents;
-}
-
-/* Set by static-behaviours.js before first paint, so a dismissed notification never flashes. */
-[data-notification-dismissed] [data-isomer-notification] {
-  display: none;
-}

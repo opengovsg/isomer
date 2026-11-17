@@ -4,6 +4,7 @@ import type { DgsApiDatasetSearchParams } from "~/hooks/useDgsData/types"
 import type { DynamicComponentListProps } from "~/interfaces"
 import { useMemo } from "react"
 import { useDgsData } from "~/hooks/useDgsData"
+import { island } from "~/islands/island"
 
 import { DgsTransformedContactInformation } from "../ContactInformation"
 
@@ -11,7 +12,7 @@ import { DgsTransformedContactInformation } from "../ContactInformation"
 // thus we play safe and just return 1 for loading state
 const DEFAULT_NUMBER_OF_RECORDS_FOR_LOADING = 1
 
-export const DynamicComponentList = ({
+const DynamicComponentListComponent = ({
   dataSource: { resourceId, sort, filters },
   component,
   layout,
@@ -60,3 +61,9 @@ export const DynamicComponentList = ({
       return <></>
   }
 }
+
+export const DynamicComponentList = island(
+  "DynamicComponentList",
+  DynamicComponentListComponent,
+  { hydrate: "load" },
+)

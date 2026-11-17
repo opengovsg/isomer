@@ -3,6 +3,7 @@
 import type { ImageGalleryClientProps } from "~/interfaces/complex/ImageGallery"
 import { useCallback, useMemo, useRef, useState, useTransition } from "react"
 import { useBreakpoint } from "~/hooks/useBreakpoint"
+import { island } from "~/islands/island"
 import { tv } from "~/lib/tv"
 
 import { ImageClient } from "../../internal/ImageClient"
@@ -56,7 +57,7 @@ const slideStyles = tv({
 
 const compoundStyles = createImagePreviewStyles()
 
-export const ImageGalleryClient = ({
+const ImageGalleryClientComponent = ({
   images,
   assetsBaseUrl,
   shouldLazyLoad,
@@ -311,3 +312,9 @@ export const ImageGalleryClient = ({
     </section>
   )
 }
+
+export const ImageGalleryClient = island(
+  "ImageGalleryClient",
+  ImageGalleryClientComponent,
+  { hydrate: "visible" },
+)
