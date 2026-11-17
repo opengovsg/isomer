@@ -160,6 +160,14 @@ const heroCarouselConfig = (block: IsomerComponent): AdjustmentConfig => {
     block.variant === "carousel" &&
     block.carousel?.layout === "block"
   const layoutConfig = isBlockLayout ? HERO_BLOCK_CONFIG : HERO_GRADIENT_CONFIG
+  const isCentred =
+    block.type === "hero" &&
+    block.variant === "carousel" &&
+    block.carousel?.layout === "gradient" &&
+    block.carousel.contentAlignment === "center"
+  // The template's safe zone assumes left-aligned text, so centred slides get no template.
+  const links = layoutConfig.preUploadLinks
+  const centredLinks = links && (({ templateUrl: _, ...rest }) => rest)(links)
   return {
     componentType: "hero:carousel",
     imageField: "backgroundUrl",
@@ -185,7 +193,7 @@ const heroCarouselConfig = (block: IsomerComponent): AdjustmentConfig => {
     ),
     buildSingleItemPreviewBlock: buildSingleSlidePreviewBlock,
     preUploadCopy: layoutConfig.preUploadCopy,
-    preUploadLinks: layoutConfig.preUploadLinks,
+    preUploadLinks: isCentred ? centredLinks : links,
   }
 }
 
