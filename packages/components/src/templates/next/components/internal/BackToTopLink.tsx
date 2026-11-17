@@ -29,6 +29,8 @@ export const BackToTopLink = ({
   return (
     <button
       type="button"
+      // Lets non-React renderers (apps/template-astro) attach the scroll behaviour without hydrating.
+      data-isomer-back-to-top
       className={twMerge(buttonStyle(), className)}
       onClick={handleClick}
     >

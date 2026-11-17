@@ -1,0 +1,12 @@
+{
+  "extends": "@isomer/tsconfig/base.json",
+  "compilerOptions": {
+    "lib": ["es2022", "dom", "dom.iterable"],
+    "jsx": "react-jsx",
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "checkJs": false
+  },
+  "include": [".astro/types.d.ts", "src", "*.mjs"],
+  "exclude": ["node_modules", "out", "dist"]
+}

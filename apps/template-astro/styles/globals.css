@@ -1,0 +1,14 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* next/font sets --font-inter in apps/template; here it's the fontsource family. */
+:root {
+  --font-inter: "Inter Variable";
+}
+
+/* Island/slot markers are layout-transparent (same approach as Astro's <astro-island>). */
+isomer-island,
+isomer-slot {
+  display: contents;
+}

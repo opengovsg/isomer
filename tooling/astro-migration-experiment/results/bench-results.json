@@ -1,0 +1,65 @@
+[
+  {
+    "size": 100,
+    "variant": "next",
+    "runs": 3,
+    "seconds": 20.839221084,
+    "peakMb": 3919.921875
+  },
+  {
+    "size": 100,
+    "variant": "astro",
+    "runs": 3,
+    "seconds": 4.06106141699999,
+    "peakMb": 1443.03125
+  },
+  {
+    "size": 100,
+    "variant": "astro-parallel",
+    "runs": 3,
+    "seconds": 4.6436604579999985,
+    "peakMb": 2363.75
+  },
+  {
+    "size": 1000,
+    "variant": "next",
+    "runs": 3,
+    "seconds": 27.151674457999995,
+    "peakMb": 4949.296875
+  },
+  {
+    "size": 1000,
+    "variant": "astro",
+    "runs": 3,
+    "seconds": 9.451970042000001,
+    "peakMb": 1563.796875
+  },
+  {
+    "size": 1000,
+    "variant": "astro-parallel",
+    "runs": 3,
+    "seconds": 7.411960000000021,
+    "peakMb": 2764.265625
+  },
+  {
+    "size": 10000,
+    "variant": "next",
+    "runs": 1,
+    "seconds": 156.15948037499993,
+    "peakMb": 5995.046875
+  },
+  {
+    "size": 10000,
+    "variant": "astro",
+    "runs": 1,
+    "seconds": 83.44457116599999,
+    "peakMb": 1538.328125
+  },
+  {
+    "size": 10000,
+    "variant": "astro-parallel",
+    "runs": 1,
+    "seconds": 34.512492375,
+    "peakMb": 3754.671875
+  }
+]

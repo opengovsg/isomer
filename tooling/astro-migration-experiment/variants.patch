@@ -1,0 +1,75 @@
+--- a/apps/template-astro/astro.config.mjs
++++ b/apps/template-astro/astro.config.mjs
+@@ -15,6 +15,16 @@
+   "react/jsx-dev-runtime": "preact/jsx-dev-runtime",
+   react: "preact/compat",
+ }
++// EXPERIMENT: ISLANDS_RUNTIME=redact hydrates with TanStack Redact instead (needs @tanstack/redact).
++const REDACT_ALIASES = {
++  "react-dom/client": "@tanstack/redact/dom-client",
++  "react-dom": "@tanstack/redact/dom",
++  "react/jsx-runtime": "@tanstack/redact/jsx-runtime",
++  "react/jsx-dev-runtime": "@tanstack/redact/jsx-dev-runtime",
++  react: "@tanstack/redact",
++}
++const CLIENT_ALIASES =
++  process.env.ISLANDS_RUNTIME === "redact" ? REDACT_ALIASES : PREACT_ALIASES
+ const USE_PREACT = process.env.ISLANDS_RUNTIME !== "react"
+ 
+ export default defineConfig({
+@@ -70,7 +80,7 @@
+         applyToEnvironment: (env) =>
+           env.name === "client" && env.config.command === "build" && USE_PREACT,
+         resolveId(source, importer, options) {
+-          const target = PREACT_ALIASES[source]
++          const target = CLIENT_ALIASES[source]
+           return target
+             ? this.resolve(target, import.meta.dirname + "/package.json", {
+                 ...options,
+--- a/apps/template-astro/src/lib/render.tsx
++++ b/apps/template-astro/src/lib/render.tsx
+@@ -12,6 +12,7 @@
+ 
+ import { serializeForInlineScript } from "@isomer/validators"
+ 
++import { renderIsland } from "../islands/render-island.js"
+ import { renderHead } from "./head"
+ import {
+   assetsBaseUrl,
+@@ -60,6 +61,12 @@
+   "h",
+ )
+ 
++// EXPERIMENT: ISLANDS_MODE=whole-tree hydrates the entire page as one island.
++const Engine =
++  process.env.ISLANDS_MODE === "whole-tree"
++    ? renderIsland(RenderEngine, "engine/render.js#RenderEngine")
++    : RenderEngine
++
+ export const renderPage = (
+   schema: IsomerPageSchemaType,
+   { withPageJsonLd = true } = {},
+@@ -68,7 +75,7 @@
+   return {
+     head: renderHead(getMetadata(renderSchema), config.site.siteName),
+     headScripts,
+-    body: toHtml(<RenderEngine {...renderSchema} />, "b"),
++    body: toHtml(<Engine {...renderSchema} />, "b"),
+     appScripts,
+     siteJsonLd,
+     pageJsonLd: withPageJsonLd
+--- a/apps/template-astro/src/islands/vite-plugin.mjs
++++ b/apps/template-astro/src/islands/vite-plugin.mjs
+@@ -107,7 +107,11 @@
+ 
+ /** `export const loaders = { "<module key>": () => import("<file>"), ... }` */
+ const registryModule = () => {
+-  const entries = allIslandModules().map(
++  const modules = allIslandModules()
++  // EXPERIMENT: ISLANDS_MODE=whole-tree (the PR #1751 approach) makes RenderEngine one island.
++  if (process.env.ISLANDS_MODE === "whole-tree")
++    modules.push(path.join(COMPONENTS_DIST, "engine/render.js"))
++  const entries = modules.map(
+     (file) =>
+       `  ${JSON.stringify(moduleKey(file))}: () => import(${JSON.stringify(file)}),`,
+   )

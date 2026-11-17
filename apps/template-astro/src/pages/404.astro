@@ -1,0 +1,25 @@
+---
+import type { IsomerPageSchemaType } from "@opengovsg/isomer-components"
+import Page from "../layouts/Page.astro"
+import { renderPage } from "../lib/render"
+
+// Mirrors apps/template/app/not-found.tsx.
+const PAGE_TITLE = "404: Page not found"
+const PAGE_DESCRIPTION = "The page that you are accessing does not exist"
+
+const schema = {
+  version: "0.1.0",
+  layout: "notfound",
+  meta: { noIndex: true, description: PAGE_DESCRIPTION },
+  page: {
+    title: PAGE_TITLE,
+    permalink: "/404.html",
+    lastModified: new Date().toISOString(),
+  },
+  content: [],
+} as unknown as IsomerPageSchemaType
+
+const page = renderPage(schema, { withPageJsonLd: false })
+---
+
+<Page {...page} />

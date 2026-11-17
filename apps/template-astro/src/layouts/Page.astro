@@ -1,0 +1,48 @@
+---
+import type { renderPage } from "../lib/render"
+import "@fontsource-variable/inter/wght.css"
+import interLatin from "@fontsource-variable/inter/files/inter-latin-wght-normal.woff2?url"
+import "../../styles/globals.css"
+import staticBehaviours from "../islands/static-behaviours.js?raw"
+import { assetsBaseUrl, config } from "../lib/site"
+
+type Props = ReturnType<typeof renderPage>
+
+const { head, headScripts, body, appScripts, siteJsonLd, pageJsonLd } =
+  Astro.props
+---
+
+<!doctype html>
+<html
+  lang="en"
+  data-theme={(config.site.theme as string) || "isomer-next"}
+  data-assets-base-url={assetsBaseUrl}
+>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      rel="preload"
+      href={interLatin}
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <script is:inline set:html={staticBehaviours} />
+    <Fragment set:html={head} />
+    <Fragment set:html={headScripts} />
+  </head>
+  <body class="antialiased">
+    <Fragment set:html={body} />
+    {
+      pageJsonLd && (
+        <script type="application/ld+json" set:html={pageJsonLd} is:inline />
+      )
+    }
+    <Fragment set:html={appScripts} />
+    <script type="application/ld+json" set:html={siteJsonLd} is:inline />
+    <script>
+      import "../islands/hydrate-islands.js"
+    </script>
+  </body>
+</html>
