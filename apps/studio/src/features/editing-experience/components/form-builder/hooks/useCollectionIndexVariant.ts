@@ -43,12 +43,5 @@ export const useCollectionIndexVariant = ({
     { enabled: enabled && !!indexPageId },
   )
 
-  const variant = (indexPageContent?.content.page as CollectionPagePageProps)
-    ?.variant
-
-  return variant === "blog"
-    ? "blog"
-    : variant === "collection"
-      ? variant
-      : undefined
+  return (indexPageContent?.content.page as CollectionPagePageProps)?.variant
 }
