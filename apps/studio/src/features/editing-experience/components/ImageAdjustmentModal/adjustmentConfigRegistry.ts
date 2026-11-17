@@ -462,10 +462,10 @@ const buildCollectionThumbnailConfig = (
     cropMode: "custom",
     focalEnabled: true,
     ownsImageFitField: true,
-    // Warn below the recommended 1200×900 (4:3) upload in preUploadCopy, for
-    // both layouts (CollectionCard's 200×160 box, BlogCard's 2:1 frame).
-    maxRenderedWidthPx: 1200,
-    maxRenderedHeightPx: 900,
+    // Warn below the recommended size in preUploadCopy, which differs by
+    // layout (CollectionCard list vs BlogCard).
+    maxRenderedWidthPx: isBlogVariant ? 640 : 400,
+    maxRenderedHeightPx: 320,
     skipRealComponentPreview: true,
     // Neither card changes ratio across breakpoints, so all three preview
     // states share one.
@@ -480,11 +480,13 @@ const buildCollectionThumbnailConfig = (
           tablet: { width: 5, height: 4 },
           desktop: { width: 5, height: 4 },
         }),
-    preUploadCopy:
-      "Recommended 1200 × 900 px (4:3). Use one clear subject centred. It's shown as a small box or a wide strip.",
+    preUploadCopy: isBlogVariant
+      ? "Recommended 640 × 320 px."
+      : "Recommended 400 × 320 px.",
     preUploadLinks: {
-      guideLabel: "thumbnails",
-      templateUrl: "/placeholder_no_image.png",
+      guideLabel: "thumbnail",
+      guideUrl:
+        "https://support.isomer.gov.sg/en/articles/18459803-managing-collection-thumbnails",
     },
   }
 }
