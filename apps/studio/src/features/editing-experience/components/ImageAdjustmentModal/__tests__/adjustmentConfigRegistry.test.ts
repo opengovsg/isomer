@@ -301,7 +301,7 @@ describe("resolveAdjustmentConfig", () => {
         label: "hero:gradient",
         block: { type: "hero", variant: "gradient" },
         fieldName: "backgroundUrl",
-        expectedHeight: 1440,
+        expectedHeight: 1080,
       },
       {
         label: "hero:block",
@@ -313,7 +313,7 @@ describe("resolveAdjustmentConfig", () => {
         label: "hero:largeImage",
         block: { type: "hero", variant: "largeImage" },
         fieldName: "backgroundUrl",
-        expectedHeight: 1280,
+        expectedHeight: 960,
       },
       {
         label: "infopic",
@@ -331,7 +331,7 @@ describe("resolveAdjustmentConfig", () => {
         label: "infocards:cardsWithImages",
         block: { type: "infocards", variant: "cardsWithImages" },
         fieldName: "imageUrl",
-        expectedHeight: 800,
+        expectedHeight: 533,
       },
       {
         label: "infocards:cardsWithFullImages",
@@ -625,6 +625,32 @@ describe("resolveAdjustmentConfig", () => {
         { width: 2, height: 1 },
         { width: 2, height: 1 },
       ])
+    })
+
+    it("uses layout-specific upload copy and blur thresholds", () => {
+      const resolve = (collectionVariant?: "collection" | "blog") =>
+        resolveAdjustmentConfig({
+          block: {},
+          fieldName: "src",
+          context: { isCollectionThumbnail: true, collectionVariant },
+        })!
+      const guideUrl =
+        "https://support.isomer.gov.sg/en/articles/18459803-managing-collection-thumbnails"
+
+      for (const [variant, copy, width] of [
+        ["collection", "Recommended 400 × 320 px.", 400],
+        [undefined, "Recommended 400 × 320 px.", 400],
+        ["blog", "Recommended 640 × 320 px.", 640],
+      ] as const) {
+        const config = resolve(variant)
+        expect(config.preUploadCopy).toBe(copy)
+        expect(config.maxRenderedWidthPx).toBe(width)
+        expect(config.maxRenderedHeightPx).toBe(320)
+        expect(config.preUploadLinks).toEqual({
+          guideLabel: "thumbnail",
+          guideUrl,
+        })
+      }
     })
 
     it("defaults to the 1-column (CollectionCard) layout when the variant is unresolved", () => {
