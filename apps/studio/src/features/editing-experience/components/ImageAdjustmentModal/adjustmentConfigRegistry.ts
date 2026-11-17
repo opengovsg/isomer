@@ -384,11 +384,8 @@ const IMAGE_CONFIG: AdjustmentConfig = {
   imageField: "src",
   cropMode: "custom",
   focalEnabled: false,
-  // Widest the native image renders: the content column is full-width (col-span-12)
-  // just below the `lg` breakpoint, ~943px at a 1023px viewport (above `lg` it
-  // narrows to col-span-9). Round up to 960 so a sharp image at that width doesn't
-  // false-warn while genuinely soft crops below it still do.
-  maxRenderedWidthPx: 960,
+  // Blur warning follows the recommended upload width shown in the banner.
+  maxRenderedWidthPx: 1280,
   // Free-form crop: no fixed ratio, so previews carry no aspectRatio — the
   // caption shows width only and the real render is measured.
   previewStates: [
@@ -397,7 +394,11 @@ const IMAGE_CONFIG: AdjustmentConfig = {
     { id: "desktop", label: "Desktop", viewportWidth: 1280 },
   ],
   preUploadCopy:
-    "You can crop this image to any shape. Use a high-resolution image so the area you keep stays sharp at the size it displays on your page.",
+    "Recommended at least 1280 px wide, any height.",
+  preUploadLinks: {
+    guideLabel: "image",
+    guideUrl: "https://support.isomer.gov.sg/en/articles/10425935-images",
+  },
 }
 
 // ImageGallery (P2b) — array-nested, always letterboxed. Every gallery image
@@ -414,13 +415,9 @@ const IMAGE_GALLERY_CONFIG: AdjustmentConfig = {
   imageField: "src",
   cropMode: "custom",
   focalEnabled: false,
-  // Main slideshow: full content column wide (~943px just below `lg`, round up to
-  // 960) and a fixed 28.5rem = 456px tall, object-contain. Both axes are needed
-  // because contain only upscales when the crop falls short on BOTH — so a wide
-  // landscape or a tall portrait stays sharp and doesn't false-warn, while a
-  // genuinely small crop still does (see computeLowResWarning).
+  // Blur warning follows the recommended upload size shown in the banner.
   maxRenderedWidthPx: 960,
-  maxRenderedHeightPx: 456,
+  maxRenderedHeightPx: 640,
   previewObjectFitFor: () => "contain",
   skipRealComponentPreview: true,
   // object-contain shows the whole image regardless of frame shape. The frame is
@@ -433,7 +430,12 @@ const IMAGE_GALLERY_CONFIG: AdjustmentConfig = {
     desktop: { width: 2, height: 1 },
   }),
   preUploadCopy:
-    "Gallery images are shown in full (letterboxed to fit the frame), never cropped to it. Crop here only to trim parts of the image you don't want to show.",
+    "Recommended 960 × 640 px.",
+  preUploadLinks: {
+    guideLabel: "image gallery",
+    guideUrl:
+      "https://support.isomer.gov.sg/en/articles/12129003-image-gallery",
+  },
 }
 
 // resolveAdjustmentConfig matches these on `type:variant` or bare `type`,
