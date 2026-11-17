@@ -123,8 +123,8 @@ const FOCAL_WIRING_CONFIGS: {
     ],
   },
   {
-    // Not block-type-keyed -- see resolveAdjustmentConfig's isCollectionThumbnail
-    // branch, which short-circuits before the block `type` switch.
+    // Has no block type. resolveAdjustmentConfig handles it before the block
+    // lookup.
     resolve: {
       block: undefined,
       fieldName: "image",

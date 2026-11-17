@@ -110,11 +110,8 @@ export const CardWithoutImage: Story = {
   args: generateArgs({ image: undefined }),
 }
 
-// Image-adjustment focal point (object-position) applied to a cover-fit
-// thumbnail. The subject is pulled towards the top-left, visibly off-centre
-// vs the default object-center crop — the render path the collection
-// thumbnail editor's focal control drives (see CollectionCard's
-// effectiveImageAdjustment).
+// A cover-fit thumbnail with a top-left focal point, so the subject sits
+// off-centre.
 export const WithFocalPoint: Story = {
   args: generateArgs({
     image: {
@@ -129,10 +126,9 @@ export const WithFocalPoint: Story = {
   }),
 }
 
-// Regression: a focal set while imageFit was "cover" must NOT leak through
-// once the thumbnail switches to "Resize image to fit" (contain). Despite a
-// top-left focal, the letterboxed image stays centred (no object-position).
-// Contrast with WithFocalPoint above.
+// Regression: a focal point saved under "cover" must not apply once the
+// thumbnail switches to "Resize image to fit". The letterboxed image stays
+// centred.
 export const ContainIgnoresFocalPoint: Story = {
   args: generateArgs({
     isContainNeeded: true,

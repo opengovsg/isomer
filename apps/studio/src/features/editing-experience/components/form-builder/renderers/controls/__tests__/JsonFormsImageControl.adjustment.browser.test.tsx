@@ -35,9 +35,8 @@ vi.mock("../../../hooks/useAdjustmentConfigForField", () => ({
 vi.mock("~/components/PageEditor/FileAttachment", () => ({
   FileAttachment: () => <div data-testid="file-attachment" />,
 }))
-// No EditorDrawerProvider wraps this test, so useCollectionIndexVariant's
-// queries are always disabled -- stub just enough of the tRPC client shape
-// for its (never-fired) useQuery calls to not blow up on a missing context.
+// useCollectionIndexVariant's queries never fire here. Stub the tRPC client
+// so its useQuery calls don't need a provider.
 vi.mock("~/utils/trpc", () => ({
   trpc: {
     resource: { getParentOf: { useQuery: () => ({ data: undefined }) } },
