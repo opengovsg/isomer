@@ -77,9 +77,8 @@ const FOCAL_WIRING_CONFIGS: {
     ],
   },
   {
-    // Both carousel layouts (block/gradient) render slide images through the
-    // shared CarouselSlides.tsx; HeroCarousel.tsx maps the per-slide schema
-    // field into the slide view. Both must carry it, so both are listed.
+    // CarouselSlides.tsx renders the slide images for both layouts, and
+    // HeroCarousel.tsx maps the schema field into the slide. Both must carry it.
     resolve: {
       block: { type: "hero", variant: "carousel" },
       fieldName: "backgroundUrl",

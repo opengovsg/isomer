@@ -41,13 +41,11 @@ export interface AdjustmentRenderContext {
   collectionVariant?: "collection" | "blog"
 }
 
-// For an array-nested image field, builds the block the real-component
-// preview renders. `editedItem` is the field host with the adjusted image
-// patched in; `fieldHost` is the same item before patching, so a builder can
-// `indexOf` it in the owner's array to find which item it's editing. Return
-// undefined to use the framed-image approximation. `activeIndex` names which
-// item in the returned block should render as "current" for components
-// (e.g. Hero carousel) that only show one item at a time; omit it otherwise.
+// Builds the block the real-component preview renders for an image inside an
+// array. `editedItem` has the adjusted image patched in, and `fieldHost` is the
+// same item before patching, so a builder can find its index in the array.
+// Return undefined to use the framed-image preview. Set `activeIndex` when the
+// component shows one item at a time, like the hero carousel.
 export type BuildSingleItemPreviewBlock = (
   ownerBlock: IsomerComponent,
   editedItem: Record<string, unknown>,
