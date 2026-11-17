@@ -401,8 +401,7 @@ const IMAGE_CONFIG: AdjustmentConfig = {
     { id: "tablet", label: "Tablet", viewportWidth: 768 },
     { id: "desktop", label: "Desktop", viewportWidth: 1280 },
   ],
-  preUploadCopy:
-    "Recommended at least 1280 px wide, any height.",
+  preUploadCopy: "Recommended at least 1280 px wide, any height.",
   preUploadLinks: {
     guideLabel: "image",
     guideUrl: "https://support.isomer.gov.sg/en/articles/10425935-images",
@@ -437,8 +436,7 @@ const IMAGE_GALLERY_CONFIG: AdjustmentConfig = {
     tablet: { width: 3, height: 2 },
     desktop: { width: 2, height: 1 },
   }),
-  preUploadCopy:
-    "Recommended 960 × 640 px.",
+  preUploadCopy: "Recommended 960 × 640 px.",
   preUploadLinks: {
     guideLabel: "image gallery",
     guideUrl:
