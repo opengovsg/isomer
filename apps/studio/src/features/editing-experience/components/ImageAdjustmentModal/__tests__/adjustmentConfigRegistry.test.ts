@@ -195,7 +195,8 @@ describe("resolveAdjustmentConfig", () => {
       const preview = withImages!.buildSingleItemPreviewBlock!(
         block as IsomerComponent,
         editedCard,
-      ) as Record<string, unknown>
+        originalCard,
+      )!.component as Record<string, unknown>
       expect(preview.cards).toEqual([editedCard])
       expect(preview.title).toBe("")
       expect(preview.subtitle).toBeUndefined()
@@ -221,7 +222,8 @@ describe("resolveAdjustmentConfig", () => {
       const preview = withImages?.buildSingleItemPreviewBlock?.(
         block as IsomerComponent,
         editedCard,
-      )
+        cardB,
+      )?.component
       const html = renderBlockHtml(preview, "content")
 
       expect(html.match(/<img/g)).toHaveLength(1)
@@ -244,7 +246,8 @@ describe("resolveAdjustmentConfig", () => {
       const preview = fullImage?.buildSingleItemPreviewBlock?.(
         block as IsomerComponent,
         editedCard,
-      )
+        card,
+      )?.component
       const html = renderBlockHtml(preview, "content")
 
       expect(html).toContain("Real title")
@@ -431,12 +434,15 @@ describe("resolveAdjustmentConfig", () => {
       }
     })
 
-    it("hero carousel previews the edited slide in the real component", () => {
+    it("hero carousel previews the edited slide in the real component, keeping its siblings so the band height still reflects the tallest slide", () => {
+      const first = { title: "First" }
+      const second = { title: "Second" }
+      const third = { title: "Third" }
       const block = {
         type: "hero",
         variant: "carousel",
         carousel: { layout: "gradient" },
-        slides: [{ title: "First" }, { title: "Second" }, { title: "Third" }],
+        slides: [first, second, third],
       }
       const config = resolveAdjustmentConfig({
         block,
@@ -445,10 +451,15 @@ describe("resolveAdjustmentConfig", () => {
       const edited = { title: "Second", backgroundUrl: "/baked.webp" }
 
       expect(config?.skipRealComponentPreview).toBeFalsy()
-      // HeroCarousel renders nothing below two slides, so the slide repeats.
-      expect(
-        config?.buildSingleItemPreviewBlock?.(block as never, edited),
-      ).toMatchObject({ slides: [edited, edited] })
+      const built = config?.buildSingleItemPreviewBlock?.(
+        block as never,
+        edited,
+        second,
+      )
+      expect(built).toMatchObject({
+        component: { slides: [first, edited, third] },
+        activeIndex: 1,
+      })
     })
 
     it("hero carousel preview shapes follow the carousel layout (gradient when absent)", () => {

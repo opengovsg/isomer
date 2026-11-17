@@ -35,18 +35,27 @@ const buildSingleCardPreviewBlock: BuildSingleItemPreviewBlock = (
     label: undefined,
     cards: [editedCard],
   }
-  return preview
+  return { component: preview }
 }
 
-// Builds the carousel block the real-component preview renders. HeroCarousel
-// renders nothing below two slides, so the edited slide appears twice.
+// Builds the carousel block the real-component preview renders. Keeps every
+// slide (not just the edited one): the published carousel's height is set by
+// its tallest slide's content, which only shows up if all slides are there to
+// be measured. `activeIndex` tells HeroCarouselPreviewProvider which slide to
+// display, so the preview still shows the one being edited.
 const buildSingleSlidePreviewBlock: BuildSingleItemPreviewBlock = (
   block,
   slide,
+  fieldHost,
 ) => {
   if (block.type !== "hero" || block.variant !== "carousel") return undefined
   const editedSlide = slide as (typeof block.slides)[number]
-  return { ...block, slides: [editedSlide, editedSlide] }
+  const activeIndex = block.slides.indexOf(
+    fieldHost as (typeof block.slides)[number],
+  )
+  if (activeIndex === -1) return undefined
+  const slides = block.slides.with(activeIndex, editedSlide)
+  return { component: { ...block, slides }, activeIndex }
 }
 
 // The three breakpoint widths every editor preview uses. Only the aspect
@@ -145,17 +154,11 @@ const HERO_BLOCK_CONFIG: AdjustmentConfig = {
   },
 }
 
-// Tier B — full-bleed responsive carousel hero. Each slide's backgroundUrl is
-// rendered (object-cover) by the shared CarouselSlideImages, used by BOTH
-// carousel layouts (block = half-width image panel at lg; gradient = full-bleed
-// with a dark overlay). The editor resolves a single slide's backgroundUrl to
-// the owning carousel block. The thresholds below are shared by both layouts and
-// use the more generous full-bleed geometry (gradient, the widest the image ever
-// renders) so a sharp image doesn't false-warn under either; only the preview
-// shapes follow the block's carousel layout.
-// Focal anchors the subject as the band reshapes across breakpoints; crop is
-// free (custom), exactly like HERO_GRADIENT_CONFIG.
-// The preview renders the edited slide for real, text overlay included.
+// Tier B — full-bleed responsive carousel hero. Both carousel layouts render
+// slides through the same CarouselSlideImages, so the resolution thresholds
+// share gradient's more generous full-bleed geometry (the widest the image
+// ever renders) to avoid a false low-res warning under block; only the
+// preview shapes below follow the block's actual carousel layout.
 const heroCarouselConfig = (block: IsomerComponent): AdjustmentConfig => {
   const isBlockLayout =
     block.type === "hero" &&

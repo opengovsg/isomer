@@ -11,12 +11,9 @@ import { withArgosModes } from "@isomer/storybook-config"
 
 import { HeroCarousel } from "./HeroCarousel"
 
-// End-to-end demo: each carousel slide's per-slide `backgroundUrlImageAdjustment`
-// schema field flows through HeroCarousel -> slideViews -> the shared
-// CarouselSlideImages -> ImageClientWithAdjustment -> object-position. Proven for
-// BOTH layouts (block + gradient), since both render slide images through the
-// same CarouselSlideImages component. Each slide carries a distinct focal point,
-// so flipping between slides shows the focal actually biting on the hero band.
+// Each slide's `backgroundUrlImageAdjustment` flows through HeroCarousel ->
+// CarouselSlideImages -> object-position, for both layouts (block + gradient).
+// Slides carry distinct focal points so switching between them is visible.
 const meta: Meta<typeof HeroCarousel> = {
   title: "Next/Components/Hero/HeroCarousel/ImageAdjustment",
   component: HeroCarousel,
