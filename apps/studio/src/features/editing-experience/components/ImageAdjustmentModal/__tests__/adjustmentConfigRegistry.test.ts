@@ -541,12 +541,8 @@ describe("resolveAdjustmentConfig", () => {
   })
 
   describe("collection item thumbnail (page-level, context-resolved)", () => {
-    // The page-level thumbnail has no block-type ancestor, so it's never
-    // keyed off `block` -- it's resolved purely from the
-    // `isCollectionThumbnail` context flag (set by useAdjustmentConfigForField
-    // from the editor's resource type, since the field's own data has no
-    // discriminator to distinguish a collection item from any other page
-    // that happens to compose the same `image` field shape).
+    // The page thumbnail has no block, so only the isCollectionThumbnail
+    // context flag resolves it.
     it("resolves when isCollectionThumbnail is set, regardless of block shape", () => {
       const config = resolveAdjustmentConfig({
         block: { layout: "article" },
@@ -561,10 +557,8 @@ describe("resolveAdjustmentConfig", () => {
     })
 
     it("does not resolve for a similar-looking page without the collection-item signal", () => {
-      // A content/index/database page composes the identical `image` field
-      // shape for its own unrelated page thumbnail -- without the context
-      // flag (i.e. not a confirmed CollectionPage/CollectionLink resource),
-      // it must not light up the collection-item config.
+      // Content, index and database pages have the same `image` field for
+      // their own thumbnail. Without the flag they must not resolve.
       expect(
         resolveAdjustmentConfig({
           block: { layout: "content" },
@@ -580,10 +574,9 @@ describe("resolveAdjustmentConfig", () => {
       ).toBeUndefined()
     })
 
-    // The homepage CollectionBlock embed also consumes this image, but its
-    // frame depends on the live collection item count at render time -- this
-    // editor genuinely cannot know that, so it's out of scope: the preview
-    // only ever shows the collection's own index-page listing.
+    // The homepage CollectionBlock also shows this image, but its frame
+    // depends on the live item count. The preview only shows the collection's
+    // own listing.
     const aspectRatiosFor = (config: AdjustmentConfig) =>
       config.previewStates.map((s) => s.aspectRatio)
 

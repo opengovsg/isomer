@@ -508,36 +508,13 @@ const IMAGE_GALLERY_CONFIG: AdjustmentConfig = {
   },
 }
 
-// Collection item thumbnail (`page.image`) — a page-level field, not a
-// content-block field, so it has no block `type` discriminator for the
-// registry to key off (see resolveAdjustmentConfig's isCollectionThumbnail
-// branch). The same source image also feeds a homepage CollectionBlock
-// embed, whose frame depends on the live collection item count at render
-// time (3:2, or 2:1 at desktop for exactly 2 items) — genuinely unknowable
-// here, and out of scope for this editor; the preview only reflects the
-// collection's own index-page listing.
-// That listing's frame IS knowable: the collection's index page already has
-// a "Layout" setting (JsonFormsCollectionVariantControl, format
-// "collection-variant") picking CollectionCard ("1-column", a fixed 200x160
-// / 5:4 box) or BlogCard ("2-column", a fixed aspect-[2/1] box) — see
-// CollectionResults.tsx. useAdjustmentConfigForField fetches that setting
-// and passes it as `collectionVariant`, so the preview mimics every other
-// component here: one resolved frame, no version picker. Unresolved
-// (query still loading, or this control somehow renders outside a page
-// editor) falls back to the schema's own "collection" (1-column) default.
-// ChildrenPages was considered but ruled out: it only ever reads the
-// immediate children of the page it's placed on, and a collection's items
-// are children of the Collection resource, one level below that — so a
-// ChildrenPages block can never reach an individual item's thumbnail (at
-// most it would show the Collection's own page.image, a different field).
-// cropMode is "custom" (not a locked ratio) and ownsImageFitField is set so
-// editors can choose "Resize image to fit" (contain, no cropping) instead of
-// the default cover crop — same fit/fill toggle InfoCards already offers,
-// with focal hidden under "contain" for the same reason (nothing to anchor
-// once the image is letterboxed). The real render context is a different
-// page (the collection index) than the one being edited — skip the
-// real-component preview in favour of the framed approximation, as
-// ImageGallery does for the same reason.
+// Collection item thumbnail (`page.image`). It is a page-level field with no
+// block type, so resolveAdjustmentConfig handles it before the block lookup.
+// The preview shows the collection's own listing only: a 5:4 CollectionCard
+// for the "collection" layout, a 2:1 BlogCard for "blog". The homepage
+// CollectionBlock frame depends on the live item count, so it is not previewed.
+// The listing renders on a different page, so this skips the real-component
+// preview like ImageGallery does. Fit and fill work as on InfoCards.
 const buildCollectionThumbnailConfig = (
   collectionVariant?: "collection" | "blog",
 ): AdjustmentConfig => {
@@ -554,9 +531,8 @@ const buildCollectionThumbnailConfig = (
     maxRenderedWidthPx: 1200,
     maxRenderedHeightPx: 900,
     skipRealComponentPreview: true,
-    // Identical ratio at every breakpoint either way (CollectionCard's
-    // `h-[160px] w-[200px]` and BlogCard's `aspect-[2/1]` both carry no
-    // md:/lg: override), so all three preview states share one ratio.
+    // Neither card changes ratio across breakpoints, so all three preview
+    // states share one.
     previewStates: isBlogVariant
       ? responsivePreviewStates({
           mobile: { width: 2, height: 1 },
@@ -608,10 +584,8 @@ export function resolveAdjustmentConfig(args: {
   fieldName: string
   context?: AdjustmentRenderContext
 }): AdjustmentConfig | undefined {
-  // Page-level thumbnail field (no block-type ancestor) on a confirmed
-  // collection item — see buildCollectionThumbnailConfig. Checked before the
-  // block-type lookup below since this field's host has no `type`
-  // discriminator for that lookup to key off.
+  // The collection thumbnail has no block type, so resolve it before the
+  // block lookup.
   if (args.context?.isCollectionThumbnail)
     return buildCollectionThumbnailConfig(args.context.collectionVariant)
 

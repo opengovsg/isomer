@@ -110,8 +110,7 @@ export const CardWithoutImage: Story = {
   args: generateArgs({ image: undefined }),
 }
 
-// Image-adjustment focal point (object-position) applied to a cover-fit
-// thumbnail. See CollectionCard's identical story for the full rationale.
+// A cover-fit thumbnail with a top-left focal point.
 export const WithFocalPoint: Story = {
   args: generateArgs({
     image: {
@@ -126,8 +125,8 @@ export const WithFocalPoint: Story = {
   }),
 }
 
-// Regression: a focal set while imageFit was "cover" must NOT leak through
-// once the thumbnail switches to "Resize image to fit" (contain).
+// Regression: a focal point saved under "cover" must not apply once the
+// thumbnail switches to "Resize image to fit".
 export const ContainIgnoresFocalPoint: Story = {
   args: generateArgs({
     isContainNeeded: true,

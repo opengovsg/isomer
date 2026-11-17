@@ -660,8 +660,8 @@ export const getLocalisedSitemap = async (
   const thumbnailSql = sql<string>`
         published.content->'page'->'image'->> 'src'
     `.as("thumbnail")
-  // Fit + focal/crop metadata for the thumbnail above -- see CollectionCard/
-  // BlogCard's effectiveImageAdjustment for how these are applied at render.
+  // Fit and adjustment metadata for the thumbnail above. CollectionCard and
+  // BlogCard apply them at render.
   const thumbnailImageFitSql = sql<"cover" | "contain" | null>`
         published.content->'page'->'image'->> 'imageFit'
     `.as("thumbnailImageFit")

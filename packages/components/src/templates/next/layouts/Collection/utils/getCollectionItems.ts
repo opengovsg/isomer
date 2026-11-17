@@ -37,10 +37,8 @@ const getItemImage = ({
     return undefined
   }
 
-  // If the item has an image, we will show the item's image. isContainNeeded
-  // is derived from the editor's own imageFit choice here (same cover/contain
-  // split InfoCards offers) -- the fallback branches below set it directly
-  // since the site logo is always letterboxed.
+  // Show the item's own image. isContainNeeded follows the editor's imageFit
+  // choice. The fallbacks below set it directly.
   if (item.image?.src) {
     return {
       src: item.image.src,
