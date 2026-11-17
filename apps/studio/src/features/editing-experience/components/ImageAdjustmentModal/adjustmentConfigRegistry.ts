@@ -38,11 +38,9 @@ const buildSingleCardPreviewBlock: BuildSingleItemPreviewBlock = (
   return { component: preview }
 }
 
-// Builds the carousel block the real-component preview renders. Keeps every
-// slide (not just the edited one): the published carousel's height is set by
-// its tallest slide's content, which only shows up if all slides are there to
-// be measured. `activeIndex` tells HeroCarouselPreviewProvider which slide to
-// display, so the preview still shows the one being edited.
+// Builds the carousel block the real-component preview renders. It keeps every
+// slide because the tallest slide sets the carousel's height. `activeIndex`
+// tells the preview which slide to show.
 const buildSingleSlidePreviewBlock: BuildSingleItemPreviewBlock = (
   block,
   slide,
@@ -154,18 +152,13 @@ const HERO_BLOCK_CONFIG: AdjustmentConfig = {
   },
 }
 
-// Tier B — full-bleed responsive carousel hero. Both carousel layouts render
-// slides through the same CarouselSlideImages, so the resolution thresholds
-// share gradient's more generous full-bleed geometry (the widest the image
-// ever renders) to avoid a false low-res warning under block; only the
-// preview shapes below follow the block's actual carousel layout.
+// Hero carousel. Preview shapes, upload guidance and the low-res warning size
+// follow the carousel's layout, block or gradient.
 const heroCarouselConfig = (block: IsomerComponent): AdjustmentConfig => {
   const isBlockLayout =
     block.type === "hero" &&
     block.variant === "carousel" &&
     block.carousel?.layout === "block"
-  // Slides use the same upload guidance and warning size as the standalone
-  // hero variant their layout mirrors.
   const layoutConfig = isBlockLayout ? HERO_BLOCK_CONFIG : HERO_GRADIENT_CONFIG
   return {
     componentType: "hero:carousel",
@@ -174,11 +167,9 @@ const heroCarouselConfig = (block: IsomerComponent): AdjustmentConfig => {
     focalEnabled: true,
     maxRenderedWidthPx: layoutConfig.maxRenderedWidthPx,
     maxRenderedHeightPx: layoutConfig.maxRenderedHeightPx,
-    // Only a pre-measure guess for the real preview. Gradient (default):
-    // closest common ratio to each hero band (375×240→16:10, 768×360→2:1,
-    // 1280×500→5:2), as in HERO_GRADIENT_CONFIG. Block: imageColumn is h-80 below
-    // lg and half-width at lg with min-h 500 (375×320→7:6, 768×320→12:5,
-    // 640×500→5:4).
+    // Pre-measure guesses only. Gradient: 16:10, 2:1 and 5:2, as in
+    // HERO_GRADIENT_CONFIG. Block: the image column is h-80 below lg and
+    // half-width with min-h 500 at lg, giving 7:6, 12:5 and 5:4.
     previewStates: responsivePreviewStates(
       isBlockLayout
         ? {
@@ -553,12 +544,10 @@ const buildCollectionThumbnailConfig = (
   }
 }
 
-// Every static config, matched by resolveAdjustmentConfig on
-// `type:variant` (or bare `type`) plus the image field name. The collection
-// thumbnail (no block `type`) and the hero carousel (preview shapes follow
-// its layout) are resolved explicitly before this lookup. The first match
-// wins, so a `type:variant` entry must come before a bare `type` entry for the
-// same type.
+// Static configs. resolveAdjustmentConfig matches on `type:variant` or bare
+// `type`, plus the image field name. It resolves the collection thumbnail and
+// the hero carousel before this lookup. The first match wins, so list a
+// `type:variant` entry before the bare `type` one.
 export const CONFIGS: AdjustmentConfig[] = [
   IMAGE_CONFIG,
   IMAGE_GALLERY_CONFIG,

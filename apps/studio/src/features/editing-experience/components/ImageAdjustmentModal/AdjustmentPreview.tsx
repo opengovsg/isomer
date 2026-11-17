@@ -29,8 +29,7 @@ import type {
 } from "./AdjustmentConfig"
 import { chooseBakeMime, fetchImageBlob } from "./useSaveImageAdjustment"
 
-// Pins a hero carousel to the slide being edited (first slide by default).
-// Other components ignore this.
+// Holds a hero carousel on the slide being edited. Other components ignore it.
 const heroCarouselPreviewFor = (activeIndex = 0) => ({
   activeIndex,
   setActiveIndex: () => undefined,

@@ -11,9 +11,8 @@ import { withArgosModes } from "@isomer/storybook-config"
 
 import { HeroCarousel } from "./HeroCarousel"
 
-// Each slide's `backgroundUrlImageAdjustment` flows through HeroCarousel ->
-// CarouselSlideImages -> object-position, for both layouts (block + gradient).
-// Slides carry distinct focal points so switching between them is visible.
+// Each slide's `backgroundUrlImageAdjustment` reaches object-position through
+// HeroCarousel and CarouselSlideImages, in both layouts.
 const meta: Meta<typeof HeroCarousel> = {
   title: "Next/Components/Hero/HeroCarousel/ImageAdjustment",
   component: HeroCarousel,
@@ -26,17 +25,16 @@ const meta: Meta<typeof HeroCarousel> = {
 export default meta
 type Story = StoryObj<typeof HeroCarousel>
 
-// A full, valid imageAdjustment object. crop is baked into the src in
-// production, so here it is identity; only `focal` acts at render time.
+// Production bakes the crop into the src, so crop is the full image here and
+// only `focal` acts at render time.
 const adjustmentWithFocal = (x: number, y: number): ImageAdjustment => ({
   crop: { x: 0, y: 0, width: 1, height: 1 },
   focal: { x, y },
   originalKey: "1/00000000-0000-0000-0000-000000000000/original.jpg",
 })
 
-// Two slides (meets HERO_CAROUSEL_SLIDE_LIMITS.minItems), each with a distinct
-// focal point so the first slide pins the top-left and the second the
-// bottom-right — proving the per-slide adjustment is honoured independently.
+// Two slides, the minimum. The first pins the top-left and the second the
+// bottom-right, so each slide's focal point is visible.
 const slidesWithFocal = [
   {
     backgroundUrl:
