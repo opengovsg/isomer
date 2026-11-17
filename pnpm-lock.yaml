@@ -541,11 +541,11 @@ catalogs:
       version: 2.22.1
   playwright:
     '@playwright/test':
-      specifier: ^1.64.0
-      version: 1.64.1
+      specifier: ^1.65.0
+      version: 1.65.1
     playwright:
-      specifier: ^1.64.0
-      version: 1.64.1
+      specifier: ^1.65.0
+      version: 1.65.1
   prisma:
     '@prisma/adapter-pg':
       specifier: 7.10.1
@@ -981,16 +981,16 @@ importers:
         version: 3.32.2(@floating-ui/dom@1.8.0)(@tiptap/core@3.32.2(@tiptap/pm@3.32.2))(@tiptap/pm@3.32.2)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@trpc/client':
         specifier: catalog:trpc
-        version: 11.24.0(@trpc/server@11.24.0(@types/ws@8.18.1)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.64.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(typescript@6.0.3))(typescript@6.0.3)
+        version: 11.24.0(@trpc/server@11.24.0(@types/ws@8.18.1)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.65.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(typescript@6.0.3))(typescript@6.0.3)
       '@trpc/next':
         specifier: catalog:trpc
-        version: 11.24.0(4d2f4edd4b026f5a632d79fbeb4dfea2)
+        version: 11.24.0(493479e641b6773febfca71a6c151688)
       '@trpc/react-query':
         specifier: catalog:trpc
-        version: 11.24.0(@tanstack/react-query@5.107.1(@types/react@18.3.31)(react@18.3.1))(@trpc/client@11.24.0(@trpc/server@11.24.0(@types/ws@8.18.1)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.64.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(typescript@6.0.3))(typescript@6.0.3))(@trpc/server@11.24.0(@types/ws@8.18.1)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.64.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(typescript@6.0.3))(react@18.3.1)(typescript@6.0.3)
+        version: 11.24.0(@tanstack/react-query@5.107.1(@types/react@18.3.31)(react@18.3.1))(@trpc/client@11.24.0(@trpc/server@11.24.0(@types/ws@8.18.1)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.65.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(typescript@6.0.3))(typescript@6.0.3))(@trpc/server@11.24.0(@types/ws@8.18.1)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.65.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(typescript@6.0.3))(react@18.3.1)(typescript@6.0.3)
       '@trpc/server':
         specifier: catalog:trpc
-        version: 11.24.0(@types/ws@8.18.1)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.64.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(typescript@6.0.3)
+        version: 11.24.0(@types/ws@8.18.1)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.65.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(typescript@6.0.3)
       '@uidotdev/usehooks':
         specifier: 'catalog:'
         version: 2.4.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -1056,7 +1056,7 @@ importers:
         version: 6.0.2
       next:
         specifier: 'catalog:'
-        version: 16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.64.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1)
+        version: 16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.65.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1)
       openid-client:
         specifier: 'catalog:'
         version: 5.7.1
@@ -1135,7 +1135,7 @@ importers:
         version: 6.11.0(@types/node@26.6.6)(supports-color@8.1.1)
       '@argos-ci/storybook':
         specifier: catalog:argos
-        version: 6.4.4(@types/node@26.6.6)(@vitest/browser-playwright@5.1.0)(@vitest/browser@5.1.0(msw@3.0.3(@types/node@26.6.6)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3)))(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3))(vitest@5.1.0))(playwright@1.64.1)(storybook@10.6.6(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(supports-color@8.1.1)(vitest@5.1.0)
+        version: 6.4.4(@types/node@26.6.6)(@vitest/browser-playwright@5.1.0)(@vitest/browser@5.1.0(msw@3.0.3(@types/node@26.6.6)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3)))(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3))(vitest@5.1.0))(playwright@1.65.1)(storybook@10.6.6(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(supports-color@8.1.1)(vitest@5.1.0)
       '@babel/plugin-transform-class-properties':
         specifier: catalog:babel
         version: 8.0.1(@babel/core@8.0.1)
@@ -1165,7 +1165,7 @@ importers:
         version: link:../../tooling/typescript
       '@playwright/test':
         specifier: catalog:playwright
-        version: 1.64.1
+        version: 1.65.1
       '@storybook/addon-a11y':
         specifier: catalog:storybook
         version: 10.6.6(storybook@10.6.6(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
@@ -1183,7 +1183,7 @@ importers:
         version: 10.6.6(@vitest/browser-playwright@5.1.0)(@vitest/browser@5.1.0(msw@3.0.3(@types/node@26.6.6)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3)))(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3))(vitest@5.1.0))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@10.6.6(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(vitest@5.1.0)
       '@storybook/nextjs-vite':
         specifier: catalog:storybook
-        version: 10.6.6(@babel/core@8.0.1)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(babel-plugin-macros@3.1.0)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.64.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(rollup@4.60.1)(storybook@10.6.6(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3))
+        version: 10.6.6(@babel/core@8.0.1)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(babel-plugin-macros@3.1.0)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.65.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(rollup@4.60.1)(storybook@10.6.6(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3))
       '@testing-library/react':
         specifier: 'catalog:'
         version: 16.3.3(@testing-library/dom@10.4.1)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -1216,7 +1216,7 @@ importers:
         version: 7.0.0-dev.20260707.2
       '@vitest/browser-playwright':
         specifier: catalog:vitest
-        version: 5.1.0(msw@3.0.3(@types/node@26.6.6)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3)))(playwright@1.64.1)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3))(vitest@5.1.0)
+        version: 5.1.0(msw@3.0.3(@types/node@26.6.6)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3)))(playwright@1.65.1)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3))(vitest@5.1.0)
       '@vitest/coverage-istanbul':
         specifier: catalog:vitest
         version: 5.1.0(vitest@5.1.0)
@@ -1249,7 +1249,7 @@ importers:
         version: 3.0.3(msw@3.0.3(@types/node@26.6.6)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3)))(storybook@10.6.6(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
       msw-trpc:
         specifier: 'catalog:'
-        version: 2.0.1(@trpc/server@11.24.0(@types/ws@8.18.1)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.64.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(typescript@6.0.3))(msw@3.0.3(@types/node@26.6.6)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3)))(typescript@6.0.3)
+        version: 2.0.1(@trpc/server@11.24.0(@types/ws@8.18.1)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.65.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(typescript@6.0.3))(msw@3.0.3(@types/node@26.6.6)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3)))(typescript@6.0.3)
       node-mocks-http:
         specifier: 'catalog:'
         version: 1.18.1(@types/node@26.6.6)
@@ -1261,7 +1261,7 @@ importers:
         version: 2.22.1(pg@8.23.1)
       playwright:
         specifier: catalog:playwright
-        version: 1.64.1
+        version: 1.65.1
       postcss:
         specifier: 'catalog:'
         version: 8.5.32
@@ -1480,7 +1480,7 @@ importers:
         version: 6.11.0(@types/node@26.5.1)(supports-color@8.1.1)
       '@argos-ci/storybook':
         specifier: catalog:argos
-        version: 6.4.4(@types/node@26.5.1)(@vitest/browser-playwright@5.1.0)(@vitest/browser@5.1.0(msw@3.0.3(@types/node@26.5.1)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3)))(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3))(vitest@5.1.0))(playwright@1.64.1)(storybook@10.6.6(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(supports-color@8.1.1)(vitest@5.1.0)
+        version: 6.4.4(@types/node@26.5.1)(@vitest/browser-playwright@5.1.0)(@vitest/browser@5.1.0(msw@3.0.3(@types/node@26.5.1)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3)))(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3))(vitest@5.1.0))(playwright@1.65.1)(storybook@10.6.6(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(supports-color@8.1.1)(vitest@5.1.0)
       '@isomer/oxlint-config':
         specifier: workspace:*
         version: link:../../tooling/oxlint
@@ -1528,7 +1528,7 @@ importers:
         version: 6.2.1(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3))
       '@vitest/browser-playwright':
         specifier: catalog:vitest
-        version: 5.1.0(msw@3.0.3(@types/node@26.5.1)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3)))(playwright@1.64.1)(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3))(vitest@5.1.0)
+        version: 5.1.0(msw@3.0.3(@types/node@26.5.1)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3)))(playwright@1.65.1)(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3))(vitest@5.1.0)
       '@vitest/coverage-istanbul':
         specifier: catalog:vitest
         version: 5.1.0(vitest@5.1.0)
@@ -1555,7 +1555,7 @@ importers:
         version: 9.0.4
       playwright:
         specifier: catalog:playwright
-        version: 1.64.1
+        version: 1.65.1
       postcss:
         specifier: 'catalog:'
         version: 8.5.32
@@ -5411,8 +5411,8 @@ packages:
     engines: {node: '>=20'}
     hasBin: true
 
-  '@playwright/test@1.64.1':
-    resolution: {integrity: sha512-IaYGml/nSOiZWROfPtuIL7neuu9qDOZ3TNvNljUIrhDMxiGTgPjzj/g9p9RxpS2tSepPDRY+UwAaEeiKtUvIAg==}
+  '@playwright/test@1.65.1':
+    resolution: {integrity: sha512-y+NCIRm2LvY4slUVWvGh1nujJ8RF/hEisIsq2mtUPgdQC4L701bq5hZGMhrpeXjACvwvO9tj5dJqhvM6TP9lbw==}
     engines: {node: '>=20'}
     hasBin: true
 
@@ -10263,8 +10263,8 @@ packages:
     engines: {node: '>=20'}
     hasBin: true
 
-  playwright-core@1.64.1:
-    resolution: {integrity: sha512-BC4s8y6SEVA6Q1rSxZTto8hI1KUI3xXlHGZgvGqP4IqPdI/a6FX9H29IDNz7vKo9l21b6LfYosScPL6M3xxyDQ==}
+  playwright-core@1.65.1:
+    resolution: {integrity: sha512-hqPpz7blSMPxWVdoeE1yiBSzXsKiVOd2k+kjCvmUywD2GPO2Dd9HfcWnq9NN0GHbNZDFgZ9JfBFr+X5/BLo0qw==}
     engines: {node: '>=20'}
     hasBin: true
 
@@ -10273,8 +10273,8 @@ packages:
     engines: {node: '>=20'}
     hasBin: true
 
-  playwright@1.64.1:
-    resolution: {integrity: sha512-HCrVhHr5QQuwYoswEUGTb7gGp522yflbv/ST8nF4sFWGuLjQCt17Q/EubpGGSNKYn1tsTCPZxqHhHCfVURu7UA==}
+  playwright@1.65.1:
+    resolution: {integrity: sha512-vJ1FuoOrNwOKHUIVEvSt3jT1L+wjjDpwhwIstKtfvTh8XIG4FG4bIFuvNdMxi81LGfAhUgUZleVFaOLY4RIUUw==}
     engines: {node: '>=20'}
     hasBin: true
 
@@ -12551,12 +12551,12 @@ snapshots:
       - '@types/node'
       - supports-color
 
-  '@argos-ci/storybook@6.4.4(@types/node@26.5.1)(@vitest/browser-playwright@5.1.0)(@vitest/browser@5.1.0(msw@3.0.3(@types/node@26.5.1)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3)))(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3))(vitest@5.1.0))(playwright@1.64.1)(storybook@10.6.6(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(supports-color@8.1.1)(vitest@5.1.0)':
+  '@argos-ci/storybook@6.4.4(@types/node@26.5.1)(@vitest/browser-playwright@5.1.0)(@vitest/browser@5.1.0(msw@3.0.3(@types/node@26.5.1)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3)))(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3))(vitest@5.1.0))(playwright@1.65.1)(storybook@10.6.6(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(supports-color@8.1.1)(vitest@5.1.0)':
     dependencies:
       '@argos-ci/core': 6.8.8(@types/node@26.5.1)(supports-color@8.1.1)
       '@argos-ci/playwright': 7.8.0(@types/node@26.5.1)(supports-color@8.1.1)
       '@argos-ci/util': 4.2.3
-      '@argos-ci/vitest': 0.9.0(@types/node@26.5.1)(@vitest/browser-playwright@5.1.0)(@vitest/browser@5.1.0(msw@3.0.3(@types/node@26.5.1)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3)))(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3))(vitest@5.1.0))(playwright@1.64.1)(supports-color@8.1.1)(vitest@5.1.0)
+      '@argos-ci/vitest': 0.9.0(@types/node@26.5.1)(@vitest/browser-playwright@5.1.0)(@vitest/browser@5.1.0(msw@3.0.3(@types/node@26.5.1)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3)))(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3))(vitest@5.1.0))(playwright@1.65.1)(supports-color@8.1.1)(vitest@5.1.0)
       storybook: 10.6.6(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
     transitivePeerDependencies:
       - '@types/node'
@@ -12566,12 +12566,12 @@ snapshots:
       - supports-color
       - vitest
 
-  '@argos-ci/storybook@6.4.4(@types/node@26.6.6)(@vitest/browser-playwright@5.1.0)(@vitest/browser@5.1.0(msw@3.0.3(@types/node@26.6.6)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3)))(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3))(vitest@5.1.0))(playwright@1.64.1)(storybook@10.6.6(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(supports-color@8.1.1)(vitest@5.1.0)':
+  '@argos-ci/storybook@6.4.4(@types/node@26.6.6)(@vitest/browser-playwright@5.1.0)(@vitest/browser@5.1.0(msw@3.0.3(@types/node@26.6.6)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3)))(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3))(vitest@5.1.0))(playwright@1.65.1)(storybook@10.6.6(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(supports-color@8.1.1)(vitest@5.1.0)':
     dependencies:
       '@argos-ci/core': 6.8.8(@types/node@26.6.6)(supports-color@8.1.1)
       '@argos-ci/playwright': 7.8.0(@types/node@26.6.6)(supports-color@8.1.1)
       '@argos-ci/util': 4.2.3
-      '@argos-ci/vitest': 0.9.0(@types/node@26.6.6)(@vitest/browser-playwright@5.1.0)(@vitest/browser@5.1.0(msw@3.0.3(@types/node@26.6.6)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3)))(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3))(vitest@5.1.0))(playwright@1.64.1)(supports-color@8.1.1)(vitest@5.1.0)
+      '@argos-ci/vitest': 0.9.0(@types/node@26.6.6)(@vitest/browser-playwright@5.1.0)(@vitest/browser@5.1.0(msw@3.0.3(@types/node@26.6.6)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3)))(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3))(vitest@5.1.0))(playwright@1.65.1)(supports-color@8.1.1)(vitest@5.1.0)
       storybook: 10.6.6(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
     transitivePeerDependencies:
       - '@types/node'
@@ -12583,29 +12583,29 @@ snapshots:
 
   '@argos-ci/util@4.2.3': {}
 
-  '@argos-ci/vitest@0.9.0(@types/node@26.5.1)(@vitest/browser-playwright@5.1.0)(@vitest/browser@5.1.0(msw@3.0.3(@types/node@26.5.1)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3)))(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3))(vitest@5.1.0))(playwright@1.64.1)(supports-color@8.1.1)(vitest@5.1.0)':
+  '@argos-ci/vitest@0.9.0(@types/node@26.5.1)(@vitest/browser-playwright@5.1.0)(@vitest/browser@5.1.0(msw@3.0.3(@types/node@26.5.1)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3)))(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3))(vitest@5.1.0))(playwright@1.65.1)(supports-color@8.1.1)(vitest@5.1.0)':
     dependencies:
       '@argos-ci/browser': 6.6.0
       '@argos-ci/core': 6.8.8(@types/node@26.5.1)(supports-color@8.1.1)
       '@argos-ci/playwright': 7.8.0(@types/node@26.5.1)(supports-color@8.1.1)
       '@argos-ci/util': 4.2.3
       '@vitest/browser': 5.1.0(msw@3.0.3(@types/node@26.5.1)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3)))(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3))(vitest@5.1.0)
-      '@vitest/browser-playwright': 5.1.0(msw@3.0.3(@types/node@26.5.1)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3)))(playwright@1.64.1)(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3))(vitest@5.1.0)
-      playwright: 1.64.1
+      '@vitest/browser-playwright': 5.1.0(msw@3.0.3(@types/node@26.5.1)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3)))(playwright@1.65.1)(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3))(vitest@5.1.0)
+      playwright: 1.65.1
       vitest: 5.1.0(@opentelemetry/api@1.9.1)(@types/node@26.5.1)(@vitest/browser-playwright@5.1.0)(@vitest/coverage-istanbul@5.1.0)(@vitest/ui@5.1.0)(jsdom@30.0.1(@noble/hashes@2.2.0))(msw@3.0.3(@types/node@26.5.1)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3)))(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3))
     transitivePeerDependencies:
       - '@types/node'
       - supports-color
 
-  '@argos-ci/vitest@0.9.0(@types/node@26.6.6)(@vitest/browser-playwright@5.1.0)(@vitest/browser@5.1.0(msw@3.0.3(@types/node@26.6.6)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3)))(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3))(vitest@5.1.0))(playwright@1.64.1)(supports-color@8.1.1)(vitest@5.1.0)':
+  '@argos-ci/vitest@0.9.0(@types/node@26.6.6)(@vitest/browser-playwright@5.1.0)(@vitest/browser@5.1.0(msw@3.0.3(@types/node@26.6.6)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3)))(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3))(vitest@5.1.0))(playwright@1.65.1)(supports-color@8.1.1)(vitest@5.1.0)':
     dependencies:
       '@argos-ci/browser': 6.6.0
       '@argos-ci/core': 6.8.8(@types/node@26.6.6)(supports-color@8.1.1)
       '@argos-ci/playwright': 7.8.0(@types/node@26.6.6)(supports-color@8.1.1)
       '@argos-ci/util': 4.2.3
       '@vitest/browser': 5.1.0(msw@3.0.3(@types/node@26.6.6)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3)))(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3))(vitest@5.1.0)
-      '@vitest/browser-playwright': 5.1.0(msw@3.0.3(@types/node@26.6.6)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3)))(playwright@1.64.1)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3))(vitest@5.1.0)
-      playwright: 1.64.1
+      '@vitest/browser-playwright': 5.1.0(msw@3.0.3(@types/node@26.6.6)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3)))(playwright@1.65.1)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3))(vitest@5.1.0)
+      playwright: 1.65.1
       vitest: 5.1.0(@opentelemetry/api@1.9.1)(@types/node@26.6.6)(@vitest/browser-playwright@5.1.0)(@vitest/coverage-istanbul@5.1.0)(@vitest/ui@5.1.0)(jsdom@30.1.3(@noble/hashes@2.2.0))(msw@3.0.3(@types/node@26.6.6)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3)))(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3))
     transitivePeerDependencies:
       - '@types/node'
@@ -15752,9 +15752,9 @@ snapshots:
       playwright: 1.62.1
     optional: true
 
-  '@playwright/test@1.64.1':
+  '@playwright/test@1.65.1':
     dependencies:
-      playwright: 1.64.1
+      playwright: 1.65.1
 
   '@pnpm/config.env-replace@1.1.0': {}
 
@@ -16433,7 +16433,7 @@ snapshots:
       storybook: 10.6.6(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
     optionalDependencies:
       '@vitest/browser': 5.1.0(msw@3.0.3(@types/node@26.5.1)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3)))(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3))(vitest@5.1.0)
-      '@vitest/browser-playwright': 5.1.0(msw@3.0.3(@types/node@26.5.1)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3)))(playwright@1.64.1)(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3))(vitest@5.1.0)
+      '@vitest/browser-playwright': 5.1.0(msw@3.0.3(@types/node@26.5.1)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3)))(playwright@1.65.1)(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3))(vitest@5.1.0)
       vitest: 5.1.0(@opentelemetry/api@1.9.1)(@types/node@26.5.1)(@vitest/browser-playwright@5.1.0)(@vitest/coverage-istanbul@5.1.0)(@vitest/ui@5.1.0)(jsdom@30.0.1(@noble/hashes@2.2.0))(msw@3.0.3(@types/node@26.5.1)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3)))(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3))
     transitivePeerDependencies:
       - react
@@ -16446,7 +16446,7 @@ snapshots:
       storybook: 10.6.6(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
     optionalDependencies:
       '@vitest/browser': 5.1.0(msw@3.0.3(@types/node@26.6.6)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3)))(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3))(vitest@5.1.0)
-      '@vitest/browser-playwright': 5.1.0(msw@3.0.3(@types/node@26.6.6)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3)))(playwright@1.64.1)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3))(vitest@5.1.0)
+      '@vitest/browser-playwright': 5.1.0(msw@3.0.3(@types/node@26.6.6)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3)))(playwright@1.65.1)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3))(vitest@5.1.0)
       vitest: 5.1.0(@opentelemetry/api@1.9.1)(@types/node@26.6.6)(@vitest/browser-playwright@5.1.0)(@vitest/coverage-istanbul@5.1.0)(@vitest/ui@5.1.0)(jsdom@30.1.3(@noble/hashes@2.2.0))(msw@3.0.3(@types/node@26.6.6)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3)))(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3))
     transitivePeerDependencies:
       - react
@@ -16471,18 +16471,18 @@ snapshots:
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
 
-  '@storybook/nextjs-vite@10.6.6(@babel/core@8.0.1)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(babel-plugin-macros@3.1.0)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.64.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(rollup@4.60.1)(storybook@10.6.6(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3))':
+  '@storybook/nextjs-vite@10.6.6(@babel/core@8.0.1)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(babel-plugin-macros@3.1.0)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.65.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(rollup@4.60.1)(storybook@10.6.6(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3))':
     dependencies:
       '@storybook/builder-vite': 10.6.6(storybook@10.6.6(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3))
       '@storybook/react': 10.6.6(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@10.6.6(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(supports-color@8.1.1)(typescript@6.0.3)
       '@storybook/react-vite': 10.6.6(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(rollup@4.60.1)(storybook@10.6.6(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3))
-      next: 16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.64.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1)
+      next: 16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.65.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1)
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
       storybook: 10.6.6(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       styled-jsx: 5.1.6(@babel/core@8.0.1)(babel-plugin-macros@3.1.0)(react@18.3.1)
       vite: 8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3)
-      vite-plugin-storybook-nextjs: 10.6.6(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.64.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(rollup@4.60.1)(storybook@10.6.6(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3))
+      vite-plugin-storybook-nextjs: 10.6.6(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.65.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(rollup@4.60.1)(storybook@10.6.6(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3))
     optionalDependencies:
       '@types/react': 18.3.31
       '@types/react-dom': 18.3.7(@types/react@18.3.31)
@@ -16864,37 +16864,37 @@ snapshots:
     transitivePeerDependencies:
       - '@floating-ui/dom'
 
-  '@trpc/client@11.24.0(@trpc/server@11.24.0(@types/ws@8.18.1)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.64.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(typescript@6.0.3))(typescript@6.0.3)':
+  '@trpc/client@11.24.0(@trpc/server@11.24.0(@types/ws@8.18.1)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.65.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(typescript@6.0.3))(typescript@6.0.3)':
     dependencies:
-      '@trpc/server': 11.24.0(@types/ws@8.18.1)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.64.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(typescript@6.0.3)
+      '@trpc/server': 11.24.0(@types/ws@8.18.1)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.65.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(typescript@6.0.3)
       typescript: 6.0.3
 
-  '@trpc/next@11.24.0(4d2f4edd4b026f5a632d79fbeb4dfea2)':
+  '@trpc/next@11.24.0(493479e641b6773febfca71a6c151688)':
     dependencies:
-      '@trpc/client': 11.24.0(@trpc/server@11.24.0(@types/ws@8.18.1)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.64.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(typescript@6.0.3))(typescript@6.0.3)
-      '@trpc/server': 11.24.0(@types/ws@8.18.1)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.64.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(typescript@6.0.3)
-      next: 16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.64.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1)
+      '@trpc/client': 11.24.0(@trpc/server@11.24.0(@types/ws@8.18.1)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.65.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(typescript@6.0.3))(typescript@6.0.3)
+      '@trpc/server': 11.24.0(@types/ws@8.18.1)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.65.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(typescript@6.0.3)
+      next: 16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.65.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1)
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
       typescript: 6.0.3
     optionalDependencies:
       '@tanstack/react-query': 5.107.1(@types/react@18.3.31)(react@18.3.1)
-      '@trpc/react-query': 11.24.0(@tanstack/react-query@5.107.1(@types/react@18.3.31)(react@18.3.1))(@trpc/client@11.24.0(@trpc/server@11.24.0(@types/ws@8.18.1)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.64.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(typescript@6.0.3))(typescript@6.0.3))(@trpc/server@11.24.0(@types/ws@8.18.1)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.64.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(typescript@6.0.3))(react@18.3.1)(typescript@6.0.3)
+      '@trpc/react-query': 11.24.0(@tanstack/react-query@5.107.1(@types/react@18.3.31)(react@18.3.1))(@trpc/client@11.24.0(@trpc/server@11.24.0(@types/ws@8.18.1)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.65.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(typescript@6.0.3))(typescript@6.0.3))(@trpc/server@11.24.0(@types/ws@8.18.1)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.65.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(typescript@6.0.3))(react@18.3.1)(typescript@6.0.3)
 
-  '@trpc/react-query@11.24.0(@tanstack/react-query@5.107.1(@types/react@18.3.31)(react@18.3.1))(@trpc/client@11.24.0(@trpc/server@11.24.0(@types/ws@8.18.1)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.64.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(typescript@6.0.3))(typescript@6.0.3))(@trpc/server@11.24.0(@types/ws@8.18.1)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.64.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(typescript@6.0.3))(react@18.3.1)(typescript@6.0.3)':
+  '@trpc/react-query@11.24.0(@tanstack/react-query@5.107.1(@types/react@18.3.31)(react@18.3.1))(@trpc/client@11.24.0(@trpc/server@11.24.0(@types/ws@8.18.1)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.65.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(typescript@6.0.3))(typescript@6.0.3))(@trpc/server@11.24.0(@types/ws@8.18.1)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.65.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(typescript@6.0.3))(react@18.3.1)(typescript@6.0.3)':
     dependencies:
       '@tanstack/react-query': 5.107.1(@types/react@18.3.31)(react@18.3.1)
-      '@trpc/client': 11.24.0(@trpc/server@11.24.0(@types/ws@8.18.1)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.64.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(typescript@6.0.3))(typescript@6.0.3)
-      '@trpc/server': 11.24.0(@types/ws@8.18.1)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.64.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(typescript@6.0.3)
+      '@trpc/client': 11.24.0(@trpc/server@11.24.0(@types/ws@8.18.1)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.65.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(typescript@6.0.3))(typescript@6.0.3)
+      '@trpc/server': 11.24.0(@types/ws@8.18.1)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.65.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(typescript@6.0.3)
       react: 18.3.1
       typescript: 6.0.3
 
-  '@trpc/server@11.24.0(@types/ws@8.18.1)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.64.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(typescript@6.0.3)':
+  '@trpc/server@11.24.0(@types/ws@8.18.1)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.65.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(typescript@6.0.3)':
     dependencies:
       typescript: 6.0.3
     optionalDependencies:
       '@types/ws': 8.18.1
-      next: 16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.64.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1)
+      next: 16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.65.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1)
 
   '@turbo/darwin-64@2.11.10':
     optional: true
@@ -17358,11 +17358,11 @@ snapshots:
       '@rolldown/pluginutils': 1.0.1
       vite: 8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3)
 
-  '@vitest/browser-playwright@5.1.0(msw@2.15.0(@types/node@26.6.6)(typescript@6.0.3))(playwright@1.64.1)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3))(vitest@5.1.0)':
+  '@vitest/browser-playwright@5.1.0(msw@2.15.0(@types/node@26.6.6)(typescript@6.0.3))(playwright@1.65.1)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3))(vitest@5.1.0)':
     dependencies:
       '@vitest/browser': 5.1.0(msw@2.15.0(@types/node@26.6.6)(typescript@6.0.3))(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3))(vitest@5.1.0)
       '@vitest/mocker': 5.1.0(msw@2.15.0(@types/node@26.6.6)(typescript@6.0.3))(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3))
-      playwright: 1.64.1
+      playwright: 1.65.1
       tinyrainbow: 3.2.0
       vitest: 5.1.0(@opentelemetry/api@1.9.1)(@types/node@26.6.6)(@vitest/browser-playwright@5.1.0)(@vitest/ui@5.1.0)(jsdom@30.1.3(@noble/hashes@2.2.0))(msw@2.15.0(@types/node@26.6.6)(typescript@6.0.3))(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3))
     transitivePeerDependencies:
@@ -17372,11 +17372,11 @@ snapshots:
       - vite
     optional: true
 
-  '@vitest/browser-playwright@5.1.0(msw@2.15.0(@types/node@26.6.6)(typescript@6.0.3))(playwright@1.64.1)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3))(vitest@5.1.0)':
+  '@vitest/browser-playwright@5.1.0(msw@2.15.0(@types/node@26.6.6)(typescript@6.0.3))(playwright@1.65.1)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3))(vitest@5.1.0)':
     dependencies:
       '@vitest/browser': 5.1.0(msw@2.15.0(@types/node@26.6.6)(typescript@6.0.3))(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3))(vitest@5.1.0)
       '@vitest/mocker': 5.1.0(msw@2.15.0(@types/node@26.6.6)(typescript@6.0.3))(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3))
-      playwright: 1.64.1
+      playwright: 1.65.1
       tinyrainbow: 3.2.0
       vitest: 5.1.0(@opentelemetry/api@1.9.1)(@types/node@26.6.6)(@vitest/browser-playwright@5.1.0)(@vitest/coverage-istanbul@5.1.0)(@vitest/ui@5.1.0)(jsdom@30.0.1(@noble/hashes@2.2.0))(msw@2.15.0(@types/node@26.6.6)(typescript@6.0.3))(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3))
     transitivePeerDependencies:
@@ -17386,11 +17386,11 @@ snapshots:
       - vite
     optional: true
 
-  '@vitest/browser-playwright@5.1.0(msw@2.15.0(@types/node@26.6.6)(typescript@6.0.3))(playwright@1.64.1)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3))(vitest@5.1.0)':
+  '@vitest/browser-playwright@5.1.0(msw@2.15.0(@types/node@26.6.6)(typescript@6.0.3))(playwright@1.65.1)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3))(vitest@5.1.0)':
     dependencies:
       '@vitest/browser': 5.1.0(msw@2.15.0(@types/node@26.6.6)(typescript@6.0.3))(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3))(vitest@5.1.0)
       '@vitest/mocker': 5.1.0(msw@2.15.0(@types/node@26.6.6)(typescript@6.0.3))(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3))
-      playwright: 1.64.1
+      playwright: 1.65.1
       tinyrainbow: 3.2.0
       vitest: 5.1.0(@opentelemetry/api@1.9.1)(@types/node@26.6.6)(@vitest/browser-playwright@5.1.0)(@vitest/ui@5.1.0)(jsdom@30.0.1(@noble/hashes@2.2.0))(msw@2.15.0(@types/node@26.6.6)(typescript@6.0.3))(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3))
     transitivePeerDependencies:
@@ -17400,11 +17400,11 @@ snapshots:
       - vite
     optional: true
 
-  '@vitest/browser-playwright@5.1.0(msw@3.0.3(@types/node@26.5.1)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3)))(playwright@1.64.1)(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3))(vitest@5.1.0)':
+  '@vitest/browser-playwright@5.1.0(msw@3.0.3(@types/node@26.5.1)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3)))(playwright@1.65.1)(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3))(vitest@5.1.0)':
     dependencies:
       '@vitest/browser': 5.1.0(msw@3.0.3(@types/node@26.5.1)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3)))(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3))(vitest@5.1.0)
       '@vitest/mocker': 5.1.0(msw@3.0.3(@types/node@26.5.1)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3)))(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3))
-      playwright: 1.64.1
+      playwright: 1.65.1
       tinyrainbow: 3.2.0
       vitest: 5.1.0(@opentelemetry/api@1.9.1)(@types/node@26.5.1)(@vitest/browser-playwright@5.1.0)(@vitest/coverage-istanbul@5.1.0)(@vitest/ui@5.1.0)(jsdom@30.0.1(@noble/hashes@2.2.0))(msw@3.0.3(@types/node@26.5.1)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3)))(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3))
     transitivePeerDependencies:
@@ -17413,11 +17413,11 @@ snapshots:
       - utf-8-validate
       - vite
 
-  '@vitest/browser-playwright@5.1.0(msw@3.0.3(@types/node@26.6.6)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3)))(playwright@1.64.1)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3))(vitest@5.1.0)':
+  '@vitest/browser-playwright@5.1.0(msw@3.0.3(@types/node@26.6.6)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3)))(playwright@1.65.1)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3))(vitest@5.1.0)':
     dependencies:
       '@vitest/browser': 5.1.0(msw@3.0.3(@types/node@26.6.6)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3)))(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3))(vitest@5.1.0)
       '@vitest/mocker': 5.1.0(msw@3.0.3(@types/node@26.6.6)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3)))(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3))
-      playwright: 1.64.1
+      playwright: 1.65.1
       tinyrainbow: 3.2.0
       vitest: 5.1.0(@opentelemetry/api@1.9.1)(@types/node@26.6.6)(@vitest/browser-playwright@5.1.0)(@vitest/coverage-istanbul@5.1.0)(@vitest/ui@5.1.0)(jsdom@30.1.3(@noble/hashes@2.2.0))(msw@3.0.3(@types/node@26.6.6)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3)))(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3))
     transitivePeerDependencies:
@@ -17426,11 +17426,11 @@ snapshots:
       - utf-8-validate
       - vite
 
-  '@vitest/browser-playwright@5.1.0(playwright@1.64.1)(vite@8.3.8(@types/node@26.6.5)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3))(vitest@5.1.0)':
+  '@vitest/browser-playwright@5.1.0(playwright@1.65.1)(vite@8.3.8(@types/node@26.6.5)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3))(vitest@5.1.0)':
     dependencies:
       '@vitest/browser': 5.1.0(vite@8.3.8(@types/node@26.6.5)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3))(vitest@5.1.0)
       '@vitest/mocker': 5.1.0(vite@8.3.8(@types/node@26.6.5)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3))
-      playwright: 1.64.1
+      playwright: 1.65.1
       tinyrainbow: 3.2.0
       vitest: 5.1.0(@opentelemetry/api@1.9.1)(@types/node@26.6.5)(jsdom@30.1.3(@noble/hashes@2.2.0))(vite@8.3.8(@types/node@26.6.5)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3))
     transitivePeerDependencies:
@@ -20415,10 +20415,10 @@ snapshots:
       msw: 3.0.3(@types/node@26.6.6)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3))
       storybook: 10.6.6(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
 
-  msw-trpc@2.0.1(@trpc/server@11.24.0(@types/ws@8.18.1)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.64.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(typescript@6.0.3))(msw@3.0.3(@types/node@26.6.6)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3)))(typescript@6.0.3):
+  msw-trpc@2.0.1(@trpc/server@11.24.0(@types/ws@8.18.1)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.65.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(typescript@6.0.3))(msw@3.0.3(@types/node@26.6.6)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3)))(typescript@6.0.3):
     dependencies:
-      '@trpc/client': 11.24.0(@trpc/server@11.24.0(@types/ws@8.18.1)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.64.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(typescript@6.0.3))(typescript@6.0.3)
-      '@trpc/server': 11.24.0(@types/ws@8.18.1)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.64.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(typescript@6.0.3)
+      '@trpc/client': 11.24.0(@trpc/server@11.24.0(@types/ws@8.18.1)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.65.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(typescript@6.0.3))(typescript@6.0.3)
+      '@trpc/server': 11.24.0(@types/ws@8.18.1)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.65.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(typescript@6.0.3)
       msw: 3.0.3(@types/node@26.6.6)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3))
     transitivePeerDependencies:
       - typescript
@@ -20567,7 +20567,7 @@ snapshots:
       - '@types/node'
       - babel-plugin-macros
 
-  next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.64.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1):
+  next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.65.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1):
     dependencies:
       '@next/env': 16.4.2
       '@swc/helpers': 0.5.23
@@ -20587,7 +20587,7 @@ snapshots:
       '@next/swc-win32-arm64-msvc': 16.4.2
       '@next/swc-win32-x64-msvc': 16.4.2
       '@opentelemetry/api': 1.9.1
-      '@playwright/test': 1.64.1
+      '@playwright/test': 1.65.1
       sass: 1.106.1
       sharp: 0.35.5(@types/node@26.6.6)
     transitivePeerDependencies:
@@ -21141,7 +21141,7 @@ snapshots:
   playwright-core@1.62.1:
     optional: true
 
-  playwright-core@1.64.1: {}
+  playwright-core@1.65.1: {}
 
   playwright@1.62.1:
     dependencies:
@@ -21150,9 +21150,9 @@ snapshots:
       fsevents: 2.3.2
     optional: true
 
-  playwright@1.64.1:
+  playwright@1.65.1:
     dependencies:
-      playwright-core: 1.64.1
+      playwright-core: 1.65.1
 
   plimit-lit@1.6.1:
     dependencies:
@@ -23217,13 +23217,13 @@ snapshots:
       '@types/unist': 3.0.3
       vfile-message: 4.0.3
 
-  vite-plugin-storybook-nextjs@10.6.6(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.64.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(rollup@4.60.1)(storybook@10.6.6(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3)):
+  vite-plugin-storybook-nextjs@10.6.6(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.65.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(rollup@4.60.1)(storybook@10.6.6(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3)):
     dependencies:
       '@next/env': 16.4.2
       '@rollup/pluginutils': 5.3.0(rollup@4.60.1)
       magic-string: 0.30.21
       module-alias: 2.3.4
-      next: 16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.64.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1)
+      next: 16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.65.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1)
       pathe: 2.0.3
       probe-image-size: 7.4.0(supports-color@8.1.1)
       semver: 7.8.5
@@ -23368,7 +23368,7 @@ snapshots:
     optionalDependencies:
       '@opentelemetry/api': 1.9.1
       '@types/node': 26.5.1
-      '@vitest/browser-playwright': 5.1.0(msw@3.0.3(@types/node@26.5.1)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3)))(playwright@1.64.1)(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3))(vitest@5.1.0)
+      '@vitest/browser-playwright': 5.1.0(msw@3.0.3(@types/node@26.5.1)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3)))(playwright@1.65.1)(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3))(vitest@5.1.0)
       '@vitest/coverage-istanbul': 5.1.0(vitest@5.1.0)
       '@vitest/ui': 5.1.0(vitest@5.1.0)
       jsdom: 30.0.1(@noble/hashes@2.2.0)
@@ -23417,7 +23417,7 @@ snapshots:
     optionalDependencies:
       '@opentelemetry/api': 1.9.1
       '@types/node': 26.6.6
-      '@vitest/browser-playwright': 5.1.0(msw@2.15.0(@types/node@26.6.6)(typescript@6.0.3))(playwright@1.64.1)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3))(vitest@5.1.0)
+      '@vitest/browser-playwright': 5.1.0(msw@2.15.0(@types/node@26.6.6)(typescript@6.0.3))(playwright@1.65.1)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3))(vitest@5.1.0)
       '@vitest/coverage-istanbul': 5.1.0(vitest@5.1.0)
       '@vitest/ui': 5.1.0(vitest@5.1.0)
       jsdom: 30.0.1(@noble/hashes@2.2.0)
@@ -23443,7 +23443,7 @@ snapshots:
     optionalDependencies:
       '@opentelemetry/api': 1.9.1
       '@types/node': 26.6.6
-      '@vitest/browser-playwright': 5.1.0(msw@3.0.3(@types/node@26.6.6)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3)))(playwright@1.64.1)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3))(vitest@5.1.0)
+      '@vitest/browser-playwright': 5.1.0(msw@3.0.3(@types/node@26.6.6)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3)))(playwright@1.65.1)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3))(vitest@5.1.0)
       '@vitest/coverage-istanbul': 5.1.0(vitest@5.1.0)
       '@vitest/ui': 5.1.0(vitest@5.1.0)
       jsdom: 30.1.3(@noble/hashes@2.2.0)
@@ -23469,7 +23469,7 @@ snapshots:
     optionalDependencies:
       '@opentelemetry/api': 1.9.1
       '@types/node': 26.6.6
-      '@vitest/browser-playwright': 5.1.0(msw@2.15.0(@types/node@26.6.6)(typescript@6.0.3))(playwright@1.64.1)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3))(vitest@5.1.0)
+      '@vitest/browser-playwright': 5.1.0(msw@2.15.0(@types/node@26.6.6)(typescript@6.0.3))(playwright@1.65.1)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3))(vitest@5.1.0)
       '@vitest/ui': 5.1.0(vitest@5.1.0)
       jsdom: 30.0.1(@noble/hashes@2.2.0)
     transitivePeerDependencies:
@@ -23494,7 +23494,7 @@ snapshots:
     optionalDependencies:
       '@opentelemetry/api': 1.9.1
       '@types/node': 26.6.6
-      '@vitest/browser-playwright': 5.1.0(msw@2.15.0(@types/node@26.6.6)(typescript@6.0.3))(playwright@1.64.1)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3))(vitest@5.1.0)
+      '@vitest/browser-playwright': 5.1.0(msw@2.15.0(@types/node@26.6.6)(typescript@6.0.3))(playwright@1.65.1)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3))(vitest@5.1.0)
       '@vitest/ui': 5.1.0(vitest@5.1.0)
       jsdom: 30.1.3(@noble/hashes@2.2.0)
     transitivePeerDependencies:
