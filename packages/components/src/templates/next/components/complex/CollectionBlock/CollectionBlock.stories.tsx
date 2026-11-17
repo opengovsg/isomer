@@ -162,8 +162,7 @@ export const WithImage: Story = {
   args: generateArgs({ displayThumbnail: true, displayCategory: true }),
 }
 
-// First card carries a top-left focal point (object-position), as set in the
-// collection thumbnail adjustment modal.
+// The first card has a top-left focal point.
 export const WithFocalPoint: Story = {
   args: generateArgs({
     displayThumbnail: true,

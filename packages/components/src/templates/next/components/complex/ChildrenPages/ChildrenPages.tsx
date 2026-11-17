@@ -36,8 +36,7 @@ interface ChildpageLayoutProps
     >,
     Pick<ImageClientProps, "assetsBaseUrl"> {
   childpages: Childpage[]
-  // Only src/alt are ever read for the fallback (site logo) -- it has no
-  // imageFit/imageAdjustment of its own, unlike a real child page's image.
+  // The fallback is the site logo, which has no imageFit or imageAdjustment.
   fallback: Pick<NonNullable<IsomerSitemap["image"]>, "src" | "alt">
 }
 

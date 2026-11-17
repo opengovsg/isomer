@@ -31,15 +31,11 @@ export const useAdjustmentConfigForField = (path: string) => {
   // pageLayout is undefined there.
   const editorDrawerContext = useOptionalEditorDrawerContext()
   const pageLayout = editorDrawerContext?.previewPageState.layout
-  // Collection items (CollectionPage/CollectionLink resources) are the only
-  // resource types whose page-level `image` field is THIS field -- the
-  // "collection item thumbnail" (page.image.src/alt, composed into every
-  // collection-item page schema via imageSchemaObject). Other layouts
-  // (content/index/database pages) compose the exact same `image` field
-  // shape for their own unrelated "page thumbnail" use, so the resource type
-  // check -- not the field shape -- is what makes this safe to key off.
-  // The collection-link route has no EditorDrawerProvider; a linkId in the
-  // route (only that route has one) means the form edits a CollectionLink.
+  // Only collection items (CollectionPage, CollectionLink) use the page-level
+  // `image` field as a collection thumbnail. Other layouts have the same field
+  // for their own page thumbnail, so check the resource type, not the shape.
+  // The link route has no EditorDrawerProvider. A linkId in the route means
+  // the form edits a CollectionLink.
   const { siteId: routeSiteId, linkId } = useQueryParse(pageOrLinkSchema)
   const isLinkEditorRoute = editorDrawerContext === null && linkId !== undefined
   const resourceType = editorDrawerContext?.type
@@ -52,23 +48,14 @@ export const useAdjustmentConfigForField = (path: string) => {
   const fieldName = pathParts.pop() ?? ""
   const parentPath = pathParts.join(".")
 
-  // The page-level thumbnail (`page.image.src`) is the one image field with no
-  // block-type ancestor. imageSchemaObject composes it directly onto the page
-  // metadata object, so its parentPath is always exactly "image", never nested
-  // inside a block. That shape alone isn't a safe signal, since content, index,
-  // and database pages compose the identical `image` field for their own page
-  // thumbnail, so this also checks the resource type to confirm the page is a
-  // collection item.
+  // The page thumbnail sits directly on the page object, so its parentPath is
+  // exactly "image".
   const isCollectionThumbnail =
     isCollectionItemResource && parentPath === "image"
 
-  // Content components name the adjustment after their own image field
-  // (backgroundUrl gives backgroundUrlImageAdjustment), emitted together by
-  // generateAdjustableImageFields. Deriving the key from fieldName, rather than
-  // a fixed "imageAdjustment", lets a component carry two image fields without
-  // their adjustments colliding on one shared key. The collection thumbnail is
-  // the one exception: a single-image field (imageSchemaObject) that keeps the
-  // fixed "imageAdjustment" key. One image means no collision.
+  // Content components key the adjustment by field name, e.g.
+  // backgroundUrlImageAdjustment, so two image fields never collide. The
+  // collection thumbnail is a single image and keeps the fixed key.
   const siblingKey = isCollectionThumbnail
     ? "imageAdjustment"
     : `${fieldName}ImageAdjustment`
@@ -97,8 +84,7 @@ export const useAdjustmentConfigForField = (path: string) => {
       ? (rootData as IsomerComponent)
       : undefined
 
-  // Only fetched for an actual collection thumbnail field — every other
-  // image field leaves this disabled and gets undefined back immediately.
+  // Disabled unless this is a collection thumbnail.
   const collectionVariant = useCollectionIndexVariant({
     siteId: editorDrawerContext?.siteId ?? routeSiteId,
     pageId: editorDrawerContext?.pageId ?? linkId ?? 0,

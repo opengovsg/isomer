@@ -32,18 +32,12 @@ export interface AdjustmentPreviewState {
 // Context the registry can use to resolve a config, e.g. the page layout.
 export interface AdjustmentRenderContext {
   pageLayout?: IsomerPageLayoutType
-  // True when the field being resolved is the page-level thumbnail
-  // (`page.image`) of a collection item (a CollectionPage/CollectionLink
-  // resource) — the one root-level image field with no block-type ancestor
-  // to key the registry off of. Set by useAdjustmentConfigForField from the
-  // editor's resource type, since the field's own data has no discriminator.
+  // True for a collection item's page thumbnail (`page.image`). It has no
+  // block to key the registry off, so the hook sets this from the resource type.
   isCollectionThumbnail?: boolean
-  // The parent collection's index page "Layout" setting (collection-variant
-  // format: "collection" = 1-column CollectionCard, "blog" = 2-column
-  // BlogCard) — fetched by useAdjustmentConfigForField since it lives on a
-  // different page's content than the one being edited. Undefined while that
-  // fetch is loading/unavailable; resolves to the 1-column frame in that case,
-  // matching the schema's own "collection" default.
+  // The parent collection's "Layout" setting: "collection" is the 1-column
+  // CollectionCard, "blog" the 2-column BlogCard. Undefined while loading,
+  // which resolves to the 1-column frame.
   collectionVariant?: "collection" | "blog"
 }
 

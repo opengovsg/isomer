@@ -2,20 +2,11 @@ import type { CollectionPagePageProps } from "@opengovsg/isomer-components"
 import { trpc } from "~/utils/trpc"
 
 /**
- * Resolves the "Layout" setting (collection-variant format: "collection" =
- * 1-column CollectionCard, "blog" = 2-column BlogCard) of a collection
- * item's parent collection index page. Used so the thumbnail adjustment
- * preview mimics what the editor has already chosen there, instead of
- * showing every possible destination.
- *
- * Chains three page/resource lookups (collection item → parent collection →
- * its index page → that page's content) since nothing else fetches the
- * parent collection's content as a side effect of opening one of its items.
- * Disabled entirely unless the field being resolved is actually a collection
- * thumbnail, so every other image field's render stays free of this.
- *
- * A pending or failed lookup returns undefined, so the registry falls back to
- * the card ("collection") shape; this is an accepted limitation.
+ * Reads the "Layout" setting ("collection" or "blog") from the index page of
+ * a collection item's parent collection, so the thumbnail preview matches it.
+ * Chains three lookups: item, parent collection, index page content.
+ * Returns undefined while loading or on failure, and the registry then falls
+ * back to the "collection" shape.
  */
 export const useCollectionIndexVariant = ({
   siteId,

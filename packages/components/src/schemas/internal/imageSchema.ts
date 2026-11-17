@@ -20,13 +20,9 @@ export const imageSchemaObject = Type.Object({
         }),
         alt: AltTextSchema,
         imageFit: Type.Optional(CollectionThumbnailImageFitSchema),
-        // Single-image thumbnail. Its adjustment lives in the content JSON at
-        // content.page.image.imageAdjustment; resource.service.ts surfaces it
-        // via a SQL alias named thumbnailAdjustment. It keeps the fixed
-        // "imageAdjustment" key rather than the field-named sibling the content
-        // components use. One image means no collision, so the fixed key is
-        // safe. Studio's useAdjustmentConfigForField special-cases it via
-        // isCollectionThumbnail.
+        // Keeps the fixed "imageAdjustment" key, not the field-named one that
+        // content components use. One image means no collision.
+        // resource.service.ts reads it as thumbnailAdjustment.
         imageAdjustment: Type.Optional(imageAdjustmentSchema),
       },
       {
