@@ -7,9 +7,7 @@ import { LinkButton } from "../../../internal/LinkButton/LinkButton"
 
 export interface HeroCarouselSlideView {
   backgroundUrl: string
-  // Per-slide focal/crop sibling, forwarded to the shared image renderer below.
-  // Shared by both carousel layouts (block/gradient) since both render slide
-  // images through CarouselSlideImages.
+  // Per-slide focal/crop sibling, forwarded to ImageClientWithAdjustment below.
   imageAdjustment?: ImageAdjustment
   title: string
   subtitle?: string

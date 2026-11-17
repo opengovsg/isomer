@@ -391,8 +391,6 @@ const HeroSearchbarSchema = Type.Composite(
 export const HeroCarouselSlideSchema = Type.Composite(
   [
     Type.Object({
-      // Reserves backgroundUrlImageAdjustment per slide, collision-safe across
-      // the slide array.
       ...generateAdjustableImageFields("backgroundUrl", BACKGROUND_IMAGE_OPTS),
       ...heroContentFields({
         title:

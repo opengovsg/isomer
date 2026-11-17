@@ -29,12 +29,13 @@ import type {
 } from "./AdjustmentConfig"
 import { chooseBakeMime, fetchImageBlob } from "./useSaveImageAdjustment"
 
-// Holds a hero carousel on its first slide. Other components ignore it.
-const STATIC_HERO_CAROUSEL = {
-  activeIndex: 0,
+// Pins a hero carousel to the slide being edited (first slide by default).
+// Other components ignore this.
+const heroCarouselPreviewFor = (activeIndex = 0) => ({
+  activeIndex,
   setActiveIndex: () => undefined,
   autoplay: false,
-}
+})
 
 // Site stub for a single-block preview. It fills only the fields the block
 // reads, as PreviewWithCustomSitemap.tsx does.
@@ -292,12 +293,17 @@ export const AdjustmentPreview = ({
       // modal's Fit/Fill choice so the preview follows the toggle.
       ...(isNestedField ? { imageFit: objectFit } : {}),
     }
-    // The real component renders every item, so build a one-item block.
-    // No builder means the framed-image approximation.
-    const component = isNestedField
-      ? buildSingleItemPreviewBlock?.(block, { ...fieldHost, ...patch })
-      : ({ ...block, ...patch } as IsomerComponent)
-    if (!component) return null
+    // The real component renders every item, so an array-nested field needs
+    // its own builder. No builder means the framed-image approximation.
+    const built = isNestedField
+      ? buildSingleItemPreviewBlock?.(
+          block,
+          { ...fieldHost, ...patch },
+          fieldHost,
+        )
+      : { component: { ...block, ...patch } as IsomerComponent }
+    if (!built) return null
+    const { component, activeIndex } = built
     // On a real page the layout styles `.component-content` from an ancestor
     // selector, see Homepage.tsx. Without this wrapper the text and buttons
     // sit flush left.
@@ -309,7 +315,9 @@ export const AdjustmentPreview = ({
           isNestedField ? " [&_.auto-rows-max]:!grid-cols-1" : ""
         }`}
       >
-        <HeroCarouselPreviewProvider value={STATIC_HERO_CAROUSEL}>
+        <HeroCarouselPreviewProvider
+          value={heroCarouselPreviewFor(activeIndex)}
+        >
           {renderComponent({
             component,
             layout: pageLayout ?? "content",
