@@ -17,9 +17,7 @@ vi.mock("next/router", () => ({
   useRouter: () => ({ query: mockQuery.current }),
 }))
 
-// useCollectionIndexVariant issues a tRPC query (only enabled for collection
-// thumbnails, which none of these cases are). Stub it so the renderHook wrapper
-// doesn't need a tRPC provider.
+// Stub the hook's tRPC query so renderHook needs no tRPC provider.
 vi.mock("../useCollectionIndexVariant", () => ({
   useCollectionIndexVariant: (args: unknown) =>
     mockUseCollectionIndexVariant(args) as undefined,

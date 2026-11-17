@@ -30,11 +30,8 @@ export const CollectionCard = ({
 }): JSX.Element => {
   const isExternalLink = !!referenceLinkHref && isExternalUrl(referenceLinkHref)
   const hasDateFilters = (dateFilterDisplayEntries?.length ?? 0) > 0
-  // Focal point for a "cover"-fit thumbnail: anchors the subject as the frame
-  // shifts between CollectionCard/BlogCard layouts. Ignored under "contain"
-  // (including the site-logo/first-image fallbacks, which are always
-  // letterboxed) -- the whole already-cropped image is letterboxed there, so
-  // an object-position would only shove it off-center.
+  // Focal point applies only to a "cover" thumbnail. A "contain" image,
+  // including the fallbacks, is letterboxed and stays centred.
   const effectiveImageAdjustment = isContainNeeded
     ? undefined
     : image?.imageAdjustment

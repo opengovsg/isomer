@@ -34,9 +34,8 @@ interface BaseCardProps {
   description: string
   image?: Pick<ImageProps, "src" | "alt"> & {
     imageFit?: (typeof IMAGE_FIT)[keyof typeof IMAGE_FIT]
-    // Sibling written by the adjustment modal; absence = unedited. Crop is
-    // baked into `src`; focal (object-position) is only applied under
-    // imageFit "cover" — see CollectionCard/BlogCard's effectiveImageAdjustment.
+    // Written by the adjustment modal. Absent means unedited. The crop is
+    // baked into `src`, and focal applies only under imageFit "cover".
     imageAdjustment?: ImageAdjustment
   }
   isContainNeeded?: boolean
