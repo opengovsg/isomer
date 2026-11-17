@@ -1,6 +1,6 @@
 import type { LinkRefPageSchema } from "@opengovsg/isomer-components"
 import type { Static } from "@sinclair/typebox"
-import { TAG_CATEGORY_TYPE } from "@opengovsg/isomer-components"
+import { IMAGE_FIT, TAG_CATEGORY_TYPE } from "@opengovsg/isomer-components"
 import { format, parse } from "date-fns"
 import { z } from "zod"
 
@@ -47,6 +47,8 @@ const dateTaggedEntrySchema = z.object({
   endDate: z.string().optional(),
 })
 
+const normalizedUnit = z.number().min(0).max(1)
+
 export const editLinkSchema = z.object({
   date: slashDateSchema.optional(),
   category: z.string(),
@@ -68,6 +70,21 @@ export const editLinkSchema = z.object({
     .object({
       src: z.string(),
       alt: z.string(),
+      // Mirrors imageSchemaObject in isomer-components. zod strips unknown
+      // keys, so fields missing here are lost on save.
+      imageFit: z.enum([IMAGE_FIT.Cover, IMAGE_FIT.Content]).optional(),
+      imageAdjustment: z
+        .object({
+          crop: z.object({
+            x: normalizedUnit,
+            y: normalizedUnit,
+            width: normalizedUnit,
+            height: normalizedUnit,
+          }),
+          focal: z.object({ x: normalizedUnit, y: normalizedUnit }),
+          originalKey: z.string(),
+        })
+        .optional(),
     })
     .optional(),
 })

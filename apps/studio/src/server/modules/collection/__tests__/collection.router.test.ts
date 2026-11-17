@@ -1621,6 +1621,36 @@ describe("collection.router", async () => {
       expect(expected.id).toEqual(blob.id)
     })
 
+    it("should keep the thumbnail's image fit and adjustment", async () => {
+      // Arrange
+      const { page, site } = await setupPageResource({
+        resourceType: "CollectionLink",
+      })
+      await setupAdminPermissions({ userId: session.userId, siteId: site.id })
+      const image = {
+        src: "/1/abc/baked-def.png",
+        alt: "A thumbnail",
+        imageFit: "contain" as const,
+        imageAdjustment: {
+          crop: { x: 0.1, y: 0.2, width: 0.5, height: 0.6 },
+          focal: { x: 0.3, y: 0.7 },
+          originalKey: "1/abc/original.png",
+        },
+      }
+
+      // Act
+      const expected = await caller.updateCollectionLink({
+        siteId: site.id,
+        category: "category",
+        ref: "1",
+        linkId: Number(page.id),
+        image,
+      })
+
+      // Assert
+      expect(expected.content.page).toMatchObject({ image })
+    })
+
     it("should store a valid date in `dd/MM/yyyy` format", async () => {
       // Arrange
       const { page, site } = await setupPageResource({
