@@ -167,7 +167,7 @@ const heroCarouselConfig = (block: IsomerComponent): AdjustmentConfig => {
     block.variant === "carousel" &&
     block.carousel?.layout === "gradient" &&
     block.carousel.contentAlignment === "center"
-  // The template's safe zone assumes left-aligned text, so centred slides get no template.
+  // Centred gradient slides link to the guide only, with no template.
   const links = layoutConfig.preUploadLinks
   const centredLinks = links && (({ templateUrl: _, ...rest }) => rest)(links)
   return {
