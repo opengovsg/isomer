@@ -289,16 +289,26 @@ export const isNotFoundError = (error: unknown): boolean => {
   )
 }
 
-// ponytail: reads only the first page (up to 1,000 keys), which covers an
-// asset folder (an original plus a few renditions); paginate if that changes
 export const listObjectKeys = async ({
   Bucket,
   Prefix,
 }: Pick<ListObjectsV2CommandInput, "Bucket" | "Prefix">): Promise<string[]> => {
-  const response = await storage.send(
-    new ListObjectsV2Command({ Bucket, Prefix }),
-  )
-  return (response.Contents ?? []).flatMap(({ Key }) => (Key ? [Key] : []))
+  const keys: string[] = []
+  let ContinuationToken: string | undefined
+
+  do {
+    const response = await storage.send(
+      new ListObjectsV2Command({ Bucket, Prefix, ContinuationToken }),
+    )
+    keys.push(
+      ...(response.Contents ?? []).flatMap(({ Key }) => (Key ? [Key] : [])),
+    )
+    ContinuationToken = response.IsTruncated
+      ? response.NextContinuationToken
+      : undefined
+  } while (ContinuationToken)
+
+  return keys
 }
 
 export const getFileSize = async ({

@@ -154,13 +154,13 @@ export const getPresignedPutUrl = async ({
 
 // Tags every object in the asset's folder, not just the original: CloudFront
 // serves the .webp/.avif renditions in its place, so an untagged rendition
-// keeps the asset live. The original is tagged even if the listing misses it,
-// so a missing key still fails loudly.
+// keeps the asset live. The original goes last, so a missing original (which
+// still fails loudly) does not stop its renditions from being tagged.
 export const markFileAsDeleted = async ({ key }: { key: string }) => {
   const folder = key.slice(0, key.lastIndexOf("/") + 1)
   const folderKeys = await listObjectKeys({ Bucket: bucket, Prefix: folder })
 
-  for (const Key of new Set([key, ...folderKeys])) {
+  for (const Key of new Set([...folderKeys.filter((k) => k !== key), key])) {
     await deleteFile({ Key, Bucket: bucket })
   }
 }

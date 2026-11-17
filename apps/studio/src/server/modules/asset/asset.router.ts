@@ -105,16 +105,12 @@ export const assetRouter = router({
 
       const results = await deleteAssetsByUrl(urls)
 
-      const successfulKeys = new Set(
-        results
-          .filter((result) => result.success && result.key)
-          .map((result) => result.key)
-          .filter((key): key is string => !!key),
+      // Failed results are invalidated too: tagging may have stopped partway
+      // through a folder, and evicting an untagged object is harmless
+      const attemptedKeys = new Set(
+        results.flatMap(({ key }) => (key ? [key] : [])),
       )
-      const invalidation = await invalidateAssetPaths(
-        ctx.logger,
-        successfulKeys,
-      )
+      const invalidation = await invalidateAssetPaths(ctx.logger, attemptedKeys)
 
       const failedCount = results.filter((result) => !result.success).length
       ctx.logger.info(

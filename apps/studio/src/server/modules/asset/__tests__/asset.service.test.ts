@@ -450,6 +450,35 @@ describe("asset.service", () => {
       expect(deleteFile).toHaveBeenCalledTimes(3)
     })
 
+    it("should tag the listed renditions before reporting a missing original as failed", async () => {
+      // Arrange
+      const original = `36/${UUID_1}/a.png`
+      vi.mocked(listObjectKeys).mockResolvedValueOnce([
+        `36/${UUID_1}/a.webp`,
+        `36/${UUID_1}/a.avif`,
+      ])
+      vi.mocked(deleteFile).mockImplementation(({ Key }) =>
+        Key === original
+          ? Promise.reject(new Error("NoSuchKey"))
+          : Promise.resolve(undefined),
+      )
+
+      // Act
+      const results = await deleteAssetsByUrl([
+        `https://${ASSET_DOMAIN}/${original}`,
+      ])
+
+      // Assert
+      expect(results[0]).toMatchObject({ key: original, success: false })
+      expect(vi.mocked(deleteFile).mock.calls.map(([{ Key }]) => Key)).toEqual([
+        `36/${UUID_1}/a.webp`,
+        `36/${UUID_1}/a.avif`,
+        original,
+      ])
+      vi.mocked(deleteFile).mockReset()
+      vi.mocked(deleteFile).mockResolvedValue(undefined)
+    })
+
     it("should report failure for an invalid URL without calling deleteFile", async () => {
       // Act
       const results = await deleteAssetsByUrl(["not-a-url"])

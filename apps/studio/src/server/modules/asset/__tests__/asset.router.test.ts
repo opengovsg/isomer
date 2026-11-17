@@ -344,6 +344,33 @@ describe("asset.router", async () => {
       )
     })
 
+    it("should invalidate CloudFront for assets whose deletion failed partway", async () => {
+      // Arrange
+      await setupIsomerAdmin({
+        userId: String(session.userId),
+        role: IsomerAdminRole.Core,
+      })
+      vi.mocked(deleteFile).mockRejectedValueOnce(new Error("S3 unavailable"))
+      const url = `https://${ASSET_DOMAIN}/1/${UUID_1}/a.png`
+
+      // Act
+      const result = await caller.deleteAssetsByUrl({ urls: [url] })
+
+      // Assert
+      expect(result.results).toEqual([
+        {
+          url,
+          key: `1/${UUID_1}/a.png`,
+          success: false,
+          error: "Failed to delete asset",
+        },
+      ])
+      expect(invalidateAssetPaths).toHaveBeenCalledWith(
+        expect.anything(),
+        new Set([`1/${UUID_1}/a.png`]),
+      )
+    })
+
     it("should reject and not call deleteFile when urls exceeds the cap", async () => {
       // Arrange
       await setupIsomerAdmin({

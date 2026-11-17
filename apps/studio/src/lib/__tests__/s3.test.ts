@@ -3,6 +3,7 @@ import {
   GetObjectCommand,
   GetObjectTaggingCommand,
   HeadObjectCommand,
+  ListObjectsV2Command,
   PutObjectRetentionCommand,
   PutObjectTaggingCommand,
 } from "@aws-sdk/client-s3"
@@ -30,6 +31,7 @@ const {
   setAssetAsPublished,
   getFileSize,
   getTextObject,
+  listObjectKeys,
 } = await import("../s3")
 
 const DELETE_TAG = "deletedAt"
@@ -82,6 +84,39 @@ describe("deleteFile", () => {
         ([command]) => command instanceof PutObjectTaggingCommand,
       ),
     ).toBe(false)
+  })
+})
+
+describe("listObjectKeys", () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it("follows continuation tokens until the listing is complete", async () => {
+    // Arrange
+    sendMock
+      .mockResolvedValueOnce({
+        Contents: [{ Key: "1/uuid/a.png" }],
+        IsTruncated: true,
+        NextContinuationToken: "page-2",
+      })
+      .mockResolvedValueOnce({
+        Contents: [{ Key: "1/uuid/a.webp" }],
+        IsTruncated: false,
+      })
+
+    // Act
+    const keys = await listObjectKeys({
+      Bucket: "test-bucket",
+      Prefix: "1/uuid/",
+    })
+
+    // Assert
+    expect(keys).toEqual(["1/uuid/a.png", "1/uuid/a.webp"])
+    expect(sendMock).toHaveBeenCalledTimes(2)
+    const secondCommand = sendMock.mock.calls[1]?.[0] as ListObjectsV2Command
+    expect(secondCommand).toBeInstanceOf(ListObjectsV2Command)
+    expect(secondCommand.input.ContinuationToken).toBe("page-2")
   })
 })
 
