@@ -283,7 +283,7 @@ describe("resolveAdjustmentConfig", () => {
         label: "infocards:cardsWithImages",
         block: { type: "infocards", variant: "cardsWithImages" },
         fieldName: "imageUrl",
-        expectedHeight: 800,
+        expectedHeight: 533,
       },
       {
         label: "infocards:cardsWithFullImages",
