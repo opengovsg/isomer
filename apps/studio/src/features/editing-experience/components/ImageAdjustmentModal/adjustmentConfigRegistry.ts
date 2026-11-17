@@ -77,11 +77,10 @@ const HERO_GRADIENT_CONFIG: AdjustmentConfig = {
   imageField: "backgroundUrl",
   cropMode: "custom",
   focalEnabled: true,
-  // Warn below the recommended 2560×1440 (16:9) upload in preUploadCopy. The
-  // section is full-bleed with lg:min-h-[31.25rem] (500px). The crop is free,
-  // so check width and height separately.
-  maxRenderedWidthPx: 2560,
-  maxRenderedHeightPx: 1440,
+  // Warn below the recommended 1920×1080 upload in preUploadCopy. The crop is
+  // free, so check width and height separately.
+  maxRenderedWidthPx: 1920,
+  maxRenderedHeightPx: 1080,
   // Closest common ratio to the hero band at each breakpoint, 375×240,
   // 768×360 and 1280×500.
   previewStates: responsivePreviewStates({
@@ -89,10 +88,13 @@ const HERO_GRADIENT_CONFIG: AdjustmentConfig = {
     tablet: { width: 2, height: 1 },
     desktop: { width: 5, height: 2 },
   }),
-  preUploadCopy: "Recommended 2560 × 1440 px (16:9).",
+  preUploadCopy: "Recommended 1920 × 1080 px.",
   preUploadLinks: {
-    guideLabel: "Hero banner",
-    templateUrl: "/placeholder_no_image.png",
+    guideLabel: "hero banner",
+    guideUrl:
+      "https://support.isomer.gov.sg/en/articles/10390602-editing-your-hero-banner",
+    templateUrl:
+      "https://isomer-user-content.by.gov.sg/Studio/Isomer%20-%20Hero%20banner%20Gradient%20%C2%B7%201920%C3%971080.png?original=true",
   },
 }
 
@@ -108,9 +110,8 @@ const HERO_BLOCK_CONFIG: AdjustmentConfig = {
   imageField: "backgroundUrl",
   cropMode: "custom",
   focalEnabled: true,
-  // Warn below the recommended 1280×860 (3:2) upload in preUploadCopy, not
-  // the rendered frame (~960 wide, lg:min-h 500px). Crop is free (custom), so
-  // height is checked too.
+  // Warn below the recommended 1280×860 upload in preUploadCopy. Crop is free
+  // (custom), so height is checked too.
   maxRenderedWidthPx: 1280,
   maxRenderedHeightPx: 860,
   // Closest common ratio to each breakpoint's hero band (375×240→16:10,
@@ -125,12 +126,13 @@ const HERO_BLOCK_CONFIG: AdjustmentConfig = {
     tablet: { width: 2, height: 1 },
     desktop: { width: 5, height: 2 },
   }),
-  preUploadCopy:
-    "Recommended 1280 × 860 px (3:2). Keep the main subject centred with space above and below, as phones show only the middle of the image.",
-  // Same placeholder new blocks start with (public/placeholder_no_image.png).
+  preUploadCopy: "Recommended 1280 × 860 px.",
   preUploadLinks: {
-    guideLabel: "Hero banner",
-    templateUrl: "/placeholder_no_image.png",
+    guideLabel: "hero banner",
+    guideUrl:
+      "https://support.isomer.gov.sg/en/articles/10390602-editing-your-hero-banner",
+    templateUrl:
+      "https://isomer-user-content.by.gov.sg/Studio/Isomer%20-%20Hero%20banner%20Block%20%C2%B7%201280%C3%97860.png?original=true",
   },
 }
 
@@ -143,9 +145,9 @@ const CONTENTPIC_CONFIG: AdjustmentConfig = {
   cropMode: "fixed",
   focalEnabled: false,
   lockedRatios: [{ width: 5, height: 6 }],
-  // Warn below the recommended 500×600 upload in preUploadCopy (the rendered
-  // frame is only 200px wide, sm:w-[200px]). Height follows the locked 5:6.
-  maxRenderedWidthPx: 500,
+  // Warn below the recommended 600×720 upload in preUploadCopy. Height follows
+  // the locked 5:6.
+  maxRenderedWidthPx: 600,
   // Contentpic stacks below `sm` and sits side by side from `sm` up, so
   // Mobile shows the stacked layout. The ratios are first guesses only.
   previewStates: responsivePreviewStates({
@@ -153,11 +155,11 @@ const CONTENTPIC_CONFIG: AdjustmentConfig = {
     tablet: { width: 2, height: 1 },
     desktop: { width: 2, height: 1 },
   }),
-  preUploadCopy:
-    "Recommended 500 × 600 px (5:6). Use a portrait image with space above the head.",
+  preUploadCopy: "Recommended 600 × 720 px.",
   preUploadLinks: {
-    guideLabel: "Image with text",
-    templateUrl: "/placeholder_no_image.png",
+    guideLabel: "image with text",
+    guideUrl:
+      "https://support.isomer.gov.sg/en/articles/10425941-image-with-text",
   },
 }
 
@@ -170,9 +172,8 @@ const INFOPIC_CONFIG: AdjustmentConfig = {
   imageField: "imageSrc",
   cropMode: "custom",
   focalEnabled: true,
-  // Warn below the recommended 1280×860 (3:2) upload in preUploadCopy, not
-  // the rendered frame (one lg:grid-cols-2 column, ~960 wide; image band
-  // max-h-[400px] below lg). Crop is free (custom), so height is checked too.
+  // Warn below the recommended 1280×860 upload in preUploadCopy. Crop is free
+  // (custom), so height is checked too.
   maxRenderedWidthPx: 1280,
   maxRenderedHeightPx: 860,
   // Closest common ratio to each breakpoint's frame (375×300→5:4,
@@ -182,11 +183,13 @@ const INFOPIC_CONFIG: AdjustmentConfig = {
     tablet: { width: 2, height: 1 },
     desktop: { width: 3, height: 1 },
   }),
-  preUploadCopy:
-    "Recommended 1280 × 860 px (3:2). Keep the main subject centred and the description short.",
+  preUploadCopy: "Recommended 1280 × 860 px.",
   preUploadLinks: {
-    guideLabel: "Image with text",
-    templateUrl: "/placeholder_no_image.png",
+    guideLabel: "image with text",
+    guideUrl:
+      "https://support.isomer.gov.sg/en/articles/18459544-image-with-text-homepage",
+    templateUrl:
+      "https://isomer-user-content.by.gov.sg/Studio/Isomer%20-%20Image%20with%20text%20%28homepage%29%20%C2%B7%201280%C3%97860.png?original=true",
   },
 }
 
@@ -197,8 +200,7 @@ const INFOPIC_FULL_CONFIG: AdjustmentConfig = {
   imageField: "imageSrc",
   cropMode: "custom",
   focalEnabled: true,
-  // Same recommended 1280×860 (3:2) upload as Block. The section floors at
-  // 360px (min-h-[360px]) and grows with the copy.
+  // Same recommended 1280×860 upload as Block.
   maxRenderedWidthPx: 1280,
   maxRenderedHeightPx: 860,
   // Rough section shapes at the 360px floor; the real tile height is measured.
@@ -207,11 +209,13 @@ const INFOPIC_FULL_CONFIG: AdjustmentConfig = {
     tablet: { width: 2, height: 1 },
     desktop: { width: 3, height: 1 },
   }),
-  preUploadCopy:
-    "Recommended 1280 × 860 px (3:2). Keep the main subject centred and the description short.",
+  preUploadCopy: "Recommended 1280 × 860 px.",
   preUploadLinks: {
-    guideLabel: "Image with text",
-    templateUrl: "/placeholder_no_image.png",
+    guideLabel: "image with text",
+    guideUrl:
+      "https://support.isomer.gov.sg/en/articles/18459544-image-with-text-homepage",
+    templateUrl:
+      "https://isomer-user-content.by.gov.sg/Studio/Isomer%20-%20Image%20with%20text%20%28homepage%29%20%C2%B7%201280%C3%97860.png?original=true",
   },
 }
 
@@ -225,22 +229,22 @@ const HERO_LARGE_IMAGE_CONFIG: AdjustmentConfig = {
   imageField: "backgroundUrl",
   cropMode: "custom",
   focalEnabled: true,
-  // Warn below the recommended 2560×1280 (2:1) upload in preUploadCopy. The
-  // frame is 2:1 from md up (md:aspect-[2/1]). Crop is free (custom), so
-  // height is checked too.
-  maxRenderedWidthPx: 2560,
-  maxRenderedHeightPx: 1280,
+  // Warn below the recommended 1920×960 upload in preUploadCopy. Crop is free
+  // (custom), so height is checked too.
+  maxRenderedWidthPx: 1920,
+  maxRenderedHeightPx: 960,
   previewStates: responsivePreviewStates({
     mobile: { width: 1, height: 1 },
     tablet: { width: 2, height: 1 },
     desktop: { width: 2, height: 1 },
   }),
-  preUploadCopy:
-    "Recommended 2560 × 1280 px (2:1). Keep one clear subject centred. On phones the sides are cut off.",
-  // Same placeholder new blocks start with (public/placeholder_no_image.png).
+  preUploadCopy: "Recommended 1920 × 960 px.",
   preUploadLinks: {
-    guideLabel: "Hero banner",
-    templateUrl: "/placeholder_no_image.png",
+    guideLabel: "hero banner",
+    guideUrl:
+      "https://support.isomer.gov.sg/en/articles/10390602-editing-your-hero-banner",
+    templateUrl:
+      "https://isomer-user-content.by.gov.sg/Studio/Isomer%20-%20Hero%20banner%20Large%20image%20%C2%B7%201920%C3%97960.png?original=true",
   },
 }
 
