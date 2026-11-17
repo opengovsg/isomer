@@ -522,6 +522,32 @@ describe("resolveAdjustmentConfig", () => {
       ])
     })
 
+    it("uses layout-specific upload copy and blur thresholds", () => {
+      const resolve = (collectionVariant?: "collection" | "blog") =>
+        resolveAdjustmentConfig({
+          block: {},
+          fieldName: "src",
+          context: { isCollectionThumbnail: true, collectionVariant },
+        })!
+      const guideUrl =
+        "https://support.isomer.gov.sg/en/articles/18459803-managing-collection-thumbnails"
+
+      for (const [variant, copy, width] of [
+        ["collection", "Recommended 400 × 320 px.", 400],
+        [undefined, "Recommended 400 × 320 px.", 400],
+        ["blog", "Recommended 640 × 320 px.", 640],
+      ] as const) {
+        const config = resolve(variant)
+        expect(config.preUploadCopy).toBe(copy)
+        expect(config.maxRenderedWidthPx).toBe(width)
+        expect(config.maxRenderedHeightPx).toBe(320)
+        expect(config.preUploadLinks).toEqual({
+          guideLabel: "thumbnail",
+          guideUrl,
+        })
+      }
+    })
+
     it("defaults to the 1-column (CollectionCard) layout when the variant is unresolved", () => {
       const config = resolveAdjustmentConfig({
         block: {},
