@@ -306,8 +306,7 @@ const BLOCKQUOTE_CONFIG: AdjustmentConfig = {
   preUploadCopy: "Recommended 400 × 400 px.",
   preUploadLinks: {
     guideLabel: "quote",
-    guideUrl:
-      "https://support.isomer.gov.sg/en/articles/18459513-quote",
+    guideUrl: "https://support.isomer.gov.sg/en/articles/18459513-quote",
     templateUrl:
       "https://isomer-user-content.by.gov.sg/Studio/Isomer%20-%20Quote%20%C2%B7%20400%C3%97400.png?original=true",
   },
@@ -342,8 +341,7 @@ const INFOCARDS_WITH_IMAGES_CONFIG: AdjustmentConfig = {
   preUploadCopy: "Recommended 800 × 533 px.",
   preUploadLinks: {
     guideLabel: "cards",
-    guideUrl:
-      "https://support.isomer.gov.sg/en/articles/10425947-cards",
+    guideUrl: "https://support.isomer.gov.sg/en/articles/10425947-cards",
     templateUrl:
       "https://isomer-user-content.by.gov.sg/Studio/Isomer%20-%20Cards%20with%20images%20%C2%B7%20800%C3%97533.png?original=true",
   },
@@ -375,8 +373,7 @@ const INFOCARDS_WITH_FULL_IMAGE_CONFIG: AdjustmentConfig = {
   preUploadCopy: "Recommended 800 × 1200 px.",
   preUploadLinks: {
     guideLabel: "cards",
-    guideUrl:
-      "https://support.isomer.gov.sg/en/articles/10425947-cards",
+    guideUrl: "https://support.isomer.gov.sg/en/articles/10425947-cards",
     templateUrl:
       "https://isomer-user-content.by.gov.sg/Studio/Isomer%20-%20Cards%20with%20full%20images%20%C2%B7%20800%C3%971200.png?original=true",
   },
@@ -404,8 +401,7 @@ const IMAGE_CONFIG: AdjustmentConfig = {
     { id: "tablet", label: "Tablet", viewportWidth: 768 },
     { id: "desktop", label: "Desktop", viewportWidth: 1280 },
   ],
-  preUploadCopy:
-    "Recommended at least 1280 px wide, any height.",
+  preUploadCopy: "Recommended at least 1280 px wide, any height.",
   preUploadLinks: {
     guideLabel: "image",
     guideUrl: "https://support.isomer.gov.sg/en/articles/10425935-images",
@@ -440,8 +436,7 @@ const IMAGE_GALLERY_CONFIG: AdjustmentConfig = {
     tablet: { width: 3, height: 2 },
     desktop: { width: 2, height: 1 },
   }),
-  preUploadCopy:
-    "Recommended 960 × 640 px.",
+  preUploadCopy: "Recommended 960 × 640 px.",
   preUploadLinks: {
     guideLabel: "image gallery",
     guideUrl:
