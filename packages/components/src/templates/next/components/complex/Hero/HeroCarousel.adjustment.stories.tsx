@@ -25,8 +25,8 @@ const meta: Meta<typeof HeroCarousel> = {
 export default meta
 type Story = StoryObj<typeof HeroCarousel>
 
-// Production bakes the crop into the src, so crop is the full image here and
-// only `focal` acts at render time.
+// A full imageAdjustment object. Production bakes the crop into the src, so
+// crop is the full image here and only `focal` acts at render time.
 const adjustmentWithFocal = (x: number, y: number): ImageAdjustment => ({
   crop: { x: 0, y: 0, width: 1, height: 1 },
   focal: { x, y },
