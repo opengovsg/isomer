@@ -261,19 +261,21 @@ const HERO_FLOATING_CONFIG: AdjustmentConfig = {
   cropMode: "fixed",
   focalEnabled: false,
   lockedRatios: [{ width: 3, height: 2 }],
-  // Warn below the recommended 1920×1280 upload in preUploadCopy (the frame
-  // is ~1024px wide at most). Height follows the locked 3:2.
-  maxRenderedWidthPx: 1920,
+  // Warn below the recommended 1500×1000 upload in preUploadCopy. Height
+  // follows the locked 3:2.
+  maxRenderedWidthPx: 1500,
   previewStates: responsivePreviewStates({
     mobile: { width: 3, height: 2 },
     tablet: { width: 3, height: 2 },
     desktop: { width: 3, height: 2 },
   }),
-  preUploadCopy:
-    "Recommended 1920 × 1280 px (3:2). The whole image shows. Keep faces away from the bottom-left, where the text card sits.",
+  preUploadCopy: "Recommended 1500 × 1000 px.",
   preUploadLinks: {
-    guideLabel: "Hero banner",
-    templateUrl: "/placeholder_no_image.png",
+    guideLabel: "hero banner",
+    guideUrl:
+      "https://support.isomer.gov.sg/en/articles/10390602-editing-your-hero-banner",
+    templateUrl:
+      "https://isomer-user-content.by.gov.sg/Studio/Isomer%20-%20Hero%20banner%20Floating%20%C2%B7%201500%C3%971000.png?original=true",
   },
 }
 
@@ -289,19 +291,21 @@ const BLOCKQUOTE_CONFIG: AdjustmentConfig = {
   cropMode: "fixed",
   focalEnabled: false,
   lockedRatios: [{ width: 1, height: 1 }],
-  // Warn below the recommended 400×400 upload in preUploadCopy (the avatar
-  // renders at 240px on the homepage, w-60, and 96px elsewhere).
+  // Warn below the recommended 400×400 upload in preUploadCopy. Height follows
+  // the locked 1:1.
   maxRenderedWidthPx: 400,
   previewStates: responsivePreviewStates({
     mobile: { width: 1, height: 1 },
     tablet: { width: 1, height: 1 },
     desktop: { width: 1, height: 1 },
   }),
-  preUploadCopy:
-    "Recommended 400 × 400 px (1:1). Use a square headshot with the face centred. It's shown as a circle.",
+  preUploadCopy: "Recommended 400 × 400 px.",
   preUploadLinks: {
-    guideLabel: "Quote",
-    templateUrl: "/placeholder_no_image.png",
+    guideLabel: "quote",
+    guideUrl:
+      "https://support.isomer.gov.sg/en/articles/18459513-quote",
+    templateUrl:
+      "https://isomer-user-content.by.gov.sg/Studio/Isomer%20-%20Quote%20%C2%B7%20400%C3%97400.png?original=true",
   },
 }
 
@@ -320,11 +324,10 @@ const INFOCARDS_WITH_IMAGES_CONFIG: AdjustmentConfig = {
   cropMode: "custom",
   focalEnabled: true,
   ownsImageFitField: true,
-  // Warn below the recommended 1200×800 (3:2) upload in preUploadCopy. Cards
-  // render 1200px wide at 1 column down to ~260px at 4. Crop is free (custom),
-  // so height is checked too.
-  maxRenderedWidthPx: 1200,
-  maxRenderedHeightPx: 800,
+  // Warn below the recommended 800×533 upload in preUploadCopy. Crop is free
+  // (custom), so height is checked too.
+  maxRenderedWidthPx: 800,
+  maxRenderedHeightPx: 533,
   buildSingleItemPreviewBlock: buildSingleCardPreviewBlock,
   // Only a pre-measure guess: PreviewFrame measures the real card's height.
   previewStates: responsivePreviewStates({
@@ -332,11 +335,13 @@ const INFOCARDS_WITH_IMAGES_CONFIG: AdjustmentConfig = {
     tablet: { width: 3, height: 2 },
     desktop: { width: 3, height: 2 },
   }),
-  preUploadCopy:
-    "Recommended 1200 × 800 px (3:2). Keep the main subject centred with space on all sides.",
+  preUploadCopy: "Recommended 800 × 533 px.",
   preUploadLinks: {
-    guideLabel: "Cards",
-    templateUrl: "/placeholder_no_image.png",
+    guideLabel: "cards",
+    guideUrl:
+      "https://support.isomer.gov.sg/en/articles/10425947-cards",
+    templateUrl:
+      "https://isomer-user-content.by.gov.sg/Studio/Isomer%20-%20Cards%20with%20images%20%C2%B7%20800%C3%97533.png?original=true",
   },
 }
 
@@ -350,8 +355,8 @@ const INFOCARDS_WITH_FULL_IMAGE_CONFIG: AdjustmentConfig = {
   cropMode: "custom",
   focalEnabled: true,
   ownsImageFitField: true,
-  // Warn below the recommended 800×1200 (2:3) upload in preUploadCopy. Cards
-  // are square on mobile and portrait at lg (lg:aspect-[2/3]).
+  // Warn below the recommended 800×1200 upload in preUploadCopy. Crop is free
+  // (custom), so height is checked too.
   maxRenderedWidthPx: 800,
   maxRenderedHeightPx: 1200,
   // Renders the single card for real via buildSingleItemPreviewBlock.
@@ -363,11 +368,13 @@ const INFOCARDS_WITH_FULL_IMAGE_CONFIG: AdjustmentConfig = {
     tablet: { width: 1, height: 1 },
     desktop: { width: 2, height: 3 },
   }),
-  preUploadCopy:
-    "Recommended 800 × 1200 px (2:3). Keep the subject in the upper half, as the title covers the lower part.",
+  preUploadCopy: "Recommended 800 × 1200 px.",
   preUploadLinks: {
-    guideLabel: "Cards",
-    templateUrl: "/placeholder_no_image.png",
+    guideLabel: "cards",
+    guideUrl:
+      "https://support.isomer.gov.sg/en/articles/10425947-cards",
+    templateUrl:
+      "https://isomer-user-content.by.gov.sg/Studio/Isomer%20-%20Cards%20with%20full%20images%20%C2%B7%20800%C3%971200.png?original=true",
   },
 }
 
