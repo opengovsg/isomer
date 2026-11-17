@@ -536,17 +536,8 @@ export const ImageAdjustmentModal = ({
                   {lowResWarning && (
                     <Infobox variant="warning" size="sm">
                       <Text textStyle="body-2">
-                        This image may look blurry here. The area you've kept is
-                        about {lowResWarning.effectivePx}px{" "}
-                        {lowResWarning.dimension === "width" ? "wide" : "tall"},
-                        but it can display up to {lowResWarning.targetPx}
-                        px{" "}
-                        {lowResWarning.dimension === "width" ? "wide" : "tall"}.
-                        Use a larger image, or keep a{" "}
-                        {lowResWarning.dimension === "width"
-                          ? "wider"
-                          : "taller"}{" "}
-                        area in the crop.
+                        This crop may look blurry or pixelated. Select a larger
+                        area or upload a higher-resolution image.
                       </Text>
                     </Infobox>
                   )}
