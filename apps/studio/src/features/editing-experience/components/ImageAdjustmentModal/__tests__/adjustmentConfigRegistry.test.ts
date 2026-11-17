@@ -253,7 +253,7 @@ describe("resolveAdjustmentConfig", () => {
         label: "hero:gradient",
         block: { type: "hero", variant: "gradient" },
         fieldName: "backgroundUrl",
-        expectedHeight: 1440,
+        expectedHeight: 1080,
       },
       {
         label: "hero:block",
@@ -265,7 +265,7 @@ describe("resolveAdjustmentConfig", () => {
         label: "hero:largeImage",
         block: { type: "hero", variant: "largeImage" },
         fieldName: "backgroundUrl",
-        expectedHeight: 1280,
+        expectedHeight: 960,
       },
       {
         label: "infopic",
