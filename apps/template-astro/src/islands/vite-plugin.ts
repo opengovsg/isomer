@@ -3,7 +3,8 @@
 // 1. Server: when page code imports a "use client" module from isomer-components, swap the import
 //    for a generated module that wraps each exported component with renderIsland().
 // 2. Browser: provide `virtual:isomer-islands`, a map of lazy loaders (one per client module) that
-//    hydrate-islands.js uses to download only the islands present on the page.
+//    hydrate-islands.ts uses to download only the islands present on the page.
+import type { Plugin } from "vite"
 import fs from "node:fs"
 import path from "node:path"
 
@@ -11,7 +12,7 @@ const REGISTRY_ID = "virtual:isomer-islands"
 const RESOLVED_REGISTRY_ID = "\0" + REGISTRY_ID
 // Prefix for the generated wrapper modules: "\0isomer-island:/abs/path/to/Navbar.js".
 const WRAPPER_PREFIX = "\0isomer-island:"
-const RENDER_ISLAND = path.join(import.meta.dirname, "render-island.js")
+const RENDER_ISLAND = path.join(import.meta.dirname, "render-island.ts")
 
 // Vite reports real paths, so resolve the pnpm symlink once.
 const COMPONENTS_DIST = path.join(
@@ -23,7 +24,7 @@ const COMPONENTS_DIST = path.join(
 
 // "use client" modules that render as plain HTML instead of becoming islands, because their
 // client behaviour is unnecessary without Next or is re-implemented in static-behaviours.js.
-const NO_HYDRATION = {
+const NO_HYDRATION: Record<string, string> = {
   "templates/next/components/internal/Link/Link.js":
     "only reads LinkComponentContext, which defaults to a plain <a>",
   "templates/next/context/LinkComponentContext.js": "context only, no UI",
@@ -38,48 +39,52 @@ const NO_HYDRATION = {
 }
 
 // Stable id for a module, e.g. "templates/next/components/internal/Navbar/NavbarClient.js".
-const moduleKey = (file) => path.relative(COMPONENTS_DIST, file)
+const moduleKey = (file: string) => path.relative(COMPONENTS_DIST, file)
 
 // ---------------------------------------------------------------------------------------------
 // Finding client modules
 // ---------------------------------------------------------------------------------------------
 
-const clientModuleCache = new Map()
+const clientModuleCache = new Map<string, boolean>()
 
 /** True for isomer-components dist files that start with "use client". */
-const isClientModule = (file) => {
+const isClientModule = (file: string): boolean => {
   if (!file.startsWith(COMPONENTS_DIST) || !file.endsWith(".js")) return false
-  if (!clientModuleCache.has(file)) {
+  let isClient = clientModuleCache.get(file)
+  if (isClient === undefined) {
     const firstLine = fs.readFileSync(file, "utf8").slice(0, 32)
-    clientModuleCache.set(file, /^["']use client["']/.test(firstLine))
+    isClient = /^["']use client["']/.test(firstLine)
+    clientModuleCache.set(file, isClient)
   }
-  return clientModuleCache.get(file)
+  return isClient
 }
 
-const isIsland = (file) =>
+const isIsland = (file: string) =>
   isClientModule(file) && !(moduleKey(file) in NO_HYDRATION)
 
 /**
  * Exported component names of a dist module. Hooks (useX) and lowercase helpers are skipped.
  * tsc only emits `export const X`, `export function X` and `export { A, B as C }`.
  */
-const componentExports = (file) => {
+const componentExports = (file: string) => {
   const code = fs.readFileSync(file, "utf8")
   const declared = [...code.matchAll(/^export (?:const|function) (\w+)/gm)].map(
     (match) => match[1],
   )
   const listed = [...code.matchAll(/^export \{([^}]*)\}/gm)]
-    .flatMap((match) => match[1].split(","))
+    .flatMap((match) => (match[1] ?? "").split(","))
     .map((specifier) =>
       specifier
         .trim()
         .split(/\s+as\s+/)
         .pop(),
     )
-  return [...declared, ...listed].filter((name) => name && /^[A-Z]/.test(name))
+  return [...declared, ...listed].filter(
+    (name): name is string => !!name && /^[A-Z]/.test(name),
+  )
 }
 
-const allIslandModules = (dir = COMPONENTS_DIST) =>
+const allIslandModules = (dir = COMPONENTS_DIST): string[] =>
   fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
     const file = path.join(dir, entry.name)
     if (entry.isDirectory()) return allIslandModules(file)
@@ -91,7 +96,7 @@ const allIslandModules = (dir = COMPONENTS_DIST) =>
 // ---------------------------------------------------------------------------------------------
 
 /** Re-exports a client module with every component wrapped by renderIsland(). */
-const wrapperModule = (file) => {
+const wrapperModule = (file: string) => {
   const wrapped = componentExports(file).map((name) => {
     const islandKey = JSON.stringify(`${moduleKey(file)}#${name}`)
     return `export const ${name} = renderIsland(original.${name}, ${islandKey})`
@@ -118,18 +123,13 @@ const registryModule = () => {
 // Plugin
 // ---------------------------------------------------------------------------------------------
 
-const isServerBuild = (ctx, options) =>
-  ctx.environment
-    ? ctx.environment.config.consumer === "server"
-    : Boolean(options?.ssr)
-
-export const isomerIslands = () => ({
+export const isomerIslands = (): Plugin => ({
   name: "isomer-islands",
   enforce: "pre",
 
   async resolveId(source, importer, options) {
     if (source === REGISTRY_ID) return RESOLVED_REGISTRY_ID
-    if (!importer || !isServerBuild(this, options)) return null
+    if (!importer || this.environment.config.consumer !== "server") return null
     // The wrapper's own import of the original module must not be wrapped again.
     if (importer.startsWith(WRAPPER_PREFIX)) return null
     // Client -> client imports stay inside that island's tree, as with Next's "use client".

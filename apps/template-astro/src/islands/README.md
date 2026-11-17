@@ -8,24 +8,24 @@ on its own in the browser. This is the same boundary Next uses, without Next's r
 build (Node)                                         browser
 ──────────────────────────────────────────────       ─────────────────────────────────────────
 page imports NavbarClient ("use client")
-  │ vite-plugin.mjs swaps the import for
+  │ vite-plugin.ts swaps the import for
   │ renderIsland(NavbarClient)
   ▼
-render-island.js renders:
-  <isomer-island data-component="…#NavbarClient"  ──► hydrate-islands.js
+render-island.ts renders:
+  <isomer-island data-component="…#NavbarClient"  ──► hydrate-islands.ts
                  data-island-id=":R1:"                  finds each <isomer-island>,
                  data-props='{…}'>                      lazy-loads its module (virtual:isomer-islands),
     …server HTML…                                       hydrates it on load / visible / idle
   </isomer-island>
 ```
 
-| File                           | Runs                        | Job                                                                                                                                                                                                                                                                    |
-| ------------------------------ | --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `vite-plugin.mjs`              | build                       | Finds `"use client"` modules in isomer-components and wraps their server imports with `renderIsland()`. Also generates `virtual:isomer-islands`, one lazy loader per island module. Its `NO_HYDRATION` list holds client components that render as plain HTML instead. |
-| `render-island.js`             | build (SSR)                 | Renders a component as `<isomer-island>`, with its props as JSON. React-node props such as `children` become `<isomer-slot>` HTML. Each island is rendered as its own React root so `useId` values match on hydration.                                                 |
-| `hydrate-islands.js`           | browser                     | Hydrates islands. `HYDRATE_WHEN` sets per-component timing. React (or preact/compat) is only fetched if the page has an island.                                                                                                                                        |
-| `static-behaviours.js`         | browser, inline in `<head>` | Plain-JS replacements for the `NO_HYDRATION` components that still need behaviour (image fallback, back-to-top).                                                                                                                                                       |
-| `postcss-island-selectors.mjs` | build (CSS)                 | Keeps `:first-child`, `:last-child` and `:only-child` working through the `<isomer-island>` wrapper.                                                                                                                                                                   |
+| File                          | Runs                        | Job                                                                                                                                                                                                                                                                    |
+| ----------------------------- | --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `vite-plugin.ts`              | build                       | Finds `"use client"` modules in isomer-components and wraps their server imports with `renderIsland()`. Also generates `virtual:isomer-islands`, one lazy loader per island module. Its `NO_HYDRATION` list holds client components that render as plain HTML instead. |
+| `render-island.ts`            | build (SSR)                 | Renders a component as `<isomer-island>`, with its props as JSON. React-node props such as `children` become `<isomer-slot>` HTML. Each island is rendered as its own React root so `useId` values match on hydration.                                                 |
+| `hydrate-islands.ts`          | browser                     | Hydrates islands. `HYDRATE_WHEN` sets per-component timing. React (or preact/compat) is only fetched if the page has an island.                                                                                                                                        |
+| `static-behaviours.js`        | browser, inline in `<head>` | Plain-JS replacements for the `NO_HYDRATION` components that still need behaviour (image fallback, back-to-top).                                                                                                                                                       |
+| `postcss-island-selectors.ts` | build (CSS)                 | Keeps `:first-child`, `:last-child` and `:only-child` working through the `<isomer-island>` wrapper.                                                                                                                                                                   |
 
 ## Rules for component authors
 

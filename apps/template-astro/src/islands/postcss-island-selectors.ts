@@ -12,20 +12,22 @@
 //                         :first-child:where(isomer-island:first-child > *))
 //
 // :where() adds no specificity, so the rewritten selector wins and loses exactly where it did before.
+import type { PluginCreator } from "postcss"
+
 const PSEUDO_CLASSES = ["first-child", "last-child", "only-child"]
 const WRAPPER = "isomer-island"
 
 // (?<!\\) skips escaped colons inside Tailwind class names, e.g. .\[\&\:not\(\:first-child\)\].
 const PSEUDO_CLASS = new RegExp(`(?<!\\\\):(${PSEUDO_CLASSES.join("|")})`, "g")
 
-const rewrite = (selector) =>
+const rewrite = (selector: string) =>
   selector.replace(
     PSEUDO_CLASS,
-    (_, pseudo) =>
+    (_, pseudo: string) =>
       `:is(:${pseudo}:where(:not(${WRAPPER} > *)),:${pseudo}:where(${WRAPPER}:${pseudo} > *))`,
   )
 
-export const islandSelectors = () => ({
+export const islandSelectors: PluginCreator<void> = () => ({
   postcssPlugin: "isomer-island-selectors",
   Rule(rule) {
     if (rule.selector.includes(WRAPPER)) return

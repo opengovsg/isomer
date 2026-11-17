@@ -1,11 +1,11 @@
---- a/apps/template-astro/astro.config.mjs
-+++ b/apps/template-astro/astro.config.mjs
+--- a/apps/template-astro/astro.config.ts
++++ b/apps/template-astro/astro.config.ts
 @@ -15,6 +15,16 @@
    "react/jsx-dev-runtime": "preact/jsx-dev-runtime",
    react: "preact/compat",
  }
 +// EXPERIMENT: ISLANDS_RUNTIME=redact hydrates with TanStack Redact instead (needs @tanstack/redact).
-+const REDACT_ALIASES = {
++const REDACT_ALIASES: Record<string, string> = {
 +  "react-dom/client": "@tanstack/redact/dom-client",
 +  "react-dom": "@tanstack/redact/dom",
 +  "react/jsx-runtime": "@tanstack/redact/jsx-runtime",
@@ -32,7 +32,7 @@
  
  import { serializeForInlineScript } from "@isomer/validators"
  
-+import { renderIsland } from "../islands/render-island.js"
++import { renderIsland } from "../islands/render-island"
  import { renderHead } from "./head"
  import {
    assetsBaseUrl,
@@ -58,9 +58,9 @@
      appScripts,
      siteJsonLd,
      pageJsonLd: withPageJsonLd
---- a/apps/template-astro/src/islands/vite-plugin.mjs
-+++ b/apps/template-astro/src/islands/vite-plugin.mjs
-@@ -107,7 +107,11 @@
+--- a/apps/template-astro/src/islands/vite-plugin.ts
++++ b/apps/template-astro/src/islands/vite-plugin.ts
+@@ -112,7 +112,11 @@
  
  /** `export const loaders = { "<module key>": () => import("<file>"), ... }` */
  const registryModule = () => {

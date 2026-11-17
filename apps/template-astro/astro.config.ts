@@ -2,13 +2,13 @@ import { defineConfig } from "astro/config"
 import postcssPresetEnv from "postcss-preset-env"
 import tailwindcss from "tailwindcss"
 
-import { islandSelectors } from "./src/islands/postcss-island-selectors.mjs"
-import { isomerIslands } from "./src/islands/vite-plugin.mjs"
+import { islandSelectors } from "./src/islands/postcss-island-selectors"
+import { isomerIslands } from "./src/islands/vite-plugin"
 
 // Islands hydrate with preact/compat in the browser (~35 KB smaller than react-dom); SSR always
 // stays React. ISLANDS_RUNTIME=react is the fallback if a component misbehaves under compat.
 // Build only: `astro dev` pre-bundles deps outside the plugin pipeline, so dev hydrates with React.
-const PREACT_ALIASES = {
+const PREACT_ALIASES: Record<string, string> = {
   "react-dom/client": "preact/compat/client",
   "react-dom": "preact/compat",
   "react/jsx-runtime": "preact/jsx-runtime",
@@ -23,7 +23,7 @@ export default defineConfig({
   publicDir: "../template/public",
   trailingSlash: "always",
   build: { format: "directory", assets: "_isomer" },
-  // No client router, prefetch or dev toolbar: islands/hydrate-islands.js is the only first-party JS.
+  // No client router, prefetch or dev toolbar: islands/hydrate-islands.ts is the only first-party JS.
   prefetch: false,
   devToolbar: { enabled: false },
   // ASTRO_PARALLEL_PRERENDER=1 renders pages across worker threads (Astro 7.4+).

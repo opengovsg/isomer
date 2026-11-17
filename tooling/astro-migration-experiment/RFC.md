@@ -42,24 +42,24 @@ schema/*.json ──► Astro (static) ──► renderToString(<RenderEngine/>)
                                         ▼
                  <isomer-island data-k data-p>…SSR HTML…</isomer-island>
                                         │
-          islands/hydrate-islands.js: per page, lazily import only the islands present,
+          islands/hydrate-islands.ts: per page, lazily import only the islands present,
                     hydrate each one (load / visible / idle) with Preact
 ```
 
 1. **Astro is the static-site shell only.** It provides routing via `getStaticPaths` from `sitemap.json`, Vite, CSS handling and static output. We **don't use `@astrojs/react`**. Pages call `react-dom/server` `renderToString` on `RenderEngine` directly.
-2. **The islands Vite plugin** (`src/islands/vite-plugin.mjs`; `src/islands/README.md` has the end-to-end walkthrough) recreates Next's `"use client"` boundary:
+2. **The islands Vite plugin** (`src/islands/vite-plugin.ts`; `src/islands/README.md` has the end-to-end walkthrough) recreates Next's `"use client"` boundary:
    - **Server side:** when a server module imports a `"use client"` module from `isomer-components`, the plugin wraps each exported component. The wrapper SSRs the component inside an `<isomer-island>` marker with its serialized props.
    - **Client side:** a registry of lazy loaders means each page downloads only the island chunks it contains.
 3. **SSR'd React nodes passed as props** (for example `children`) become static `<isomer-slot>` HTML, the same model as Astro's own slots.
 4. **Each island is SSR'd as its own React root** with a unique `identifierPrefix`. Without this, `useId` values (react-aria depends on them) would mismatch on hydration.
 5. **Hydration timing per island.** Below-the-fold and widget islands (gallery, carousels, video, chat widgets) hydrate when `visible` or `idle`. Everything else hydrates on `load`.
-6. **Static tier: client components that don't need a framework once there's no client router.** They render as plain HTML, and 20 lines of inline JS (`static-behaviours.js`) replace their handlers. The list is `NO_HYDRATION` in `vite-plugin.mjs`:
+6. **Static tier: client components that don't need a framework once there's no client router.** They render as plain HTML, and 20 lines of inline JS (`static-behaviours.js`) replace their handlers. The list is `NO_HYDRATION` in `vite-plugin.ts`:
    - `Link`
    - `ScrollToTop`
    - `ClientCopyright`
    - `ImageClient` (`onError` placeholder swap)
    - `BackToTopLink` (scroll to top)
-7. **A PostCSS rewrite** (`postcss-island-selectors.mjs`) changes `:first-child`, `:last-child` and `:only-child` so that an island's root matches when its _wrapper_ does. Specificity is unchanged. Without it, Tailwind classes like `[&:not(:first-child)]:mt-6` break inside islands.
+7. **A PostCSS rewrite** (`postcss-island-selectors.ts`) changes `:first-child`, `:last-child` and `:only-child` so that an island's root matches when its _wrapper_ does. Specificity is unchanged. Without it, Tailwind classes like `[&:not(:first-child)]:mt-6` break inside islands.
 8. **Preact in the browser** (the default). The build aliases `react`/`react-dom` to `preact/compat` **for the client bundle only**; `ISLANDS_RUNTIME=react` switches back to React. Server rendering stays on React, so the HTML is identical either way.
 
 ### Why not `@astrojs/react`?
@@ -122,7 +122,7 @@ Astro renders pages in a single process by default. `parallelPrerender` (Astro 7
 
 ## What got harder
 
-- **We own an islands runtime.** About 400 lines across `vite-plugin.mjs`, `render-island.js`, `hydrate-islands.js`, `static-behaviours.js` and `postcss-island-selectors.mjs` (documented in `src/islands/README.md`). Next did this for us.
+- **We own an islands runtime.** About 400 lines across `vite-plugin.ts`, `render-island.ts`, `hydrate-islands.ts`, `static-behaviours.js` and `postcss-island-selectors.ts` (documented in `src/islands/README.md`). Next did this for us.
 - **Wrapper-element side effects:**
   - `<isomer-island>` is `display: contents`, so it doesn't affect layout.
   - The PostCSS rewrite covers the structural pseudo-classes.

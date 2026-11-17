@@ -1432,6 +1432,9 @@ importers:
       '@typescript/native-preview':
         specifier: 'catalog:'
         version: 7.0.0-dev.20260707.2
+      vite:
+        specifier: catalog:vitest
+        version: 8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3)
 
   packages/algolia:
     dependencies:

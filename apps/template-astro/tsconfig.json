@@ -4,9 +4,8 @@
     "lib": ["es2022", "dom", "dom.iterable"],
     "jsx": "react-jsx",
     "module": "esnext",
-    "moduleResolution": "bundler",
-    "checkJs": false
+    "moduleResolution": "bundler"
   },
-  "include": [".astro/types.d.ts", "src", "*.mjs"],
+  "include": [".astro/types.d.ts", "src", "*.ts"],
   "exclude": ["node_modules", "out", "dist"]
 }
