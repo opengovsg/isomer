@@ -46,8 +46,6 @@ import { useAssetUpload } from "../../hooks/useAssetUpload"
 import { isManagedSiteAsset } from "./isManagedSiteAsset"
 import { getCustomErrorMessage } from "./utils"
 
-const IMAGE_GUIDELINES_URL = "https://sample.isomer.gov.sg"
-
 // Covers the WebP VP8X flags and a PNG's acTL chunk, which sits before IDAT.
 const ANIMATION_SNIFF_BYTES = 64 * 1024
 
@@ -308,22 +306,26 @@ function JsonFormsImageControl({
         >
           <Text textStyle="body-2">
             {config.preUploadCopy}{" "}
-            {config.preUploadLinks ? (
+            {config.preUploadLinks && (
               <>
                 Read the{" "}
-                <Link href={IMAGE_GUIDELINES_URL} isExternal>
-                  image guide for {config.preUploadLinks.guideLabel}
-                </Link>{" "}
-                or{" "}
-                <Link href={config.preUploadLinks.templateUrl} download>
-                  download a template
-                </Link>{" "}
-                to plan your image.
+                <Link href={config.preUploadLinks.guideUrl} isExternal>
+                  {config.preUploadLinks.guideLabel} guide
+                </Link>
+                {config.preUploadLinks.templateUrl ? (
+                  <>
+                    {" "}
+                    or{" "}
+                    {/* No isExternal: the file downloads; a new tab would only flash. */}
+                    <Link href={config.preUploadLinks.templateUrl} download>
+                      download a template
+                    </Link>{" "}
+                    for your image.
+                  </>
+                ) : (
+                  " to plan your image."
+                )}
               </>
-            ) : (
-              <Link href={IMAGE_GUIDELINES_URL} isExternal>
-                Learn more about image guidelines
-              </Link>
             )}
           </Text>
         </Infobox>
