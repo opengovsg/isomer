@@ -434,6 +434,24 @@ describe("resolveAdjustmentConfig", () => {
       }
     })
 
+    it("hero carousel with centred gradient text keeps the gradient copy but has no template link", () => {
+      const heroGradient = resolveAdjustmentConfig({
+        block: { type: "hero", variant: "gradient" },
+        fieldName: "backgroundUrl",
+      })
+      const config = resolveAdjustmentConfig({
+        block: {
+          type: "hero",
+          variant: "carousel",
+          carousel: { layout: "gradient", contentAlignment: "center" },
+        },
+        fieldName: "backgroundUrl",
+      })
+      expect(config?.preUploadCopy).toBe(heroGradient?.preUploadCopy)
+      expect(config?.preUploadLinks?.guideLabel).toBeDefined()
+      expect(config?.preUploadLinks?.templateUrl).toBeUndefined()
+    })
+
     it("hero carousel previews the edited slide in the real component, keeping its siblings so the band height still reflects the tallest slide", () => {
       const first = { title: "First" }
       const second = { title: "Second" }
