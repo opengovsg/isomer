@@ -20,7 +20,6 @@
     "@isomer/validators": "workspace:*",
     "@opengovsg/isomer-components": "workspace:*",
     "astro": "catalog:",
-    "cookie": "catalog:",
     "isomorphic-dompurify": "catalog:",
     "jsdom": "catalog:",
     "postcss": "catalog:",

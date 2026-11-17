@@ -16,16 +16,20 @@ const PAGES = [
   "/database/",
 ]
 const VARIANTS = {
-  "react-islands": {},
-  "preact-islands": { ISLANDS_RUNTIME: "preact" },
+  "preact-islands": {}, // the default
+  "react-islands": { ISLANDS_RUNTIME: "react" },
   // These two need `git apply tooling/astro-migration-experiment/variants.patch` (+ the
   // @tanstack/redact dependency); they were removed from apps/template-astro after the experiment.
   "redact-islands": { ISLANDS_RUNTIME: "redact" },
   "whole-tree-react": { ISLANDS_MODE: "whole-tree", ISLANDS_RUNTIME: "react" },
 }
-const selected = process.argv.slice(2).length
-  ? process.argv.slice(2)
-  : Object.keys(VARIANTS)
+// --reuse-next: skip building Next and recording its screenshots; reuse the ones already on disk.
+// packages/components has been simplified for Astro on this branch, so apps/template no longer
+// builds here: the Next reference must come from an earlier build (main, or commit 0df990a56).
+const args = process.argv.slice(2)
+const reuseNext = args.includes("--reuse-next")
+const names = args.filter((arg) => arg !== "--reuse-next")
+const selected = names.length ? names : Object.keys(VARIANTS)
 
 const run = (cmd, args, opts = {}) => {
   const r = spawnSync(cmd, args, {
@@ -36,7 +40,7 @@ const run = (cmd, args, opts = {}) => {
   return { ok: r.status === 0, out: `${r.stdout}${r.stderr}` }
 }
 
-// next's CLI sometimes stops once to show an upgrade nudge; the same command succeeds on retry.
+// next's CLI can stop once with a prompt; the same command succeeds on retry.
 const buildNext = () => {
   for (let i = 0; i < 4; i++)
     if (run("pnpm", ["build:template"], { cwd: TEMPLATE }).ok) return
@@ -52,14 +56,16 @@ execFileSync("pnpm", ["fixture:make", fixture, "60"], {
 })
 execFileSync("node", ["scripts/fixture.mjs", "apply", fixture], { cwd: EXP })
 try {
-  buildNext()
-  const nextBaseline = run(
-    "pnpm",
-    ["exec", "playwright", "test", "--project=next", "--update-snapshots"],
-    { cwd: EXP },
-  )
-  if (!nextBaseline.ok)
-    throw new Error(`next baseline failed:\n${nextBaseline.out.slice(-3000)}`)
+  if (!reuseNext) {
+    buildNext()
+    const nextBaseline = run(
+      "pnpm",
+      ["exec", "playwright", "test", "--project=next", "--update-snapshots"],
+      { cwd: EXP },
+    )
+    if (!nextBaseline.ok)
+      throw new Error(`next baseline failed:\n${nextBaseline.out.slice(-3000)}`)
+  }
 
   for (const name of selected) {
     const env = VARIANTS[name]

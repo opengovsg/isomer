@@ -1,6 +1,6 @@
 --- a/apps/template-astro/astro.config.ts
 +++ b/apps/template-astro/astro.config.ts
-@@ -15,6 +15,16 @@
+@@ -14,6 +14,16 @@
    "react/jsx-dev-runtime": "preact/jsx-dev-runtime",
    react: "preact/compat",
  }
@@ -17,7 +17,7 @@
  const USE_PREACT = process.env.ISLANDS_RUNTIME !== "react"
  
  export default defineConfig({
-@@ -70,7 +80,7 @@
+@@ -62,7 +72,7 @@
          applyToEnvironment: (env) =>
            env.name === "client" && env.config.command === "build" && USE_PREACT,
          resolveId(source, importer, options) {
@@ -33,10 +33,10 @@
  import { serializeForInlineScript } from "@isomer/validators"
  
 +import { renderIsland } from "../islands/render-island"
- import { renderHead } from "./head"
  import {
    assetsBaseUrl,
-@@ -60,6 +61,12 @@
+   config,
+@@ -50,6 +51,12 @@
    "h",
  )
  
@@ -49,9 +49,9 @@
  export const renderPage = (
    schema: IsomerPageSchemaType,
    { withPageJsonLd = true } = {},
-@@ -68,7 +75,7 @@
+@@ -58,7 +65,7 @@
    return {
-     head: renderHead(getMetadata(renderSchema), config.site.siteName),
+     head: toHtml(<RenderPageHead {...renderSchema} />, "m"),
      headScripts,
 -    body: toHtml(<RenderEngine {...renderSchema} />, "b"),
 +    body: toHtml(<Engine {...renderSchema} />, "b"),
@@ -60,7 +60,7 @@
      pageJsonLd: withPageJsonLd
 --- a/apps/template-astro/src/islands/vite-plugin.ts
 +++ b/apps/template-astro/src/islands/vite-plugin.ts
-@@ -112,7 +112,11 @@
+@@ -95,7 +95,11 @@
  
  /** `export const loaders = { "<module key>": () => import("<file>"), ... }` */
  const registryModule = () => {

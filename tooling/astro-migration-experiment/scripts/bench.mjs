@@ -50,8 +50,8 @@ const treeRss = (rootPid) => {
 const buildOnce = ({ cwd, clean, env }) =>
   new Promise((resolve, reject) => {
     for (const dir of clean) {
-      // Keep next's agent-upgrade retry receipts (the rest of .next, incl. webpack cache, goes),
-      // otherwise every cold build re-triggers its security-upgrade nudge.
+      // Keep next's CLI retry state (the rest of .next, incl. webpack cache, goes) so cold builds
+      // aren't interrupted by its one-time CLI prompt.
       const receipts = path.join(cwd, dir, "cache/next-agentic-upgrade-retries")
       const saved =
         fs.existsSync(receipts) &&
@@ -86,7 +86,7 @@ const buildOnce = ({ cwd, clean, env }) =>
     })
   })
 
-// next's CLI intermittently aborts with SecurityFatalError (advisory check); retry those.
+// next's CLI can stop once with a prompt; the same command succeeds on retry.
 const build = async (variant) => {
   for (let attempt = 1; ; attempt++) {
     try {

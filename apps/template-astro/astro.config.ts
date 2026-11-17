@@ -2,7 +2,6 @@ import { defineConfig } from "astro/config"
 import postcssPresetEnv from "postcss-preset-env"
 import tailwindcss from "tailwindcss"
 
-import { islandSelectors } from "./src/islands/postcss-island-selectors"
 import { isomerIslands } from "./src/islands/vite-plugin"
 
 // Islands hydrate with preact/compat in the browser (~35 KB smaller than react-dom); SSR always
@@ -20,7 +19,6 @@ const USE_PREACT = process.env.ISLANDS_RUNTIME !== "react"
 export default defineConfig({
   output: "static",
   outDir: "out",
-  publicDir: "../template/public",
   trailingSlash: "always",
   build: { format: "directory", assets: "_isomer" },
   // No client router, prefetch or dev toolbar: islands/hydrate-islands.ts is the only first-party JS.
@@ -33,13 +31,7 @@ export default defineConfig({
   vite: {
     // isomer-components is a linked workspace package; without this, dev loads a second React.
     resolve: { dedupe: ["react", "react-dom"] },
-    // Inline instead of postcss.config.mjs: postcss-load-config registers a loader hook that
-    // breaks Node module resolution for the rest of the build.
-    css: {
-      postcss: {
-        plugins: [tailwindcss(), islandSelectors(), postcssPresetEnv()],
-      },
-    },
+    css: { postcss: { plugins: [tailwindcss(), postcssPresetEnv()] } },
     // Bundle everything into the SSR build: isomerIslands must see isomer-components' internal
     // imports, and bare imports left in out/.prerender resolve from the app root, where pnpm
     // doesn't expose isomer-components' own deps (react would otherwise load twice).

@@ -6,8 +6,9 @@ import { getSitemapXml } from "@opengovsg/isomer-components"
 import fs from "node:fs"
 import path from "node:path"
 
-// Reads apps/template's data/, schema/ and sitemap.json (where the publisher writes them).
-const SITE_DIR = path.resolve(process.cwd(), "../template")
+// The publisher writes the site into data/, schema/ and sitemap.json; the committed ones are a
+// sample site for local builds.
+const SITE_DIR = process.cwd()
 const INDEX_PAGE_PERMALINK = "_index"
 
 const readJson = <T>(file: string): T =>
@@ -49,7 +50,7 @@ const sitemapEntries = getSitemapXml(sitemap).map(({ url, lastModified }) => ({
 
 export const getPermalinks = () => sitemapEntries.map((e) => e.permalink)
 
-// Mirrors apps/template's getSchema: `a/b.json`, then `a/b/_index.json` (or `_index.json` for /).
+// `a/b.json`, then `a/b/_index.json` (`_index.json` for /).
 export const getSchema = (joinedPermalink: string): IsomerPageSchemaType => {
   const candidates =
     joinedPermalink === ""

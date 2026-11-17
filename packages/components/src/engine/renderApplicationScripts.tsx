@@ -20,13 +20,14 @@ import { ZendeskWidget } from "../templates/next/components/internal/Zendesk"
 interface RenderApplicationScriptsProps {
   site: Omit<IsomerSiteProps, "lastUpdated" | "navbar" | "footerItems">
   themeColors: IsomerSiteThemeProps["colors"]
-  ScriptComponent: ScriptComponentType
+  // e.g. next/script; defaults to a plain <script>
+  ScriptComponent?: ScriptComponentType
 }
 
 export const RenderApplicationScripts = ({
   site,
   themeColors,
-  ScriptComponent,
+  ScriptComponent = "script",
 }: RenderApplicationScriptsProps) => {
   return (
     <>

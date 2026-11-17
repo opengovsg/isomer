@@ -1,13 +1,4 @@
-"use client"
-
-// React 19 / Next.js 16 forbids passing functions as props across the
-// server→client boundary (they are not serializable). LinkComponent is a
-// React component (function), so it cannot be forwarded via props from a
-// Server Component down to any "use client" leaf. Instead, the consuming app
-// wraps its tree with LinkComponentProvider (a Client Component that imports
-// the framework's Link directly), and client components read it via
-// useLinkComponent() — keeping the function entirely within the client module
-// graph and never touching the serialisation boundary.
+// Lets the host swap the element links render as (Studio passes a FakeLink that doesn't navigate).
 import type { LinkComponentType } from "~/types"
 import { createContext, useContext } from "react"
 

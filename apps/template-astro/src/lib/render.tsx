@@ -1,18 +1,17 @@
 import type { IsomerPageSchemaType } from "@opengovsg/isomer-components"
-import type { ComponentProps, ReactNode } from "react"
+import type { ReactNode } from "react"
 import {
-  getMetadata,
   getPageJsonLd,
   getSiteJsonLd,
   RenderApplicationHeadScripts,
   RenderApplicationScripts,
   RenderEngine,
+  RenderPageHead,
 } from "@opengovsg/isomer-components"
 import { renderToString } from "react-dom/server"
 
 import { serializeForInlineScript } from "@isomer/validators"
 
-import { renderHead } from "./head"
 import {
   assetsBaseUrl,
   config,
@@ -21,14 +20,6 @@ import {
   siteProps,
   sitemap,
 } from "./site"
-
-// next/script stand-in for RenderApplicationScripts: plain <script>, no client loader.
-const PlainScript = ({
-  strategy: _strategy,
-  ...props
-}: ComponentProps<"script"> & { strategy?: string }) => (
-  <script {...props} async={props.src ? true : undefined} />
-)
 
 // Each top-level render gets its own prefix so useId values never collide across renders.
 const toHtml = (node: ReactNode, identifierPrefix: string) =>
@@ -50,7 +41,6 @@ const appScripts = toHtml(
     }}
     // @ts-expect-error same loose typing as apps/template
     themeColors={config.colors}
-    ScriptComponent={PlainScript}
   />,
   "s",
 )
@@ -66,7 +56,7 @@ export const renderPage = (
 ) => {
   const renderSchema = { ...schema, site: siteProps } as IsomerPageSchemaType
   return {
-    head: renderHead(getMetadata(renderSchema), config.site.siteName),
+    head: toHtml(<RenderPageHead {...renderSchema} />, "m"),
     headScripts,
     body: toHtml(<RenderEngine {...renderSchema} />, "b"),
     appScripts,

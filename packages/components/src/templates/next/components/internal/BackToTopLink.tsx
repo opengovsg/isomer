@@ -1,5 +1,3 @@
-"use client"
-
 import { BiUpArrowAlt } from "react-icons/bi"
 import { tv } from "~/lib/tv"
 import { twMerge } from "~/lib/twMerge"
@@ -29,7 +27,7 @@ export const BackToTopLink = ({
   return (
     <button
       type="button"
-      // Lets non-React renderers (apps/template-astro) attach the scroll behaviour without hydrating.
+      // Hook for hosts that render this without hydrating (apps/template-astro's static-behaviours.js).
       data-isomer-back-to-top
       className={twMerge(buttonStyle(), className)}
       onClick={handleClick}

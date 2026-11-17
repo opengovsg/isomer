@@ -2,13 +2,17 @@
 @tailwind components;
 @tailwind utilities;
 
-/* next/font sets --font-inter in apps/template; here it's the fontsource family. */
+/* Tailwind's preset reads the font family from --font-inter. */
 :root {
   --font-inter: "Inter Variable";
 }
 
-/* Island/slot markers are layout-transparent (same approach as Astro's <astro-island>). */
-isomer-island,
-isomer-slot {
+/* Island markers are layout-transparent (same approach as Astro's <astro-island>). */
+isomer-island {
   display: contents;
+}
+
+/* Set by static-behaviours.js before first paint, so a dismissed notification never flashes. */
+[data-notification-dismissed] [data-isomer-notification] {
+  display: none;
 }

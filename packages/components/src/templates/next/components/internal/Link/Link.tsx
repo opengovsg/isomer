@@ -1,5 +1,3 @@
-"use client"
-
 import type { LinkProps } from "~/interfaces/internal/Link"
 import { BiRightArrowAlt } from "react-icons/bi"
 import { tv } from "~/lib/tv"

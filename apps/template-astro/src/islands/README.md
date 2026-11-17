@@ -19,16 +19,16 @@ render-island.ts renders:
   </isomer-island>
 ```
 
-| File                          | Runs                        | Job                                                                                                                                                                                                                                                                    |
-| ----------------------------- | --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `vite-plugin.ts`              | build                       | Finds `"use client"` modules in isomer-components and wraps their server imports with `renderIsland()`. Also generates `virtual:isomer-islands`, one lazy loader per island module. Its `NO_HYDRATION` list holds client components that render as plain HTML instead. |
-| `render-island.ts`            | build (SSR)                 | Renders a component as `<isomer-island>`, with its props as JSON. React-node props such as `children` become `<isomer-slot>` HTML. Each island is rendered as its own React root so `useId` values match on hydration.                                                 |
-| `hydrate-islands.ts`          | browser                     | Hydrates islands. `HYDRATE_WHEN` sets per-component timing. React (or preact/compat) is only fetched if the page has an island.                                                                                                                                        |
-| `static-behaviours.js`        | browser, inline in `<head>` | Plain-JS replacements for the `NO_HYDRATION` components that still need behaviour (image fallback, back-to-top).                                                                                                                                                       |
-| `postcss-island-selectors.ts` | build (CSS)                 | Keeps `:first-child`, `:last-child` and `:only-child` working through the `<isomer-island>` wrapper.                                                                                                                                                                   |
+| File                   | Runs                         | Job                                                                                                                                                                                 |
+| ---------------------- | ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `vite-plugin.ts`       | build                        | Finds `"use client"` modules in isomer-components and wraps their server imports with `renderIsland()`. Also generates `virtual:isomer-islands`, one lazy loader per island module. |
+| `render-island.ts`     | build (SSR)                  | Renders a component as `<isomer-island>`, with its props as JSON. Each island is rendered as its own React root so `useId` values match on hydration.                               |
+| `hydrate-islands.ts`   | browser                      | Hydrates islands. `HYDRATE_WHEN` sets per-component timing. React (or preact/compat) is only fetched if the page has an island.                                                     |
+| `static-behaviours.js` | browser, inlined in `<head>` | The few behaviours of components that are deliberately _not_ islands: image fallback, back-to-top, notification dismiss. Plain JS because it's inlined verbatim.                    |
 
 ## Rules for component authors
 
-- Props passed into a `"use client"` component must be JSON-serializable, or be React nodes, which become slots. The build fails with the prop's path if not. This is the same rule RSC enforces.
-- React context does not cross into an island. An island only sees context it provides itself.
-- If you add interactivity to a component listed in `NO_HYDRATION`, remove it from the list. Otherwise the interactivity silently won't run on published sites.
+- **Only mark a component `"use client"` if it needs React state or effects in the browser.** Every one becomes an island, with its own JS chunk and hydration cost. For a click handler or two, emit a `data-isomer-*` attribute and handle it in `static-behaviours.js`, the way `BackToTopLink` and `Notification` do.
+- **Props passed into a `"use client"` component must be plain data.** No functions and no React elements; the build fails with the prop name if not. Render children _inside_ the client component instead.
+- **React context doesn't cross into an island.** An island only sees context it provides itself.
+- **Don't style an island's root element with `first:` / `last:` / `only:` variants.** The root sits inside an `<isomer-island>` wrapper, so those always match. Put that spacing on the server-rendered parent instead (see `ImageGallery`).

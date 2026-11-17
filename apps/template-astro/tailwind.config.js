@@ -3,7 +3,7 @@
 import { createNextPreset, isomerSiteTheme } from "@opengovsg/isomer-components"
 import plugin from "tailwindcss/plugin"
 
-import siteConfig from "../template/data/config.json"
+import siteConfig from "./data/config.json"
 
 /** @type {import('tailwindcss').Config} */
 const config = {

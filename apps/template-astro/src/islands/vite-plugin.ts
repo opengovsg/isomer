@@ -22,22 +22,6 @@ const COMPONENTS_DIST = path.join(
   "dist/esm",
 )
 
-// "use client" modules that render as plain HTML instead of becoming islands, because their
-// client behaviour is unnecessary without Next or is re-implemented in static-behaviours.js.
-const NO_HYDRATION: Record<string, string> = {
-  "templates/next/components/internal/Link/Link.js":
-    "only reads LinkComponentContext, which defaults to a plain <a>",
-  "templates/next/context/LinkComponentContext.js": "context only, no UI",
-  "templates/next/components/internal/ScrollToTop.js":
-    "works around next/link scrolling; there is no client router here",
-  "templates/next/components/internal/Footer/ClientCopyright.js":
-    "client-side year; rendered at build time instead",
-  "templates/next/components/internal/ImageClient/ImageClient.js":
-    "onError placeholder swap lives in static-behaviours.js",
-  "templates/next/components/internal/BackToTopLink.js":
-    "scroll-to-top click lives in static-behaviours.js",
-}
-
 // Stable id for a module, e.g. "templates/next/components/internal/Navbar/NavbarClient.js".
 const moduleKey = (file: string) => path.relative(COMPONENTS_DIST, file)
 
@@ -58,9 +42,6 @@ const isClientModule = (file: string): boolean => {
   }
   return isClient
 }
-
-const isIsland = (file: string) =>
-  isClientModule(file) && !(moduleKey(file) in NO_HYDRATION)
 
 /**
  * Exported component names of a dist module. Hooks (useX) and lowercase helpers are skipped.
@@ -88,7 +69,9 @@ const allIslandModules = (dir = COMPONENTS_DIST): string[] =>
   fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
     const file = path.join(dir, entry.name)
     if (entry.isDirectory()) return allIslandModules(file)
-    return isIsland(file) && componentExports(file).length > 0 ? [file] : []
+    return isClientModule(file) && componentExports(file).length > 0
+      ? [file]
+      : []
   })
 
 // ---------------------------------------------------------------------------------------------
@@ -139,7 +122,7 @@ export const isomerIslands = (): Plugin => ({
       ...options,
       skipSelf: true,
     })
-    return resolved && isIsland(resolved.id)
+    return resolved && isClientModule(resolved.id)
       ? WRAPPER_PREFIX + resolved.id
       : null
   },

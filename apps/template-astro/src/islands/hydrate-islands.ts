@@ -1,10 +1,7 @@
 // Browser half of the islands runtime: hydrates every <isomer-island> rendered by
 // render-island.ts. Only the modules of islands present on the page are downloaded, and React
 // (or preact/compat, see astro.config.ts) is only downloaded if the page has any island.
-import type { createElement as CreateElement } from "react"
 import { loaders } from "virtual:isomer-islands"
-
-import type { IslandJson } from "./render-island"
 
 type HydrateWhen = "load" | "visible" | "idle"
 
@@ -44,29 +41,6 @@ const whenIdle = (callback: () => void) =>
     ? requestIdleCallback(callback)
     : setTimeout(callback, 200)
 
-/** Turns data-props JSON back into props, replacing { $slot } with its server-rendered HTML. */
-const toProps = (
-  json: IslandJson,
-  slotHtml: Record<string, string>,
-  createElement: typeof CreateElement,
-): unknown => {
-  if (Array.isArray(json))
-    return json.map((item) => toProps(item, slotHtml, createElement))
-  if (!json || typeof json !== "object") return json
-  if (typeof json.$slot === "string")
-    return createElement("isomer-slot", {
-      "data-slot": json.$slot,
-      suppressHydrationWarning: true,
-      dangerouslySetInnerHTML: { __html: slotHtml[json.$slot] ?? "" },
-    })
-  return Object.fromEntries(
-    Object.entries(json).map(([key, value]) => [
-      key,
-      toProps(value, slotHtml, createElement),
-    ]),
-  )
-}
-
 const islands = document.querySelectorAll<HTMLElement>("isomer-island")
 const importReact = () =>
   Promise.all([import("react"), import("react-dom/client")])
@@ -79,13 +53,6 @@ if (islands.length) void loadReact()
 for (const island of islands) {
   const { component = "", islandId, props = "{}" } = island.dataset
   const [moduleKey = "", exportName = ""] = component.split("#")
-  // Read slot HTML now, before any island's hydration can change the DOM.
-  const slotHtml = Object.fromEntries(
-    [...island.querySelectorAll<HTMLElement>("isomer-slot")].map((slot) => [
-      slot.dataset.slot ?? "",
-      slot.innerHTML,
-    ]),
-  )
 
   const hydrate = async () => {
     const loadModule = loaders[moduleKey]
@@ -101,11 +68,7 @@ for (const island of islands) {
 
     const element = createElement(
       Component,
-      toProps(
-        JSON.parse(props) as IslandJson,
-        slotHtml,
-        createElement,
-      ) as Record<string, unknown>,
+      JSON.parse(props) as Record<string, unknown>,
     )
     hydrateRoot(island, element, { identifierPrefix: islandId })
   }
