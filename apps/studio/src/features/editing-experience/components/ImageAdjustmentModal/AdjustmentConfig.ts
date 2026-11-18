@@ -1,13 +1,14 @@
 import type {
+  ImageAdjustment,
   IsomerComponent,
   IsomerPageLayoutType,
 } from "@opengovsg/isomer-components"
+import type { ReactNode } from "react"
 
 // FROZEN CONTRACT (W0-A / ISOM-2587). The per-component declaration that drives
 // the component-agnostic image adjustment modal (W0-D). Every per-component
 // fan-out task (M2/M3) adds one entry implementing this shape; the modal reads
-// it and contains no component-specific logic of its own. Change this only with
-// orchestrator sign-off — it is the interface the whole feature is built on.
+// it and contains no component-specific logic of its own.
 
 // fixed  = one or more locked aspect ratios.
 // custom = free-form crop (native Image block, P2 — out of scope for v1).
@@ -34,13 +35,51 @@ export interface AdjustmentRenderContext {
   pageLayout?: IsomerPageLayoutType
 }
 
-// For an array-nested image field, builds a block that holds only the
-// edited item. `editedItem` is the field host with the adjusted image
-// patched in. Return undefined to use the framed-image approximation.
-export type BuildSingleItemPreviewBlock = (
-  ownerBlock: IsomerComponent,
-  editedItem: Record<string, unknown>,
-) => IsomerComponent | undefined
+// What a preview builder gets. The modal fills this in.
+export interface AdjustmentPreviewContext {
+  block: IsomerComponent
+  // The object that holds the image field. It is `block` itself for a
+  // root-level field, and one array item for a nested one.
+  fieldHost: Record<string, unknown>
+  // fieldHost's position in its array, from the form path. Undefined when
+  // it is not an array item.
+  itemIndex: number | undefined
+  imageFieldName: string
+  adjustedSrc: string
+  adjustment: ImageAdjustment | undefined
+  objectFit: "cover" | "contain"
+}
+
+export interface AdjustmentPreviewBuild {
+  component: IsomerComponent
+  // Wraps the rendered component, e.g. in a context provider. The preview
+  // calls it as a plain function, so React never remounts the component.
+  wrapPreview?: (children: ReactNode) => ReactNode
+}
+
+// Builds what the real-component preview renders. Anything one component
+// needs for its preview goes here, never in AdjustmentPreview. Return
+// undefined to use the framed-image approximation.
+export type BuildAdjustmentPreview = (
+  ctx: AdjustmentPreviewContext,
+) => AdjustmentPreviewBuild | undefined
+
+// The field host with the adjusted image and the draft adjustment patched in.
+export const withAdjustedImage = (
+  ctx: AdjustmentPreviewContext,
+): Record<string, unknown> => ({
+  ...ctx.fieldHost,
+  [ctx.imageFieldName]: ctx.adjustedSrc,
+  [`${ctx.imageFieldName}ImageAdjustment`]: ctx.adjustment,
+})
+
+// The default builder. A root-level field renders the patched block. An
+// array-nested field needs its own builder, since the real component would
+// render every item.
+export const buildRootPreview: BuildAdjustmentPreview = (ctx) =>
+  ctx.fieldHost === ctx.block
+    ? { component: withAdjustedImage(ctx) as unknown as IsomerComponent }
+    : undefined
 
 export interface AdjustmentConfig {
   // Block/component type key this config applies to.
@@ -78,9 +117,8 @@ export interface AdjustmentConfig {
   // Use the framed-image approximation, not the real component. For an
   // array-nested field whose component can't render a single item.
   skipRealComponentPreview?: boolean
-  // Builds the one-item block for an array-nested field's real-component
-  // preview. Without it the preview uses the framed-image approximation.
-  buildSingleItemPreviewBlock?: BuildSingleItemPreviewBlock
+  // Builds the real-component preview. Defaults to buildRootPreview.
+  buildPreview?: BuildAdjustmentPreview
   // The modal's fit control writes to a sibling imageFit field, e.g.
   // InfoCards' "Resize image to fit".
   ownsImageFitField?: boolean
