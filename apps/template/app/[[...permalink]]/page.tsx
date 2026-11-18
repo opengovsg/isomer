@@ -1,4 +1,7 @@
-import type { IsomerPageSchemaType } from "@opengovsg/isomer-components"
+import type {
+  IsomerPageSchemaType,
+  IsomerSitemap,
+} from "@opengovsg/isomer-components"
 import type { Metadata, ResolvingMetadata } from "next"
 import config from "@/data/config.json"
 import footer from "@/data/footer.json"
@@ -50,12 +53,9 @@ const lastUpdated =
   " " +
   timeNow.getFullYear()
 
-// Leading/trailing slashes so "/about/" matches joinedPermalink "about"
 const permalinkKey = (url: string) => url.replace(/^\//, "").replace(/\/$/, "")
 
-// TODO: fixup all the typing errors
-// @ts-expect-error to fix when types are proper
-const sitemapXml = getSitemapXml(sitemap)
+const sitemapXml = getSitemapXml(sitemap as IsomerSitemap)
 const lastModifiedByPermalink = new Map(
   sitemapXml.map(({ url, lastModified }) => [permalinkKey(url), lastModified]),
 )
