@@ -107,6 +107,7 @@ function JsonFormsImageControl({
   const {
     block,
     fieldHost,
+    fieldHostIndex,
     fieldName,
     siblingPath,
     currentAdjustment,
@@ -374,6 +375,7 @@ function JsonFormsImageControl({
               block={block}
               imageFieldName={fieldName}
               fieldHost={fieldHost}
+              fieldHostIndex={fieldHostIndex}
               originalFile={originalFile}
               pageLayout={pageLayout}
               siteId={siteId}
