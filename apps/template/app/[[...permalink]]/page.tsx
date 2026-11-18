@@ -16,29 +16,31 @@ import {
 } from "@opengovsg/isomer-components"
 import { notFound } from "next/navigation"
 import { readFileSync } from "node:fs"
-import { isAbsolute, join, relative } from "node:path"
+import { join } from "node:path"
 
 import { serializeForInlineScript } from "@isomer/validators"
 
 export const dynamic = "force-static"
 
 const INDEX_PAGE_PERMALINK = "_index"
-const SCHEMA_DIR = join(process.cwd(), "schema")
+// A dynamic schema import is one webpack chunk per page.
+// Dev serves `.local-publish/schema` (see next.config). Export reads `schema/`.
+const SCHEMA_DIR = join(
+  process.cwd(),
+  process.env.NODE_ENV === "development" ? ".local-publish/schema" : "schema",
+)
 
-const isEnoent = (error: unknown) =>
-  error instanceof Error &&
-  "code" in error &&
-  (error as { code?: string }).code === "ENOENT"
-
-// Webpack turns a dynamic `import("@/schema/${permalink}.json")` into one server
-// chunk per schema file and then minifies each chunk. The export only needs
-// the JSON, so read the file instead.
-const readSchemaFile = (relativePath: string): IsomerPageSchemaType => {
-  const filePath = join(SCHEMA_DIR, relativePath)
-  const fromSchemaDir = relative(SCHEMA_DIR, filePath)
-  if (fromSchemaDir.startsWith("..") || isAbsolute(fromSchemaDir)) notFound()
-
-  return JSON.parse(readFileSync(filePath, "utf8")) as IsomerPageSchemaType
+const readSchemaFile = (
+  relativePath: string,
+): IsomerPageSchemaType | undefined => {
+  try {
+    return JSON.parse(
+      readFileSync(join(SCHEMA_DIR, relativePath), "utf8"),
+    ) as IsomerPageSchemaType
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") return
+    throw error
+  }
 }
 
 interface ParamsContent {
@@ -75,26 +77,17 @@ const lastModifiedByPermalink = new Map(
   sitemapXml.map(({ url, lastModified }) => [permalinkKey(url), lastModified]),
 )
 
-const getSchema = async ({ permalink }: Pick<ParamsContent, "permalink">) => {
+const getSchema = ({ permalink }: Pick<ParamsContent, "permalink">) => {
   const joinedPermalink: string = permalink.join("/")
   // A folder index lives at `folder/_index.json`. The site root is `_index.json`.
-  const indexPath =
-    joinedPermalink === ""
-      ? `${INDEX_PAGE_PERMALINK}.json`
-      : `${joinedPermalink}/${INDEX_PAGE_PERMALINK}.json`
-
-  let schema: IsomerPageSchemaType
-  try {
-    schema = readSchemaFile(`${joinedPermalink}.json`)
-  } catch (error) {
-    if (!isEnoent(error)) throw error
-    try {
-      schema = readSchemaFile(indexPath)
-    } catch (indexError) {
-      if (isEnoent(indexError)) notFound()
-      throw indexError
-    }
-  }
+  const schema =
+    readSchemaFile(`${joinedPermalink}.json`) ??
+    readSchemaFile(
+      joinedPermalink === ""
+        ? `${INDEX_PAGE_PERMALINK}.json`
+        : `${joinedPermalink}/${INDEX_PAGE_PERMALINK}.json`,
+    )
+  if (!schema) notFound()
 
   const lastModified =
     lastModifiedByPermalink.get(joinedPermalink) || new Date().toISOString()
@@ -115,7 +108,7 @@ export const generateMetadata = async (
   props: DynamicPageProps,
   _parent: ResolvingMetadata,
 ): Promise<Metadata> => {
-  const schema = await getSchema({
+  const schema = getSchema({
     permalink: await getPatchedPermalink(props),
   })
   schema.site = {
@@ -135,7 +128,7 @@ export const generateMetadata = async (
 }
 
 const Page = async (props: DynamicPageProps) => {
-  const renderSchema = await getSchema({
+  const renderSchema = getSchema({
     permalink: await getPatchedPermalink(props),
   })
   const pageJsonLd = getPageJsonLd({
