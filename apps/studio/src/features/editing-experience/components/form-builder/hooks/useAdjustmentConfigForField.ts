@@ -46,13 +46,13 @@ export const useAdjustmentConfigForField = (path: string) => {
 
   const pathParts = path.split(".")
   const fieldName = pathParts.pop() ?? ""
-  const parentPath = pathParts.join(".")
   // The host's position in its array, e.g. 1 for "slides.1". Undefined when
   // the host is not an array item.
   const lastParentPart = Number(pathParts.at(-1))
   const fieldHostIndex = Number.isInteger(lastParentPart)
     ? lastParentPart
     : undefined
+  const parentPath = pathParts.join(".")
 
   // The page thumbnail sits directly on the page object, so its parentPath is
   // exactly "image".

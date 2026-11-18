@@ -9,6 +9,7 @@ import { describe, expect, it } from "vitest"
 
 import type {
   AdjustmentConfig,
+  AdjustmentPreviewContext,
   AdjustmentRenderContext,
 } from "../AdjustmentConfig"
 import {
@@ -47,6 +48,41 @@ const renderBlockHtml = (
       headingLevel: 1,
     }),
   )
+
+// Runs a config's preview builder the way AdjustmentPreview does. The edited
+// image is always "/edited.png".
+const buildPreview = (
+  config: AdjustmentConfig | undefined,
+  ctx: Partial<Omit<AdjustmentPreviewContext, "block">> & {
+    block: unknown
+    fieldHost: Record<string, unknown>
+  },
+) =>
+  config?.buildPreview?.({
+    itemIndex: undefined,
+    imageFieldName: config.imageField,
+    adjustedSrc: "/edited.png",
+    adjustment: undefined,
+    objectFit: "cover",
+    ...ctx,
+    block: ctx.block as IsomerComponent,
+  })
+
+// The preview's static HTML, wrapper included.
+const previewHtml = (
+  built: ReturnType<typeof buildPreview>,
+  layout: IsomerPageLayoutType = "content",
+): string => {
+  if (!built) return ""
+  const node = renderComponent({
+    component: built.component,
+    layout,
+    site: SITE_STUB,
+    permalink: "",
+    headingLevel: 1,
+  })
+  return renderToStaticMarkup(built.wrapPreview?.(node) ?? node)
+}
 
 describe("resolveAdjustmentConfig", () => {
   it("returns undefined for components not yet wired", () => {
@@ -166,7 +202,7 @@ describe("resolveAdjustmentConfig", () => {
         // Array-nested field: both variants render the real edited card, not a
         // hand-built approximation — every other wired component gets a real preview too.
         expect(config?.skipRealComponentPreview).toBeFalsy()
-        expect(config?.buildSingleItemPreviewBlock).toBeTypeOf("function")
+        expect(config?.buildPreview).toBeTypeOf("function")
       }
     })
 
@@ -191,13 +227,13 @@ describe("resolveAdjustmentConfig", () => {
         maxColumns: "3",
         cards: [originalCard, { imageUrl: "/other.png" }],
       }
-      const editedCard = { imageUrl: "/new.png" }
-      const preview = withImages!.buildSingleItemPreviewBlock!(
-        block as IsomerComponent,
-        editedCard,
-        0,
-      )!.component as Record<string, unknown>
-      expect(preview.cards).toEqual([editedCard])
+      const preview = buildPreview(withImages, {
+        block,
+        fieldHost: originalCard,
+      })!.component as Record<string, unknown>
+      expect(preview.cards).toEqual([
+        { imageUrl: "/edited.png", imageFit: "cover" },
+      ])
       expect(preview.title).toBe("")
       expect(preview.subtitle).toBeUndefined()
       expect(preview.label).toBeUndefined()
@@ -218,13 +254,9 @@ describe("resolveAdjustmentConfig", () => {
         layout: "content",
         cards: [cardA, cardB, cardC],
       }
-      const editedCard = { ...cardB, imageUrl: "/edited.png" }
-      const preview = withImages?.buildSingleItemPreviewBlock?.(
-        block as IsomerComponent,
-        editedCard,
-        1,
-      )?.component
-      const html = renderBlockHtml(preview, "content")
+      const html = previewHtml(
+        buildPreview(withImages, { block, fieldHost: cardB }),
+      )
 
       expect(html.match(/<img/g)).toHaveLength(1)
       expect(html).toContain("/edited.png")
@@ -242,16 +274,35 @@ describe("resolveAdjustmentConfig", () => {
         layout: "content",
         cards: [card],
       }
-      const editedCard = { ...card, imageUrl: "/edited.png" }
-      const preview = fullImage?.buildSingleItemPreviewBlock?.(
-        block as IsomerComponent,
-        editedCard,
-        0,
-      )?.component
-      const html = renderBlockHtml(preview, "content")
+      const html = previewHtml(
+        buildPreview(fullImage, { block, fieldHost: card }),
+      )
 
       expect(html).toContain("Real title")
       expect(html).toContain("bg-gradient-to-t")
+    })
+
+    it("puts the lone card in a one-column grid and follows the Fit/Fill choice", () => {
+      const card = { imageUrl: "/a.png", imageAlt: "a", title: "Card" }
+      const block = {
+        type: "infocards",
+        variant: "cardsWithImages",
+        maxColumns: "3",
+        layout: "content",
+        cards: [card, card],
+      }
+      const html = previewHtml(
+        buildPreview(withImages, {
+          block,
+          fieldHost: card,
+          objectFit: "contain",
+        }),
+      )
+
+      // The wrapper targets the grid by its class, so both must be present.
+      expect(html).toContain("[&amp;_.auto-rows-max]:!grid-cols-1")
+      expect(html).toMatch(/class="[^"]*\bauto-rows-max\b/)
+      expect(html).toContain("object-contain")
     })
 
     it("previews exactly Mobile/Tablet/Desktop", () => {
@@ -283,6 +334,31 @@ describe("resolveAdjustmentConfig", () => {
       expect(configs[0]?.lockedRatios).toEqual([{ width: 1, height: 1 }])
       expect(configs[1]).toBe(configs[0])
       expect(configs[2]).toBe(configs[0])
+    })
+
+    it("shows the image in the preview when the alt text is empty, and keeps a real alt", () => {
+      const config = resolveAdjustmentConfig({
+        block: { type: "blockquote" },
+        fieldName: "imageSrc",
+      })
+      const block = {
+        type: "blockquote",
+        quote: "A quote",
+        source: "A source",
+        imageSrc: "/a.png",
+      }
+      const withAlt = { ...block, imageAlt: "The minister" }
+
+      const html = previewHtml(
+        buildPreview(config, { block, fieldHost: block }),
+      )
+      const htmlWithAlt = previewHtml(
+        buildPreview(config, { block: withAlt, fieldHost: withAlt }),
+      )
+
+      expect(html).toContain("<img")
+      expect(html).toContain("/edited.png")
+      expect(htmlWithAlt).toContain('alt="The minister"')
     })
   })
 
@@ -453,10 +529,10 @@ describe("resolveAdjustmentConfig", () => {
       expect(config?.preUploadLinks?.templateUrl).toBeUndefined()
     })
 
-    it("hero carousel builder swaps in the edited slide, keeps its siblings and reports its index", () => {
-      const first = { title: "First" }
-      const second = { title: "Second" }
-      const third = { title: "Third" }
+    it("hero carousel preview shows the edited slide and keeps its siblings", () => {
+      const first = { title: "First", backgroundUrl: "/first.png" }
+      const second = { title: "Second", backgroundUrl: "/second.png" }
+      const third = { title: "Third", backgroundUrl: "/third.png" }
       const block = {
         type: "hero",
         variant: "carousel",
@@ -467,26 +543,25 @@ describe("resolveAdjustmentConfig", () => {
         block,
         fieldName: "backgroundUrl",
       })
-      const edited = { title: "Second", backgroundUrl: "/baked.webp" }
 
       expect(config?.skipRealComponentPreview).toBeFalsy()
-      const built = config?.buildSingleItemPreviewBlock?.(
-        block as never,
-        edited,
-        1,
-      )
-      expect(built).toMatchObject({
-        component: { slides: [first, edited, third] },
-        activeIndex: 1,
+      const built = buildPreview(config, {
+        block,
+        fieldHost: second,
+        itemIndex: 1,
       })
+      expect(built?.component).toMatchObject({
+        slides: [
+          first,
+          { title: "Second", backgroundUrl: "/edited.png" },
+          third,
+        ],
+      })
+      // The carousel announces its current slide. Without the wrapper it
+      // would start on slide 1.
+      expect(previewHtml(built, "homepage")).toContain("Slide 2 of 3: Second")
       // No index means the framed-image fallback.
-      expect(
-        config?.buildSingleItemPreviewBlock?.(
-          block as never,
-          edited,
-          undefined,
-        ),
-      ).toBeUndefined()
+      expect(buildPreview(config, { block, fieldHost: second })).toBeUndefined()
     })
 
     it("fixed-crop (baked-once, same shape every breakpoint) components have focal disabled", () => {
