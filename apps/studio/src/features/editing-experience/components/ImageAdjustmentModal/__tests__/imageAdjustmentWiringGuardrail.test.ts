@@ -68,9 +68,9 @@ const FOCAL_WIRING_CONFIGS: {
       block: { type: "hero", variant: "largeImage" },
       fieldName: "backgroundUrl",
     },
+    // ImageContainer.tsx is client code and only gets the resolved string.
     componentPaths: [
       "packages/components/src/templates/next/components/complex/Hero/HeroLargeImage/HeroLargeImage.tsx",
-      "packages/components/src/templates/next/components/complex/Hero/HeroLargeImage/ImageContainer.tsx",
     ],
     storyPaths: [
       "packages/components/src/templates/next/components/complex/Hero/HeroLargeImage/HeroLargeImage.adjustment.stories.tsx",
