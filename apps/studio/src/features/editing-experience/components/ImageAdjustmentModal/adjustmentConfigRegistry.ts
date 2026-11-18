@@ -1,12 +1,14 @@
 import type { IsomerComponent } from "@opengovsg/isomer-components"
+import { createElement } from "react"
 
 import type {
   AdjustmentConfig,
   AdjustmentPreviewState,
   AdjustmentRenderContext,
   AspectRatio,
-  BuildSingleItemPreviewBlock,
+  BuildAdjustmentPreview,
 } from "./AdjustmentConfig"
+import { withAdjustedImage } from "./AdjustmentConfig"
 
 /** These component types never get image adjustment, by design. */
 export const INTENTIONALLY_NOT_ADJUSTABLE = [
@@ -15,18 +17,20 @@ export const INTENTIONALLY_NOT_ADJUSTABLE = [
   "navbar",
 ] as const
 
-// Builds the InfoCards block the real-component preview renders: ONLY the card
-// being edited, so it fills the tile (AdjustmentPreview forces the grid to one
-// column). Drops the section's title/subtitle/link button. Keeps
-// maxColumns/layout/variant so the card's per-breakpoint frame aspect (e.g.
-// lg:aspect-square) matches the live page.
-const buildSingleCardPreviewBlock: BuildSingleItemPreviewBlock = (
-  block,
-  card,
-) => {
+// Builds the InfoCards preview: ONLY the card being edited, in a one-column
+// grid so it fills the tile. Drops the section's title/subtitle/link button.
+// Keeps maxColumns/layout/variant so the card's per-breakpoint frame aspect
+// (e.g. lg:aspect-square) matches the live page.
+const buildSingleCardPreview: BuildAdjustmentPreview = (ctx) => {
+  const { block } = ctx
   if (block.type !== "infocards" || block.variant === "cardsWithoutImages")
     return undefined
-  const editedCard = card as (typeof block.cards)[number]
+  // The card reads `imageFit`, so the preview follows the modal's Fit/Fill
+  // toggle.
+  const editedCard = {
+    ...withAdjustedImage(ctx),
+    imageFit: ctx.objectFit,
+  } as (typeof block.cards)[number]
   const preview: typeof block = {
     ...block,
     title: "",
@@ -35,7 +39,29 @@ const buildSingleCardPreviewBlock: BuildSingleItemPreviewBlock = (
     label: undefined,
     cards: [editedCard],
   }
-  return preview
+  return {
+    component: preview,
+    // `auto-rows-max` is the grid's class in InfoCards/common.ts.
+    wrapPreview: (children) =>
+      createElement(
+        "div",
+        { className: "[&_.auto-rows-max]:!grid-cols-1" },
+        children,
+      ),
+  }
+}
+
+// Blockquote hides its image when the alt text is empty. Fill it in for the
+// preview only, so the image still shows.
+const buildBlockquotePreview: BuildAdjustmentPreview = (ctx) => {
+  const alt = ctx.fieldHost.imageAlt
+  return {
+    component: {
+      ...withAdjustedImage(ctx),
+      imageAlt:
+        typeof alt === "string" && alt.length > 0 ? alt : "Preview image",
+    } as unknown as IsomerComponent,
+  }
 }
 
 // The three breakpoint widths every editor preview uses. Only the aspect
@@ -298,6 +324,7 @@ const BLOCKQUOTE_CONFIG: AdjustmentConfig = {
   // Warn below the recommended 400×400 upload in preUploadCopy. Height follows
   // the locked 1:1.
   maxRenderedWidthPx: 400,
+  buildPreview: buildBlockquotePreview,
   previewStates: responsivePreviewStates({
     mobile: { width: 1, height: 1 },
     tablet: { width: 1, height: 1 },
@@ -318,8 +345,7 @@ const BLOCKQUOTE_CONFIG: AdjustmentConfig = {
 // crop baked in, focal anchors the subject across the swing). Crop is always
 // offered; focal is offered only under imageFit "cover" (isFocalApplicable) —
 // under "contain" the image is letterboxed, so the focal control is hidden.
-// The preview renders the edited card for real (via
-// buildSingleItemPreviewBlock), so the real per-breakpoint frame shows without
+// The preview renders the edited card for real (via buildSingleCardPreview), so the real per-breakpoint frame shows without
 // this config having to replicate it.
 const INFOCARDS_WITH_IMAGES_CONFIG: AdjustmentConfig = {
   componentType: "infocards:cardsWithImages",
@@ -331,7 +357,7 @@ const INFOCARDS_WITH_IMAGES_CONFIG: AdjustmentConfig = {
   // (custom), so height is checked too.
   maxRenderedWidthPx: 800,
   maxRenderedHeightPx: 533,
-  buildSingleItemPreviewBlock: buildSingleCardPreviewBlock,
+  buildPreview: buildSingleCardPreview,
   // Only a pre-measure guess: PreviewFrame measures the real card's height.
   previewStates: responsivePreviewStates({
     mobile: { width: 3, height: 2 },
@@ -361,8 +387,8 @@ const INFOCARDS_WITH_FULL_IMAGE_CONFIG: AdjustmentConfig = {
   // (custom), so height is checked too.
   maxRenderedWidthPx: 800,
   maxRenderedHeightPx: 1200,
-  // Renders the single card for real via buildSingleItemPreviewBlock.
-  buildSingleItemPreviewBlock: buildSingleCardPreviewBlock,
+  // Renders the single card for real.
+  buildPreview: buildSingleCardPreview,
   // Card is square up to lg, then 2:3 portrait at lg: square on mobile/tablet,
   // portrait on desktop.
   previewStates: responsivePreviewStates({
