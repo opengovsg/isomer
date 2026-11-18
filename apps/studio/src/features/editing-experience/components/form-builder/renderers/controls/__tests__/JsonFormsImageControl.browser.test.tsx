@@ -23,6 +23,10 @@ vi.mock("~/hooks/useQueryParse", () => ({
 
 // Stand-in for the presign + PUT round trip; the control only sees the path
 // that FileAttachment reports once it succeeds.
+vi.mock("~/hooks/useUploadLinkTarget", () => ({
+  useUploadLinkTarget: () => ({ resourceId: "1" }),
+}))
+
 vi.mock("~/hooks/useUploadAssetMutation", () => ({
   useUploadAssetMutation: () => ({
     mutate: (

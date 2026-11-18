@@ -1,4 +1,5 @@
 import type { AttachmentProps } from "@opengovsg/design-system-react"
+import type { UploadLinkTarget } from "~/hooks/useUploadAssetMutation"
 import { FormControl, Skeleton, Text } from "@chakra-ui/react"
 import { Attachment } from "@opengovsg/design-system-react"
 import { uniq } from "lodash-es"
@@ -17,7 +18,7 @@ const RiskyFileUploadModal = dynamic(() =>
 interface FileAttachmentProps {
   setHref: (href?: string) => void
   siteId: number
-  resourceId?: string
+  target: UploadLinkTarget
   maxSizeInBytes: number
   acceptedFileTypes: Record<string, string>
   isLoading?: boolean
@@ -30,7 +31,7 @@ type FileRejections = AttachmentProps<false>["rejections"]
 export const FileAttachment = ({
   setHref,
   siteId,
-  resourceId,
+  target,
   maxSizeInBytes,
   acceptedFileTypes,
   isLoading = false,
@@ -44,7 +45,7 @@ export const FileAttachment = ({
   // TODO: Add a mutation for deletion next time of s3 resources
   const { mutate: uploadFile } = useUploadAssetMutation({
     siteId,
-    resourceId,
+    target,
   })
 
   const doUpload = (file: File) => {

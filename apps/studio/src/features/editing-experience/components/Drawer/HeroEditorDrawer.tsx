@@ -64,7 +64,10 @@ export default function HeroEditorDrawer(): JSX.Element {
       },
     })
   const { mutateAsync: uploadAsset, isPending: isUploadingAsset } =
-    useUploadAssetMutation({ siteId, resourceId: String(pageId) })
+    useUploadAssetMutation({
+      siteId,
+      target: { resourceId: String(pageId) },
+    })
 
   const isLoading = isSavingPage || isUploadingAsset
 

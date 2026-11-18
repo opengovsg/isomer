@@ -1,13 +1,17 @@
-import type { z } from "zod"
-import type { getPresignedPutUrlSchema } from "~/schemas/asset"
+import type { SiteWideAssetSource } from "~/schemas/asset"
 import { useMutation } from "@tanstack/react-query"
 import { performUpload } from "~/lib/storage/client"
 import { trpc } from "~/utils/trpc"
 
-type UploadAssetMutationParams = Pick<
-  z.infer<typeof getPresignedPutUrlSchema>,
-  "siteId" | "resourceId"
->
+// Every upload must name what it is for, so the server can link the asset
+export type UploadLinkTarget =
+  | { resourceId: string }
+  | { source: SiteWideAssetSource }
+
+interface UploadAssetMutationParams {
+  siteId: number
+  target: UploadLinkTarget
+}
 
 export interface UploadAssetMutationInput {
   file: File
@@ -21,7 +25,7 @@ export interface UploadAssetMutationOutput {
 
 export const useUploadAssetMutation = ({
   siteId,
-  resourceId,
+  target,
 }: UploadAssetMutationParams) => {
   const { mutateAsync: getPresignedPutUrl } =
     trpc.asset.getPresignedPutUrl.useMutation()
@@ -36,7 +40,7 @@ export const useUploadAssetMutation = ({
           const content = await file.text()
           const { fileKey } = await uploadSvg({
             siteId,
-            resourceId,
+            ...target,
             fileName: effectiveName,
             content,
             tags: scheduledAt
@@ -53,7 +57,7 @@ export const useUploadAssetMutation = ({
 
         const { fileKey, uploadConfig } = await getPresignedPutUrl({
           siteId,
-          resourceId,
+          ...target,
           fileName: effectiveName,
           fileSize: file.size,
           tags: scheduledAt

@@ -46,7 +46,7 @@ function JsonFormsMetaImageControl(props: JsonFormsMetaImageControlProps) {
   const toast = useToast()
   const { mutate: uploadFile } = useUploadAssetMutation({
     siteId,
-    resourceId: String(pageId),
+    target: { resourceId: String(pageId) },
   })
 
   return (
