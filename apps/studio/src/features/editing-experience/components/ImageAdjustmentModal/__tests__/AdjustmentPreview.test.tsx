@@ -27,7 +27,7 @@ vi.mock("../useSaveImageAdjustment", () => ({
   fetchImageBlob: () => new Promise(() => undefined),
 }))
 vi.mock("@opengovsg/isomer-components", async (importOriginal) => ({
-  ...((await importOriginal()) as object),
+  ...(await importOriginal()),
   renderComponent: () => <span>rendered block</span>,
 }))
 
