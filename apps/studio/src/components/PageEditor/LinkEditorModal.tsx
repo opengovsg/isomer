@@ -1,5 +1,6 @@
 import type { IconType } from "react-icons"
 import type { LinkTypes } from "~/features/editing-experience/components/LinkEditor/constants"
+import type { UploadLinkTarget } from "~/hooks/useUploadAssetMutation"
 import {
   Box,
   FormControl,
@@ -37,6 +38,7 @@ import {
 } from "~/features/editing-experience/schema"
 import { useLinkEditorFileMetaSuffix } from "~/hooks/useLinkEditorFileMetaSuffix"
 import { useQueryParse } from "~/hooks/useQueryParse"
+import { useUploadLinkTarget } from "~/hooks/useUploadLinkTarget"
 import {
   FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING,
   MAX_FILE_SIZE_BYTES,
@@ -145,13 +147,14 @@ const LinkEditorModalContent = ({
 
   const isEditingLink = !!linkText && !!linkHref
 
-  // Pages outside a site (e.g. the central banner) cannot pick pages or files
   const { query } = useRouter()
   const parsedSite = pageOrLinkSchema.safeParse(query)
   const site = parsedSite.success ? parsedSite.data : null
-  const availableLinkTypes = site
-    ? linkTypes
-    : omit(linkTypes, [LINK_TYPES.Page, LINK_TYPES.File])
+  const uploadTarget = useUploadLinkTarget()
+  const availableLinkTypes = getAvailableLinkTypes(linkTypes, {
+    hasSite: !!site,
+    canUpload: !!uploadTarget,
+  })
 
   const onSubmit = handleSubmit(({ linkText, linkHref }) =>
     onSave(buildFinalLinkTextForSave(linkText, linkHref), linkHref),
@@ -199,7 +202,11 @@ const LinkEditorModalContent = ({
               }
               error={errors.linkHref?.message}
             >
-              <ModalLinkEditor site={site} onUploadedFile={onUploadedFile} />
+              <ModalLinkEditor
+                site={site}
+                uploadTarget={uploadTarget}
+                onUploadedFile={onUploadedFile}
+              />
               {errors.linkHref?.message && (
                 <FormErrorMessage>{errors.linkHref.message}</FormErrorMessage>
               )}
@@ -252,6 +259,19 @@ export interface LinkEditorModalProps {
     }
   >
 }
+// Pages outside a site (e.g. the central banner) cannot pick pages or files,
+// and uploads need a page or site-wide section to link the file to
+export const getAvailableLinkTypes = <T extends Record<string, unknown>>(
+  linkTypes: T,
+  { hasSite, canUpload }: { hasSite: boolean; canUpload: boolean },
+) => {
+  if (!hasSite) {
+    return omit(linkTypes, [LINK_TYPES.Page, LINK_TYPES.File])
+  }
+
+  return canUpload ? linkTypes : omit(linkTypes, [LINK_TYPES.File])
+}
+
 export const LinkEditorModal = ({
   isOpen,
   onClose,
@@ -289,9 +309,11 @@ export const LinkEditorModal = ({
 
 const ModalLinkEditor = ({
   site,
+  uploadTarget,
   onUploadedFile,
 }: {
   site: z.infer<typeof pageOrLinkSchema> | null
+  uploadTarget: UploadLinkTarget | undefined
   onUploadedFile?: (file: File) => void
 }) => {
   const { error, curHref, setHref } = useLinkEditor()
@@ -309,7 +331,7 @@ const ModalLinkEditor = ({
     )
   }
 
-  const { siteId, pageId, linkId } = site
+  const { siteId } = site
 
   return (
     <LinkHrefEditor
@@ -322,17 +344,17 @@ const ModalLinkEditor = ({
         getLinkHrefType(curHref) === LINK_TYPES.File ? (
           <AttachmentData data={curHref} onClick={() => setHref("")} />
         ) : (
-          <FileAttachment
-            maxSizeInBytes={MAX_FILE_SIZE_BYTES}
-            acceptedFileTypes={FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING}
-            siteId={Number(siteId)}
-            resourceId={
-              (pageId ?? linkId) ? String(pageId ?? linkId) : undefined
-            }
-            setHref={(href) => setHref(href ?? "")}
-            onUploadedFile={onUploadedFile}
-            enableRiskyFileWarning={true}
-          />
+          uploadTarget && (
+            <FileAttachment
+              maxSizeInBytes={MAX_FILE_SIZE_BYTES}
+              acceptedFileTypes={FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING}
+              siteId={Number(siteId)}
+              target={uploadTarget}
+              setHref={(href) => setHref(href ?? "")}
+              onUploadedFile={onUploadedFile}
+              enableRiskyFileWarning={true}
+            />
+          )
         )
       }
     />

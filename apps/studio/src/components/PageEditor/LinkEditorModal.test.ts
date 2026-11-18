@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest"
 
-import { linkEditorSchema } from "./LinkEditorModal"
+import { LINK_TYPES } from "~/features/editing-experience/components/LinkEditor/constants"
+
+import { getAvailableLinkTypes, linkEditorSchema } from "./LinkEditorModal"
 
 describe("linkEditorSchema", () => {
   it("accepts a valid external link", () => {
@@ -135,5 +137,46 @@ describe("linkEditorSchema", () => {
       linkHref,
     })
     expect(result.success).toBe(false)
+  })
+})
+
+describe("getAvailableLinkTypes", () => {
+  const linkTypes = {
+    [LINK_TYPES.Page]: { label: "Page" },
+    [LINK_TYPES.File]: { label: "File" },
+    [LINK_TYPES.External]: { label: "External" },
+  }
+
+  it("offers every link type when there is a site and an upload target", () => {
+    // Arrange / Act
+    const result = getAvailableLinkTypes(linkTypes, {
+      hasSite: true,
+      canUpload: true,
+    })
+
+    // Assert
+    expect(Object.keys(result)).toEqual(Object.keys(linkTypes))
+  })
+
+  it("hides file links when nothing names an upload target", () => {
+    // Arrange / Act
+    const result = getAvailableLinkTypes(linkTypes, {
+      hasSite: true,
+      canUpload: false,
+    })
+
+    // Assert
+    expect(Object.keys(result)).toEqual([LINK_TYPES.Page, LINK_TYPES.External])
+  })
+
+  it("hides page and file links outside a site", () => {
+    // Arrange / Act
+    const result = getAvailableLinkTypes(linkTypes, {
+      hasSite: false,
+      canUpload: false,
+    })
+
+    // Assert
+    expect(Object.keys(result)).toEqual([LINK_TYPES.External])
   })
 })

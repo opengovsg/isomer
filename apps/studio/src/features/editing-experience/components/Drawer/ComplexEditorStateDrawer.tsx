@@ -71,7 +71,10 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
     })
 
   const { mutateAsync: uploadAsset, isPending: isUploadingAsset } =
-    useUploadAssetMutation({ siteId, resourceId: String(pageId) })
+    useUploadAssetMutation({
+      siteId,
+      target: { resourceId: String(pageId) },
+    })
 
   const handleDeleteBlock = useCallback(() => {
     const currentBlock = savedPageState.content[currActiveIdx]

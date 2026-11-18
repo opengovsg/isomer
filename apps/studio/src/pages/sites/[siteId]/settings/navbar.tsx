@@ -14,6 +14,7 @@ import {
   BRIEF_TOAST_SETTINGS,
   SETTINGS_TOAST_MESSAGES,
 } from "~/constants/toast"
+import { UploadLinkTargetProvider } from "~/contexts/UploadLinkTargetContext"
 import { UnsavedSettingModal } from "~/features/editing-experience/components/UnsavedSettingModal"
 import { siteSchema } from "~/features/editing-experience/schema"
 import { EditNavbarPreview } from "~/features/settings/EditNavbarPreview"
@@ -22,7 +23,7 @@ import { useNavigationEffect } from "~/hooks/useNavigationEffect"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { SiteSettingsLayout } from "~/templates/layouts/SiteSettingsLayout"
 import { trpc } from "~/utils/trpc"
-import { ResourceType } from "~prisma/generated/generatedEnums"
+import { AssetLinkSource, ResourceType } from "~prisma/generated/generatedEnums"
 
 const NavbarSettingsPage: NextPageWithLayout = () => {
   const { siteId } = useQueryParse(siteSchema)
@@ -98,7 +99,11 @@ NavbarSettingsPage.getLayout = (page) => {
   return (
     <PermissionsBoundary
       resourceType={ResourceType.RootPage}
-      page={SiteSettingsLayout(page)}
+      page={SiteSettingsLayout(
+        <UploadLinkTargetProvider source={AssetLinkSource.NAVBAR}>
+          {page}
+        </UploadLinkTargetProvider>,
+      )}
     />
   )
 }
