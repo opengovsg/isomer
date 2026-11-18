@@ -9,13 +9,20 @@ export const PAGES = {
   notFound: "/does-not-exist/",
 }
 
-// Fails the test on any page error or React hydration error (minified #418/#423/#425).
+// Fails the test on any page error or hydration problem: React's development warnings, or its
+// minified production errors (#418/#423/#425).
+const HYDRATION_PROBLEM =
+  /hydrat|server HTML|did not match|Did not expect server|Minified React error #4(18|23|25)/i
 export const test = base.extend<{ errors: string[] }>({
   errors: async ({ page }, use) => {
     const errors: string[] = []
     page.on("pageerror", (e) => errors.push(e.message))
     page.on("console", (m) => {
-      if (m.type() === "error" && /react|hydrat/i.test(m.text()))
+      // First line only: the attached component stack mentions hydration functions for any warning.
+      if (
+        m.type() === "error" &&
+        HYDRATION_PROBLEM.test(m.text().split("\n")[0] ?? "")
+      )
         errors.push(m.text())
     })
     await use(errors)

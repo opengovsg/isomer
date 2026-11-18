@@ -9,6 +9,7 @@
     "fixture": "node scripts/fixture.mjs",
     "fixture:make": "tsx scripts/make-fixture.ts",
     "measure": "node scripts/measure.mjs",
+    "test:hydration": "node scripts/hydration-check.mjs",
     "test:parity": "playwright test --project=next --update-snapshots && playwright test --project=astro",
     "variants": "node scripts/variants.mjs"
   },

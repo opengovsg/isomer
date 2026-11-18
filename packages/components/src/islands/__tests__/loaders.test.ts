@@ -32,10 +32,18 @@ describe("islandLoaders", () => {
   })
 
   // Imports every island module (Algolia, react-aria, …), so give it more than the default 5 s.
-  it("loads each island's component by name", { timeout: 30_000 }, async () => {
-    const components = await Promise.all(
-      Object.values(islandLoaders).map((load) => load()),
-    )
-    for (const component of components) expect(component).toBeTruthy()
-  })
+  it(
+    "loads the island registered under each name",
+    { timeout: 30_000 },
+    async () => {
+      const loaded = await Promise.all(
+        Object.entries(islandLoaders).map(async ([name, load]) => [
+          name,
+          ((await load()) as { displayName?: string } | undefined)?.displayName,
+        ]),
+      )
+      for (const [name, displayName] of loaded)
+        expect(displayName, name).toBe(`Island(${name})`)
+    },
+  )
 })

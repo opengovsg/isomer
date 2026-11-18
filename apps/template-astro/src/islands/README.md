@@ -16,10 +16,10 @@ renderToString(<IslandServerProvider>…)
   </isomer-island>
 ```
 
-| File         | Runs        | Job                                                                                                                                                                                                                                                                                          |
-| ------------ | ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `server.tsx` | build (SSR) | `IslandServerProvider` plugs into `IslandRendererContext`. Each island is rendered with its props as JSON. React-node props such as `children` become `<isomer-slot>` HTML. Each island is rendered as its own React root (with an `identifierPrefix`) so `useId` values match on hydration. |
-| `client.ts`  | browser     | `hydrateIslands()` hydrates each island at the timing in `data-hydrate`, reusing slot HTML as-is. React (or preact/compat) is only fetched if the page has an island.                                                                                                                        |
+| File         | Runs        | Job                                                                                                                                                                                                                                                                        |
+| ------------ | ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `server.tsx` | build (SSR) | `IslandServerProvider` plugs into `IslandRendererContext`. Each island's props are written as JSON; server-rendered `children` become an `<isomer-slot>`. Each island is rendered as its own React root (with an `identifierPrefix`) so `useId` values match on hydration. |
+| `client.ts`  | browser     | `hydrateIslands()` hydrates each island at the timing in `data-hydrate`, reusing the slot's HTML as-is. React (preact/compat in production) is only fetched if the page has an island.                                                                                     |
 
 The tag, attribute and slot-marker names come from the components package, so both ends of the
 protocol share one definition.

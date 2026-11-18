@@ -2,7 +2,8 @@ import { defineConfig } from "astro/config"
 import postcssPresetEnv from "postcss-preset-env"
 import tailwindcss from "tailwindcss"
 
-// Client build only: SSR stays React, and dev pre-bundling bypasses resolveId (dev hydrates with React).
+// Production client bundles only: SSR stays React, and dev / --devOutput builds keep React's
+// development build, which reports hydration mismatches.
 const PREACT_ALIASES: Record<string, string> = {
   "react-dom/client": "preact/compat/client",
   "react-dom": "preact/compat",
@@ -31,7 +32,7 @@ export default defineConfig({
         name: "isomer-preact-client",
         enforce: "pre",
         applyToEnvironment: (env) =>
-          env.name === "client" && env.config.command === "build",
+          env.name === "client" && process.env.NODE_ENV === "production",
         resolveId(source, importer, options) {
           const target = PREACT_ALIASES[source]
           return target

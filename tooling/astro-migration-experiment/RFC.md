@@ -21,7 +21,7 @@ On a synthetic 60-page coverage site, compared with today's Next build:
 - **Visual and interaction parity holds.** All 19 Playwright checks pass: pixel comparison of 6 page types × 2 viewports against the Next build, plus interaction tests for every interactive island.
 - **Studio renders the same DOM as published sites.** Island boundaries are declared in `packages/components` with `island()`, so Studio's preview renders the same `<isomer-island>` markup. There's no build-time rewriting that only the published site sees.
 
-The costs are about 320 lines of islands runtime that we'd own (72 in components, 245 in the Astro app), a few rules for component authors, and porting work still to do for CodeBuild, Studio's local publish and the e2e test.
+The costs are about 260 lines of islands runtime that we'd own (72 in components, 191 in the Astro app), a few rules for component authors, and porting work still to do for CodeBuild, Studio's local publish and the e2e test.
 
 ## Problem
 
@@ -52,7 +52,7 @@ markup protocol constants                     browser: hydrateIslands() lazy-loa
    - **`islandLoaders`** maps each island name to a lazy `import()` of its module. A unit test fails if it drifts from the `island()` calls.
    - **The markup protocol** (tag, attribute and slot-marker names, `IslandRendererContext`, `InsideIsland`) is exported, so the host doesn't repeat the strings.
 3. **The host renders and hydrates them** (`apps/template-astro/src/islands/`):
-   - **`server.tsx`**: `IslandServerProvider` plugs into `IslandRendererContext`, so every island additionally carries its props as JSON, its hydration timing and an id. Server-rendered React nodes passed as props (e.g. `NotificationClient`'s `children`) become static `<isomer-slot>` HTML that the browser reuses as-is, like Astro's own slots.
+   - **`server.tsx`**: `IslandServerProvider` plugs into `IslandRendererContext`, so every island additionally carries its props as JSON, its hydration timing and an id. Server-rendered `children` (e.g. `NotificationClient`'s body) become static `<isomer-slot>` HTML that the browser reuses as-is, like Astro's default slot.
    - **`client.ts`**: `hydrateIslands()` lazy-loads only the islands on the page and hydrates each at its timing (`load`, `visible` or `idle`).
 4. **Each island is SSR'd as its own React root** with a unique `identifierPrefix`. Without this, `useId` values (react-aria depends on them) would mismatch on hydration.
 5. **Preact in the browser.** The build aliases `react`/`react-dom` to `preact/compat` **for the client bundle only**. Server rendering stays on React, so the HTML is identical either way.
@@ -131,16 +131,16 @@ Cold builds on an Apple Silicon laptop with default cores. Peak RSS is summed ac
 
 ## What got harder
 
-- **We own an islands runtime.** About 320 lines: `island.ts` (72) in components, `server.tsx` and `client.ts` (245) in the Astro app, plus the 29-entry `islandLoaders` map. Next did this for us.
+- **We own an islands runtime.** About 260 lines: `island.ts` (72) in components, `server.tsx` and `client.ts` (191) in the Astro app, plus the 29-entry `islandLoaders` map. Next did this for us.
 - **Rules for component authors** (in `packages/components/src/islands/README.md`):
-  - Wrap a component in `island()` and add it to `islandLoaders` only if it needs React state or effects and server-rendered code renders it. The loader test catches a missing entry.
-  - Island props must be plain JSON data or React nodes (which become slots); `Date` objects become ISO strings. Anything else, e.g. functions, fails the build with the prop path.
+  - Wrap a component in `island()` and add it to `islandLoaders` only if it needs React state or effects and server-rendered code renders it. The loader test fails if an `island()` has no loader, or a loader returns a different island than its name.
+  - Island props must be plain JSON data (`Date`s become ISO strings). Server-rendered content can only be passed as `children`, which becomes a slot. Anything else, e.g. functions or React elements in other props, fails the build with the prop name.
   - React context doesn't cross into an island.
   - Read browser-only state (storage, user agent) after mount. Each island is its own React root, which doesn't repair a first render that differs from the server HTML.
   - No `first:` / `last:` / `only:` variants on an island's root element; set spacing from the parent.
 - **Mistakes that fail silently, and how they're covered today:**
   - **An interactive component that isn't wrapped in `island()`** renders as static HTML: clicks do nothing, and nothing errors. Covered by code review and the islands README today; custom lint rules can be added if this turns out to bite (e.g. flag components using state/effect hooks that aren't islands or only rendered inside one).
-  - **Browser-only state read during the first render** (sessionStorage, user agent) leaves stale UI after hydration. This happened with the notification banner and was fixed by reading after mount. Today it's covered by the README rule and manual checks only, because production React and Preact don't report hydration mismatches. A parity run against a development-mode React client bundle would catch it automatically.
+  - **Browser-only state read during the first render** (sessionStorage, user agent) leaves stale UI after hydration. This happened with the notification banner and was fixed by reading after mount. `pnpm test:hydration` builds the site with `astro build --devOutput`, so islands hydrate with React's development build, and loads every page fresh and with the "dismissed" flags pre-set. It fails on hydration warnings and on the dismissed banner being visible. Reintroducing the notification bug makes it fail, but only through the banner assertion: when an island renders _less_ than the server HTML at its root, React (even in development) silently keeps the stale markup. The development build does report mismatches _inside_ an island's markup.
   - **`useId` under Preact.** react-aria generates its label and description IDs with `useId` (we also call it directly in `Table`, `SearchableTableClientUI` and `DateRangeFilterInput`), and `preact/compat`'s IDs differ from React's server-rendered ones. It works today because elements created at the same time reference each other consistently. It would break if a server-rendered element pointed (`aria-*`) at an element created after hydration. Banning `useId` in our code wouldn't remove the risk, because react-aria uses it internally. An `aria-*`-references-resolve check in the interaction tests would catch it.
 - **Wrapper-element side effects.** `<isomer-island>` is `display: contents`, so layout ignores it. A parent's child-combinator rules (`parent > *`, `space-y-*`, `divide-*`) still skip island roots. No failures turned up in the coverage site, and Studio now shows the same behaviour as published sites.
 - **Preact compatibility is ours to verify:**
@@ -251,6 +251,7 @@ pnpm fixture:make fixtures/coverage 60 && pnpm fixture apply fixtures/coverage
 pnpm exec playwright test --project=astro                # 19 visual + interaction checks vs the Next screenshots
 pnpm measure --files / /content/                         # first-load bytes + per-file JS breakdown
 pnpm variants --reuse-next preact-islands                # -> results/variants/*.md (other variants need variants.patch)
+pnpm test:hydration                                      # dev-mode React build: hydration warnings + dismissed-banner checks
 pnpm bench 100,1000,10000 3 next,astro         # -> results/bench-results.json
 pnpm fixture restore                                     # put both apps' sample sites back
 ```

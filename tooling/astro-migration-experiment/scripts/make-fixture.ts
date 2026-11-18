@@ -17,7 +17,10 @@ import footer from "../../../apps/studio/src/features/editing-experience/data/fo
 import navbar from "../../../apps/studio/src/features/editing-experience/data/navbar.json"
 import homepageTemplate from "../../../apps/studio/src/features/editing-experience/data/placeholder.json"
 
-const [outDir, totalArg = "60"] = process.argv.slice(2)
+const args = process.argv.slice(2)
+// --notification adds a site-wide notification banner (an island with a slot)
+const withNotification = args.includes("--notification")
+const [outDir, totalArg = "60"] = args.filter((arg) => !arg.startsWith("--"))
 if (!outDir) throw new Error("usage: make-fixture.ts <outDir> [totalPages]")
 const TOTAL_PAGES = Number(totalArg)
 const COLLECTION_SIZE = 100
@@ -215,6 +218,13 @@ const put = (file: string, data: unknown) => {
   fs.mkdirSync(path.dirname(full), { recursive: true })
   fs.writeFileSync(full, JSON.stringify(data, null, 2))
 }
+if (withNotification)
+  (config.site as Record<string, unknown>).notification = {
+    title: "Scheduled maintenance",
+    content: [
+      { type: "text", text: "Some services will be unavailable on Saturday." },
+    ],
+  }
 put("data/config.json", config)
 put("data/navbar.json", localiseImages(navbar))
 put("data/footer.json", footer)
