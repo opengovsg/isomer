@@ -687,7 +687,7 @@ describe("resolveAdjustmentConfig", () => {
     })
 
     it("uses layout-specific upload copy and blur thresholds", () => {
-      const resolve = (collectionVariant?: "collection" | "blog") =>
+      const resolve = (collectionVariant: "collection" | "blog") =>
         resolveAdjustmentConfig({
           block: {},
           fieldName: "src",
@@ -698,7 +698,6 @@ describe("resolveAdjustmentConfig", () => {
 
       for (const [variant, copy, width] of [
         ["collection", "Recommended 400 × 320 px.", 400],
-        [undefined, "Recommended 400 × 320 px.", 400],
         ["blog", "Recommended 640 × 320 px.", 640],
       ] as const) {
         const config = resolve(variant)
@@ -712,17 +711,31 @@ describe("resolveAdjustmentConfig", () => {
       }
     })
 
-    it("defaults to the 1-column (CollectionCard) layout when the variant is unresolved", () => {
-      const config = resolveAdjustmentConfig({
+    // Guessing a frame here could show a shape that doesn't match the real
+    // card once the parent's actual layout resolves.
+    it("shows no frame and skips the recommended-size copy while the variant is unresolved", () => {
+      const pending = resolveAdjustmentConfig({
         block: {},
         fieldName: "src",
         context: { isCollectionThumbnail: true },
-      })
-      expect(aspectRatiosFor(config!)).toEqual([
-        { width: 5, height: 4 },
-        { width: 5, height: 4 },
-        { width: 5, height: 4 },
-      ])
+      })!
+      const failed = resolveAdjustmentConfig({
+        block: {},
+        fieldName: "src",
+        context: {
+          isCollectionThumbnail: true,
+          collectionVariant: "pending",
+        },
+      })!
+
+      for (const config of [pending, failed]) {
+        expect(config.previewStates).toEqual([])
+        expect(config.preUploadCopy).toBeUndefined()
+        expect(config.maxRenderedWidthPx).toBeUndefined()
+        expect(config.skipRealComponentPreview).toBe(true)
+        expect(config.cropMode).toBe("custom")
+        expect(config.focalEnabled).toBe(true)
+      }
     })
   })
 
