@@ -226,7 +226,7 @@ astro /database/
 | `/content/` | Fonts | 47.3 | 47.1 | -0% |
 | `/content/` | JS (lazy, after load) | 0.0 | 3.5 | — |
 | `/content/` | RSC fetches | 0.0 | 0.0 | — |
-| `/content/` | Third-party (excluded) | 16696.7 | 16732.8 | 0% |
+| `/content/` | Third-party (excluded) | 16704.7 | 16687.1 | -0% |
 | `/content/` | JS files fetched | 10 | 24 | |
 | `/collection-1/` | **Total first load** | 421.7 | 226.2 | -46% |
 | `/collection-1/` | HTML | 76.1 | 37.6 | -51% |
@@ -260,7 +260,6 @@ astro /database/
 | `/database/` | JS files fetched | 10 | 24 | |
 
 Console errors:
-- next `/content/`: requestStorageAccess: Permission denied.
 - next `/content/`: requestStorageAccess: Permission denied.
 - next `/content/`: requestStorageAccess: Permission denied.
 - next `/content/`: requestStorageAccess: Permission denied.

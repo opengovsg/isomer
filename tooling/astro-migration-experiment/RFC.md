@@ -134,10 +134,14 @@ Cold builds on an Apple Silicon laptop with default cores. Peak RSS is summed ac
 - **We own an islands runtime.** About 320 lines: `island.ts` (72) in components, `server.tsx` and `client.ts` (245) in the Astro app, plus the 29-entry `islandLoaders` map. Next did this for us.
 - **Rules for component authors** (in `packages/components/src/islands/README.md`):
   - Wrap a component in `island()` and add it to `islandLoaders` only if it needs React state or effects and server-rendered code renders it. The loader test catches a missing entry.
-  - Island props must be serializable or React nodes (which become slots). Functions fail the build with the prop path, the same rule as RSC.
+  - Island props must be plain JSON data or React nodes (which become slots); `Date` objects become ISO strings. Anything else, e.g. functions, fails the build with the prop path.
   - React context doesn't cross into an island.
   - Read browser-only state (storage, user agent) after mount. Each island is its own React root, which doesn't repair a first render that differs from the server HTML.
   - No `first:` / `last:` / `only:` variants on an island's root element; set spacing from the parent.
+- **Mistakes that fail silently, and how they're covered today:**
+  - **An interactive component that isn't wrapped in `island()`** renders as static HTML: clicks do nothing, and nothing errors. Covered by code review and the islands README today; custom lint rules can be added if this turns out to bite (e.g. flag components using state/effect hooks that aren't islands or only rendered inside one).
+  - **Browser-only state read during the first render** (sessionStorage, user agent) leaves stale UI after hydration. This happened with the notification banner and was fixed by reading after mount. Today it's covered by the README rule and manual checks only, because production React and Preact don't report hydration mismatches. A parity run against a development-mode React client bundle would catch it automatically.
+  - **`useId` under Preact.** react-aria generates its label and description IDs with `useId` (we also call it directly in `Table`, `SearchableTableClientUI` and `DateRangeFilterInput`), and `preact/compat`'s IDs differ from React's server-rendered ones. It works today because elements created at the same time reference each other consistently. It would break if a server-rendered element pointed (`aria-*`) at an element created after hydration. Banning `useId` in our code wouldn't remove the risk, because react-aria uses it internally. An `aria-*`-references-resolve check in the interaction tests would catch it.
 - **Wrapper-element side effects.** `<isomer-island>` is `display: contents`, so layout ignores it. A parent's child-combinator rules (`parent > *`, `space-y-*`, `divide-*`) still skip island roots. No failures turned up in the coverage site, and Studio now shows the same behaviour as published sites.
 - **Preact compatibility is ours to verify:**
   - react-aria and headlessui run on `preact/compat`. They pass our interaction tests, but React upstream doesn't support this setup.
