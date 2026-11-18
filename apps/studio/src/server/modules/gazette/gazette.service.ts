@@ -142,9 +142,14 @@ export const getPresignedPutUrl = async ({
     ContentType: contentType,
     ContentDisposition: contentDisposition,
     ContentLength: fileSize,
-    Tagging: tags && stringifiedTags,
+    Tagging: stringifiedTags,
   })
-  return { presignedPutUrl, contentType, contentDisposition }
+  return {
+    presignedPutUrl,
+    contentType,
+    contentDisposition,
+    tagging: stringifiedTags,
+  }
 }
 
 export const getPresignedGetUrl = async ({

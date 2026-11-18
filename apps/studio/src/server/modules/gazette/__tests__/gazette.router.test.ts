@@ -974,6 +974,30 @@ describe("gazette.router", async () => {
       expect(signerArgs.Tagging).toContain("scheduledAt=1700000000000")
     })
 
+    it("returns the signed tagging so a scheduled upload's PUT sends it", async () => {
+      // Arrange
+      const { site, collection } = await seedToppanWithCollection()
+      vi.spyOn(s3Lib, "generateSignedPutUrl").mockResolvedValue(
+        "https://signed.example/put",
+      )
+
+      // Act
+      const result = await caller.getPresignedPutUrl({
+        siteId: site.id,
+        resourceId: collection.id,
+        year: 2026,
+        category: "Government Gazette",
+        subcategory: "Public",
+        fileName: "scheduled.pdf",
+        fileSize: 1234,
+        tags: [{ key: "scheduledAt", value: "1700000000000" }],
+      })
+
+      // Assert: the URL signs x-amz-tagging, so without this value the
+      // browser's PUT fails signature verification
+      expect(result.tagging).toBe("scheduledAt=1700000000000")
+    })
+
     it("omits Tagging when no tags supplied", async () => {
       const { site, collection } = await seedToppanWithCollection()
       const signedPutSpy = vi
