@@ -2,7 +2,11 @@ import { TRPCError } from "@trpc/server"
 import superjson from "superjson"
 import { describe, expect, it } from "vitest"
 
-import { MAX_ANNOTATION_PATH_SEGMENTS, safeSuperjson } from "../safeTransformer"
+import {
+  MAX_ANNOTATION_NESTING,
+  MAX_ANNOTATION_PATH_SEGMENTS,
+  safeSuperjson,
+} from "../safeTransformer"
 
 // Crafted payloads aren't valid SuperJSONResults, which is the point.
 const deserialize = (payload: unknown) =>
@@ -68,6 +72,31 @@ describe("safeSuperjson.deserialize", () => {
 
     // Act / Assert
     expectRejectedFast(payload)
+  })
+
+  it("rejects deeply nested annotations without overflowing the stack", () => {
+    // Arrange: plain-object and tuple-shaped chains
+    let objectTree: unknown = null
+    let tupleTree: unknown = ["undefined"]
+    for (let i = 0; i < 200_000; i++) {
+      objectTree = { x: objectTree }
+      tupleTree = ["undefined", { x: tupleTree }]
+    }
+
+    // Act / Assert
+    for (const values of [objectTree, tupleTree]) {
+      const payload = { json: null, meta: { values } }
+      expect(() => deserialize(payload)).toThrow(/nested too deeply/)
+    }
+  })
+
+  it("accepts nesting at the cap", () => {
+    // Arrange
+    let values: unknown = ["undefined"]
+    for (let i = 0; i < MAX_ANNOTATION_NESTING; i++) values = { x: values }
+
+    // Act / Assert
+    expect(() => deserialize({ json: {}, meta: { values } })).not.toThrow()
   })
 
   it("accepts annotation paths just under the budget", () => {

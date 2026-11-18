@@ -13,32 +13,30 @@ const SENSITIVE_KEYS = new Set([
 
 const isSensitiveKey = (key: string) => SENSITIVE_KEYS.has(key.toLowerCase())
 
-// `seen` maps each input object to its copy, so shared references (superjson
-// `referentialEqualities`) are copied once and cycles terminate.
+const REPEATED = "[REPEATED]"
+
+// A repeated object (shared reference or cycle) is logged once, then as a
+// marker, so neither this walk nor pino's JSON.stringify expands it again.
 export const redactLogInput = (
   input: unknown,
-  seen = new WeakMap<object, unknown>(),
+  seen = new WeakSet<object>(),
 ): unknown => {
   if (input === null || typeof input !== "object") {
     return input
   }
-
-  const copied = seen.get(input)
-  if (copied !== undefined) {
-    return copied
+  if (seen.has(input)) {
+    return REPEATED
   }
+  seen.add(input)
 
   if (Array.isArray(input)) {
-    const result: unknown[] = []
-    seen.set(input, result)
-    for (const value of input) result.push(redactLogInput(value, seen))
-    return result
+    return input.map((value) => redactLogInput(value, seen))
   }
 
-  const result: Record<string, unknown> = {}
-  seen.set(input, result)
-  for (const [key, value] of Object.entries(input)) {
-    result[key] = isSensitiveKey(key) ? REDACTED : redactLogInput(value, seen)
-  }
-  return result
+  return Object.fromEntries(
+    Object.entries(input).map(([key, value]) => [
+      key,
+      isSensitiveKey(key) ? REDACTED : redactLogInput(value, seen),
+    ]),
+  )
 }
