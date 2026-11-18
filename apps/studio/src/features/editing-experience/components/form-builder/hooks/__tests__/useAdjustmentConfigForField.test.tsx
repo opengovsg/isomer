@@ -1,0 +1,135 @@
+// @vitest-environment jsdom
+
+import type { PropsWithChildren } from "react"
+import { JsonFormsStateProvider } from "@jsonforms/react"
+import { renderHook } from "@testing-library/react"
+import { describe, expect, it, vi } from "vitest"
+
+import { useAdjustmentConfigForField } from "../useAdjustmentConfigForField"
+
+const mockQuery: { current: { siteId: string; linkId?: string } } = vi.hoisted(
+  () => ({ current: { siteId: "1" } }),
+)
+const mockUseCollectionIndexVariant = vi.hoisted(() => vi.fn())
+
+// No router in the test renderer; the hook reads route params via useQueryParse.
+vi.mock("next/router", () => ({
+  useRouter: () => ({ query: mockQuery.current }),
+}))
+
+// Stub the hook's tRPC query so renderHook needs no tRPC provider.
+vi.mock("../useCollectionIndexVariant", () => ({
+  useCollectionIndexVariant: (args: unknown) =>
+    mockUseCollectionIndexVariant(args) as undefined,
+}))
+
+const renderWithData = (data: unknown, path: string) =>
+  renderHook(() => useAdjustmentConfigForField(path), {
+    wrapper: ({ children }: PropsWithChildren) => (
+      <JsonFormsStateProvider
+        initState={{ core: { data, schema: {}, uischema: undefined } }}
+      >
+        {children}
+      </JsonFormsStateProvider>
+    ),
+  })
+
+describe("useAdjustmentConfigForField", () => {
+  it("resolves a root-level image field to the block's own config", () => {
+    const data = {
+      type: "hero",
+      variant: "floating",
+      backgroundUrl: "/1/uuid/file.png",
+    }
+    const { result } = renderWithData(data, "backgroundUrl")
+
+    expect(result.current.block).toBe(data)
+    expect(result.current.fieldHost).toBe(data)
+    expect(result.current.fieldName).toBe("backgroundUrl")
+    expect(result.current.siblingPath).toBe("backgroundUrlImageAdjustment")
+    expect(result.current.config?.componentType).toBe("hero:floating")
+  })
+
+  it("resolves an array-nested card field to the InfoCards config, with fieldHost = the card", () => {
+    const card = { imageUrl: "/1/uuid/card.png" }
+    const data = {
+      type: "infocards",
+      variant: "cardsWithImages",
+      cards: [card],
+    }
+    const { result } = renderWithData(data, "cards.0.imageUrl")
+
+    expect(result.current.block).toBe(data)
+    expect(result.current.fieldHost).toBe(card)
+    expect(result.current.fieldName).toBe("imageUrl")
+    expect(result.current.siblingPath).toBe("cards.0.imageUrlImageAdjustment")
+    expect(result.current.config?.componentType).toBe(
+      "infocards:cardsWithImages",
+    )
+  })
+
+  it("resolves a nested field to the root block even if the item has its own type", () => {
+    const card = { type: "card", imageUrl: "/1/uuid/card.png" }
+    const data = {
+      type: "infocards",
+      variant: "cardsWithImages",
+      cards: [card],
+    }
+    const { result } = renderWithData(data, "cards.0.imageUrl")
+
+    expect(result.current.block).toBe(data)
+    expect(result.current.fieldHost).toBe(card)
+  })
+
+  it("reads an array item's index from the path, and none for other hosts", () => {
+    const data = {
+      type: "infocards",
+      variant: "cardsWithImages",
+      image: { src: "/1/uuid/thumb.png" },
+      cards: [{ imageUrl: "/a.png" }, { imageUrl: "/b.png" }],
+    }
+
+    expect(
+      renderWithData(data, "cards.1.imageUrl").result.current.fieldHostIndex,
+    ).toBe(1)
+    expect(
+      renderWithData(data, "imageUrl").result.current.fieldHostIndex,
+    ).toBeUndefined()
+    expect(
+      renderWithData(data, "image.src").result.current.fieldHostIndex,
+    ).toBeUndefined()
+  })
+
+  it("returns undefined for a nested, unregistered field", () => {
+    const data = {
+      type: "infocards",
+      variant: "cardsWithImages",
+      cards: [{ imageUrl: "/1/uuid/card.png", someOtherField: "x" }],
+    }
+    const { result } = renderWithData(data, "cards.0.someOtherField")
+
+    expect(result.current.config).toBeUndefined()
+  })
+
+  it("treats a link-route image field as the collection thumbnail without an EditorDrawerProvider", () => {
+    mockQuery.current = { siteId: "7", linkId: "42" }
+    const data = { image: { src: "/7/uuid/thumb.png", alt: "" } }
+    const { result } = renderWithData(data, "image.src")
+    mockQuery.current = { siteId: "1" }
+
+    expect(result.current.siblingPath).toBe("image.imageAdjustment")
+    expect(result.current.config).toBeDefined()
+    expect(mockUseCollectionIndexVariant).toHaveBeenCalledWith({
+      siteId: 7,
+      pageId: 42,
+      enabled: true,
+    })
+  })
+
+  it("does not treat an image field as a thumbnail without context or a linkId", () => {
+    const data = { image: { src: "/1/uuid/thumb.png", alt: "" } }
+    const { result } = renderWithData(data, "image.src")
+
+    expect(result.current.config).toBeUndefined()
+  })
+})

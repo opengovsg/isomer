@@ -3,13 +3,14 @@ import { twMerge } from "~/lib/twMerge"
 import { getHeadingTag } from "~/utils/getHeadingTag"
 
 import { ComponentContent } from "../../../../internal/customCssClass"
-import { ImageClient } from "../../../../internal/ImageClient"
+import { ImageClientWithAdjustment } from "../../../../internal/ImageClient"
 import { QuickLinks } from "./QuickLinks"
 
 export const HeroGradientQuickLinks = ({
   title,
   subtitle,
   backgroundUrl,
+  backgroundUrlImageAdjustment: imageAdjustment,
   actions,
   site,
   headingLevel,
@@ -30,11 +31,12 @@ export const HeroGradientQuickLinks = ({
           style={{ contain: "layout" }}
           aria-hidden
         >
-          <ImageClient
+          <ImageClientWithAdjustment
             src={backgroundUrl}
             alt=""
             width="100%"
             className="absolute inset-0 h-full w-full object-cover object-center"
+            imageAdjustment={imageAdjustment}
             assetsBaseUrl={site.assetsBaseUrl}
             lazyLoading={false}
           />
