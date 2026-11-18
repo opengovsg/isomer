@@ -23,8 +23,6 @@ import { serializeForInlineScript } from "@isomer/validators"
 export const dynamic = "force-static"
 
 const INDEX_PAGE_PERMALINK = "_index"
-// A dynamic schema import is one webpack chunk per page.
-// Dev serves `.local-publish/schema` (see next.config). Export reads `schema/`.
 const SCHEMA_DIR = join(
   process.cwd(),
   process.env.NODE_ENV === "development" ? ".local-publish/schema" : "schema",
@@ -79,14 +77,9 @@ const lastModifiedByPermalink = new Map(
 
 const getSchema = ({ permalink }: Pick<ParamsContent, "permalink">) => {
   const joinedPermalink: string = permalink.join("/")
-  // A folder index lives at `folder/_index.json`. The site root is `_index.json`.
   const schema =
     readSchemaFile(`${joinedPermalink}.json`) ??
-    readSchemaFile(
-      joinedPermalink === ""
-        ? `${INDEX_PAGE_PERMALINK}.json`
-        : `${joinedPermalink}/${INDEX_PAGE_PERMALINK}.json`,
-    )
+    readSchemaFile(`${joinedPermalink}/${INDEX_PAGE_PERMALINK}.json`)
   if (!schema) notFound()
 
   const lastModified =
