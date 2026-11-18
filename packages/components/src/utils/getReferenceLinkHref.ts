@@ -1,15 +1,19 @@
 import type { IsomerSitemap } from "~/types"
 import DOMPurify from "isomorphic-dompurify"
 
-// This function returns a sanitized version of the provided URL string
+// DOMPurify has no document in Node, so it sanitizes a real anchor. A new
+// fragment per href dominates static export, so one anchor is reused. Each
+// URL is still sanitized; results are not cached.
+let anchor: Element | null = null
+
 export const getSanitizedLinkHref = (url?: string) => {
   if (url === undefined) {
     return undefined
   }
 
-  // We use DOMPurify to create the document fragment as Node.js has no browser 'document' object.
-  const fragment = DOMPurify.sanitize("<a></a>", { RETURN_DOM_FRAGMENT: true })
-  const anchor = fragment.firstElementChild
+  anchor ??= DOMPurify.sanitize("<a></a>", {
+    RETURN_DOM_FRAGMENT: true,
+  }).firstElementChild
 
   if (!anchor) {
     return undefined
