@@ -1,4 +1,7 @@
-import type { IsomerPageSchemaType } from "@opengovsg/isomer-components"
+import type {
+  IsomerPageSchemaType,
+  IsomerSitemap,
+} from "@opengovsg/isomer-components"
 import type { Metadata, ResolvingMetadata } from "next"
 import config from "@/data/config.json"
 import footer from "@/data/footer.json"
@@ -50,6 +53,13 @@ const lastUpdated =
   " " +
   timeNow.getFullYear()
 
+const permalinkKey = (url: string) => url.replace(/^\//, "").replace(/\/$/, "")
+
+const sitemapXml = getSitemapXml(sitemap as IsomerSitemap)
+const lastModifiedByPermalink = new Map(
+  sitemapXml.map(({ url, lastModified }) => [permalinkKey(url), lastModified]),
+)
+
 const getSchema = async ({ permalink }: Pick<ParamsContent, "permalink">) => {
   const joinedPermalink: string = permalink.join("/")
 
@@ -82,12 +92,7 @@ const getSchema = async ({ permalink }: Pick<ParamsContent, "permalink">) => {
     })) as IsomerPageSchemaType
 
   const lastModified =
-    // TODO: fixup all the typing errors
-    // @ts-expect-error to fix when types are proper
-    getSitemapXml(sitemap).find(
-      ({ url }) =>
-        joinedPermalink === url.replace(/^\//, "").replace(/\/$/, ""),
-    ).lastModified || new Date().toISOString()
+    lastModifiedByPermalink.get(joinedPermalink) || new Date().toISOString()
 
   schema.page.permalink = "/" + joinedPermalink
   schema.page.lastModified = lastModified
@@ -96,10 +101,8 @@ const getSchema = async ({ permalink }: Pick<ParamsContent, "permalink">) => {
 }
 
 export const generateStaticParams = () => {
-  // TODO: fixup all the typing errors
-  // @ts-expect-error to fix when types are proper
-  return getSitemapXml(sitemap).map(({ url }) => ({
-    permalink: url.replace(/^\//, "").replace(/\/$/, "").split("/"),
+  return sitemapXml.map(({ url }) => ({
+    permalink: permalinkKey(url).split("/"),
   }))
 }
 
