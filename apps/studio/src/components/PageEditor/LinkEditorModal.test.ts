@@ -1,5 +1,4 @@
 import { describe, expect, it } from "vitest"
-
 import { LINK_TYPES } from "~/features/editing-experience/components/LinkEditor/constants"
 
 import { getAvailableLinkTypes, linkEditorSchema } from "./LinkEditorModal"
