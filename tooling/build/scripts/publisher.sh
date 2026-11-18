@@ -129,7 +129,7 @@ if [[ -n "$ISOMER_BUILD_REPO_BRANCH" ]]; then
 
   echo "Installing workspace dependencies..."
   start_time=$(date +%s)
-  pnpm install --frozen-lockfile --filter isomer-base-template... --filter publishing...
+  pnpm install --frozen-lockfile --filter isomer-astro-template... --filter publishing...
   calculate_duration "$start_time"
 
   if [ "$RESTORED_STORE" -eq 0 ]; then
@@ -159,7 +159,7 @@ else
   # nothing needs to be built in a per-site job.
   echo "Re-linking workspace from cached store..."
   start_time=$(date +%s)
-  pnpm install --frozen-lockfile --filter isomer-base-template... --filter publishing...
+  pnpm install --frozen-lockfile --filter isomer-astro-template... --filter publishing...
   calculate_duration "$start_time"
 
   fetch_cached "s3://$S3_CACHE_BUCKET_NAME/isomer/$GIT_SHA/$COMPONENTS_DIST_TGZ" "$COMPONENTS_DIST_TGZ" packages/components ||
@@ -176,22 +176,17 @@ calculate_duration "$start_time"
 
 # Prebuilding...
 echo "Prebuilding site..."
-rm -rf ../../../../apps/template/schema
-rm -rf ../../../../apps/template/data
-mv schema/ ../../../../apps/template/
-mv data/ ../../../../apps/template/
-cp sitemap.json ../../../../apps/template/public/
-mv sitemap.json ../../../../apps/template/
-mv redirects.json ../../../../apps/template/
+TEMPLATE_DIR=../../../../apps/template-astro
+rm -rf "$TEMPLATE_DIR/schema"
+rm -rf "$TEMPLATE_DIR/data"
+mv schema/ "$TEMPLATE_DIR/"
+mv data/ "$TEMPLATE_DIR/"
+cp sitemap.json "$TEMPLATE_DIR/public/"
+mv sitemap.json "$TEMPLATE_DIR/"
+mv redirects.json "$TEMPLATE_DIR/"
 # Capture absolute path now; the upload step runs from a different CWD later.
-REDIRECTS_JSON="$(realpath ../../../../apps/template/redirects.json)"
-cd ../../../../apps/template
-# Create not-found.json by copying _index.json if it doesn't exist
-# Refer to apps/template/app/not-found.tsx for more context
-if [ ! -f "schema/not-found.json" ]; then
-  echo "Creating not-found.json..."
-  cp schema/_index.json schema/not-found.json
-fi
+REDIRECTS_JSON="$(realpath "$TEMPLATE_DIR/redirects.json")"
+cd "$TEMPLATE_DIR"
 pwd
 
 # Build
@@ -247,12 +242,13 @@ export S3_SYNC_CONCURRENCY
 echo "S3 sync concurrency: $S3_SYNC_CONCURRENCY"
 aws configure set default.s3.max_concurrent_requests $S3_SYNC_CONCURRENCY
 
-# Set all files to have 10 minutes of cache, except for those in the _next folder
-aws s3 sync --only-show-errors . s3://"$S3_BUCKET_NAME"/"$SITE_NAME"/"$CODEBUILD_BUILD_NUMBER"/latest --delete --no-progress --cache-control "max-age=600" --exclude "_next/*"
+# Set all files to have 10 minutes of cache, except for those in the _isomer folder
+aws s3 sync --only-show-errors . s3://"$S3_BUCKET_NAME"/"$SITE_NAME"/"$CODEBUILD_BUILD_NUMBER"/latest --delete --no-progress --cache-control "max-age=600" --exclude "_isomer/*"
 
-# Set all files in the _next folder to be cached indefinitely (1 year) on users' browsers
-# Next.js uses unique content hashes in filenames, allowing updated content to have different filenames and invalidate the cache on new builds.
-aws s3 sync --only-show-errors _next s3://"$S3_BUCKET_NAME"/"$SITE_NAME"/"$CODEBUILD_BUILD_NUMBER"/latest/_next --delete --no-progress --cache-control "max-age=31536000, public"
+# Set all files in the _isomer folder (Astro's build assets, see build.assets in
+# apps/template-astro/astro.config.ts) to be cached indefinitely (1 year) on users' browsers.
+# Their filenames carry content hashes, so updated content gets new filenames on new builds.
+aws s3 sync --only-show-errors _isomer s3://"$S3_BUCKET_NAME"/"$SITE_NAME"/"$CODEBUILD_BUILD_NUMBER"/latest/_isomer --delete --no-progress --cache-control "max-age=31536000, public"
 
 calculate_duration "$start_time"
 
