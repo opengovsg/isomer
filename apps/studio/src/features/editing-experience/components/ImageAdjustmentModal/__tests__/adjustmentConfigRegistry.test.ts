@@ -7,7 +7,11 @@ import { renderComponent } from "@opengovsg/isomer-components"
 import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it } from "vitest"
 
-import type { AdjustmentRenderContext } from "../AdjustmentConfig"
+import type {
+  AdjustmentConfig,
+  AdjustmentPreviewContext,
+  AdjustmentRenderContext,
+} from "../AdjustmentConfig"
 import {
   INTENTIONALLY_NOT_ADJUSTABLE,
   resolveAdjustmentConfig as resolveAdjustmentConfigTyped,
@@ -44,6 +48,41 @@ const renderBlockHtml = (
       headingLevel: 1,
     }),
   )
+
+// Runs a config's preview builder the way AdjustmentPreview does. The edited
+// image is always "/edited.png".
+const buildPreview = (
+  config: AdjustmentConfig | undefined,
+  ctx: Partial<Omit<AdjustmentPreviewContext, "block">> & {
+    block: unknown
+    fieldHost: Record<string, unknown>
+  },
+) =>
+  config?.buildPreview?.({
+    itemIndex: undefined,
+    imageFieldName: config.imageField,
+    adjustedSrc: "/edited.png",
+    adjustment: undefined,
+    objectFit: "cover",
+    ...ctx,
+    block: ctx.block as IsomerComponent,
+  })
+
+// The preview's static HTML, wrapper included.
+const previewHtml = (
+  built: ReturnType<typeof buildPreview>,
+  layout: IsomerPageLayoutType = "content",
+): string => {
+  if (!built) return ""
+  const node = renderComponent({
+    component: built.component,
+    layout,
+    site: SITE_STUB,
+    permalink: "",
+    headingLevel: 1,
+  })
+  return renderToStaticMarkup(built.wrapPreview?.(node) ?? node)
+}
 
 describe("resolveAdjustmentConfig", () => {
   it("returns undefined for components not yet wired", () => {
@@ -121,7 +160,7 @@ describe("resolveAdjustmentConfig", () => {
         // Array-nested field: both variants render the real edited card, not a
         // hand-built approximation — every other wired component gets a real preview too.
         expect(config?.skipRealComponentPreview).toBeFalsy()
-        expect(config?.buildSingleItemPreviewBlock).toBeTypeOf("function")
+        expect(config?.buildPreview).toBeTypeOf("function")
       }
     })
 
@@ -146,12 +185,13 @@ describe("resolveAdjustmentConfig", () => {
         maxColumns: "3",
         cards: [originalCard, { imageUrl: "/other.png" }],
       }
-      const editedCard = { imageUrl: "/new.png" }
-      const preview = withImages!.buildSingleItemPreviewBlock!(
-        block as IsomerComponent,
-        editedCard,
-      ) as Record<string, unknown>
-      expect(preview.cards).toEqual([editedCard])
+      const preview = buildPreview(withImages, {
+        block,
+        fieldHost: originalCard,
+      })!.component as Record<string, unknown>
+      expect(preview.cards).toEqual([
+        { imageUrl: "/edited.png", imageFit: "cover" },
+      ])
       expect(preview.title).toBe("")
       expect(preview.subtitle).toBeUndefined()
       expect(preview.label).toBeUndefined()
@@ -172,12 +212,9 @@ describe("resolveAdjustmentConfig", () => {
         layout: "content",
         cards: [cardA, cardB, cardC],
       }
-      const editedCard = { ...cardB, imageUrl: "/edited.png" }
-      const preview = withImages?.buildSingleItemPreviewBlock?.(
-        block as IsomerComponent,
-        editedCard,
+      const html = previewHtml(
+        buildPreview(withImages, { block, fieldHost: cardB }),
       )
-      const html = renderBlockHtml(preview, "content")
 
       expect(html.match(/<img/g)).toHaveLength(1)
       expect(html).toContain("/edited.png")
@@ -195,15 +232,35 @@ describe("resolveAdjustmentConfig", () => {
         layout: "content",
         cards: [card],
       }
-      const editedCard = { ...card, imageUrl: "/edited.png" }
-      const preview = fullImage?.buildSingleItemPreviewBlock?.(
-        block as IsomerComponent,
-        editedCard,
+      const html = previewHtml(
+        buildPreview(fullImage, { block, fieldHost: card }),
       )
-      const html = renderBlockHtml(preview, "content")
 
       expect(html).toContain("Real title")
       expect(html).toContain("bg-gradient-to-t")
+    })
+
+    it("puts the lone card in a one-column grid and follows the Fit/Fill choice", () => {
+      const card = { imageUrl: "/a.png", imageAlt: "a", title: "Card" }
+      const block = {
+        type: "infocards",
+        variant: "cardsWithImages",
+        maxColumns: "3",
+        layout: "content",
+        cards: [card, card],
+      }
+      const html = previewHtml(
+        buildPreview(withImages, {
+          block,
+          fieldHost: card,
+          objectFit: "contain",
+        }),
+      )
+
+      // The wrapper targets the grid by its class, so both must be present.
+      expect(html).toContain("[&amp;_.auto-rows-max]:!grid-cols-1")
+      expect(html).toMatch(/class="[^"]*\bauto-rows-max\b/)
+      expect(html).toContain("object-contain")
     })
 
     it("previews exactly Mobile/Tablet/Desktop", () => {
@@ -235,6 +292,31 @@ describe("resolveAdjustmentConfig", () => {
       expect(configs[0]?.lockedRatios).toEqual([{ width: 1, height: 1 }])
       expect(configs[1]).toBe(configs[0])
       expect(configs[2]).toBe(configs[0])
+    })
+
+    it("shows the image in the preview when the alt text is empty, and keeps a real alt", () => {
+      const config = resolveAdjustmentConfig({
+        block: { type: "blockquote" },
+        fieldName: "imageSrc",
+      })
+      const block = {
+        type: "blockquote",
+        quote: "A quote",
+        source: "A source",
+        imageSrc: "/a.png",
+      }
+      const withAlt = { ...block, imageAlt: "The minister" }
+
+      const html = previewHtml(
+        buildPreview(config, { block, fieldHost: block }),
+      )
+      const htmlWithAlt = previewHtml(
+        buildPreview(config, { block: withAlt, fieldHost: withAlt }),
+      )
+
+      expect(html).toContain("<img")
+      expect(html).toContain("/edited.png")
+      expect(htmlWithAlt).toContain('alt="The minister"')
     })
   })
 
