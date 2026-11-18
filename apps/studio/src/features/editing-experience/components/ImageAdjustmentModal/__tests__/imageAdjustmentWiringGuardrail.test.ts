@@ -68,9 +68,9 @@ const FOCAL_WIRING_CONFIGS: {
       block: { type: "hero", variant: "largeImage" },
       fieldName: "backgroundUrl",
     },
+    // ImageContainer.tsx is client code and only gets the resolved string.
     componentPaths: [
       "packages/components/src/templates/next/components/complex/Hero/HeroLargeImage/HeroLargeImage.tsx",
-      "packages/components/src/templates/next/components/complex/Hero/HeroLargeImage/ImageContainer.tsx",
     ],
     storyPaths: [
       "packages/components/src/templates/next/components/complex/Hero/HeroLargeImage/HeroLargeImage.adjustment.stories.tsx",
@@ -145,6 +145,26 @@ const FOCAL_WIRING_CONFIGS: {
 ]
 
 describe("imageAdjustment wiring guardrail", () => {
+  // The preview is shared by every component. Anything one component needs
+  // belongs in its config's buildPreview, in adjustmentConfigRegistry.ts.
+  it("AdjustmentPreview has no component-specific code", () => {
+    const source = fs.readFileSync(
+      path.join(__dirname, "../AdjustmentPreview.tsx"),
+      "utf-8",
+    )
+    const valueImports = Array.from(
+      source.matchAll(
+        /^import \{([^}]+)\} from "@opengovsg\/isomer-components"/gm,
+      ),
+    )
+      .flatMap((match) => (match[1] ?? "").split(","))
+      .map((name) => name.trim())
+      .filter(Boolean)
+      .toSorted()
+    expect(valueImports).toEqual(["getFocalObjectPosition", "renderComponent"])
+    expect(source).not.toMatch(/imageAlt|imageFit|auto-rows-max/)
+  })
+
   for (const {
     resolve,
     componentPaths,
