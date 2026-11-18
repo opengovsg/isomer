@@ -1,7 +1,7 @@
 import type { UploadLinkTarget } from "~/hooks/useUploadAssetMutation"
 import { useRouter } from "next/router"
 import { z } from "zod"
-import { useSiteWideUploadSource } from "~/contexts/UploadLinkTargetContext"
+import { useOptionalSiteWideUploadSource } from "~/contexts/UploadLinkTargetContext"
 
 const resourceRouteSchema = z.object({
   pageId: z.coerce.number().optional(),
@@ -10,7 +10,7 @@ const resourceRouteSchema = z.object({
 
 // Undefined when nothing names a target; callers must then withhold uploads
 export const useUploadLinkTarget = (): UploadLinkTarget | undefined => {
-  const source = useSiteWideUploadSource()
+  const source = useOptionalSiteWideUploadSource()
   const { query } = useRouter()
 
   if (source !== undefined) {

@@ -23,4 +23,7 @@ export function UploadLinkTargetProvider({
   )
 }
 
-export const useSiteWideUploadSource = () => useContext(UploadLinkTargetContext)
+// No throw when unprovided: outside site settings, uploads take their target
+// from the route instead
+export const useOptionalSiteWideUploadSource = () =>
+  useContext(UploadLinkTargetContext)
