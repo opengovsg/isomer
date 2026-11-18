@@ -111,17 +111,7 @@ export const renderComponent = ({
     case "contactinformation":
       return <ContactInformation key={elementKey} {...component} {...rest} />
     case "dynamiccomponentlist":
-      // Pass only what's needed: DynamicComponentList is a client component, so
-      // its props (e.g. `site`, which holds the whole sitemap) are serialized
-      // into every page's RSC payload
-      return (
-        <DynamicComponentList
-          key={elementKey}
-          {...component}
-          layout={rest.layout}
-          headingLevel={rest.headingLevel}
-        />
-      )
+      return <DynamicComponentList key={elementKey} {...component} {...rest} />
     default:
       const _: never = component
       return <></>
