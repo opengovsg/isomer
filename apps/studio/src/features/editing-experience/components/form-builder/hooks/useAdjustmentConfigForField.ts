@@ -48,9 +48,9 @@ export const useAdjustmentConfigForField = (path: string) => {
   const fieldName = pathParts.pop() ?? ""
   // The host's position in its array, e.g. 1 for "slides.1". Undefined when
   // the host is not an array item.
-  const lastParentPart = Number(pathParts.at(-1))
-  const fieldHostIndex = Number.isInteger(lastParentPart)
-    ? lastParentPart
+  const lastParentPart = pathParts.at(-1) ?? ""
+  const fieldHostIndex = /^\d+$/.test(lastParentPart)
+    ? Number(lastParentPart)
     : undefined
   const parentPath = pathParts.join(".")
 
