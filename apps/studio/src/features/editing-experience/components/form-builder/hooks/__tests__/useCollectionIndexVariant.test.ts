@@ -5,14 +5,25 @@ import { describe, expect, it, vi } from "vitest"
 
 import { useCollectionIndexVariant } from "../useCollectionIndexVariant"
 
-const mockIndexPage = vi.hoisted(() => vi.fn())
+const mockIndexPageContent = vi.hoisted(() => vi.fn())
 
-vi.mock("~/features/editing-experience/hooks/useCollectionIndexPage", () => ({
-  useCollectionIndexPage: () => mockIndexPage() as unknown,
+// Stub the three chained tRPC queries so renderHook needs no tRPC provider.
+vi.mock("~/utils/trpc", () => ({
+  trpc: {
+    resource: {
+      getParentOf: { useQuery: () => ({ data: { parent: { id: "2" } } }) },
+    },
+    folder: { getIndexpage: { useQuery: () => ({ data: { id: "3" } }) } },
+    page: {
+      readPageAndBlob: {
+        useQuery: () => ({ data: mockIndexPageContent() as unknown }),
+      },
+    },
+  },
 }))
 
-const variantFor = (data: unknown) => {
-  mockIndexPage.mockReturnValue({ data, isError: false })
+const variantFor = (page: unknown) => {
+  mockIndexPageContent.mockReturnValue(page && { content: { page } })
   return renderHook(() =>
     useCollectionIndexVariant({ siteId: 1, pageId: 1, enabled: true }),
   ).result.current
