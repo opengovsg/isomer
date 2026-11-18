@@ -1,19 +1,66 @@
+"use client"
+
+import type { DgsApiDatasetSearchParams } from "~/hooks/useDgsData/types"
 import type { DynamicComponentListProps } from "~/interfaces"
+import { useMemo } from "react"
+import { useDgsData } from "~/hooks/useDgsData"
 
-import { DynamicComponentListClient } from "./DynamicComponentListClient"
+import { DgsTransformedContactInformation } from "../ContactInformation"
 
-// Server wrapper so `site` (which holds the whole sitemap) is not serialized
-// into the RSC payload of every page using this client component
+// We do not know how many records will be returned
+// thus we play safe and just return 1 for loading state
+const DEFAULT_NUMBER_OF_RECORDS_FOR_LOADING = 1
+
 export const DynamicComponentList = ({
-  dataSource,
+  dataSource: { resourceId, sort, filters },
   component,
   layout,
   headingLevel,
-}: DynamicComponentListProps) => (
-  <DynamicComponentListClient
-    dataSource={dataSource}
-    component={component}
-    layout={layout}
-    headingLevel={headingLevel}
-  />
-)
+}: DynamicComponentListProps) => {
+  const params = useMemo(
+    () => ({
+      resourceId,
+      sort,
+      filters: filters?.reduce<
+        NonNullable<DgsApiDatasetSearchParams["filters"]>
+      >((acc, filter) => {
+        acc[filter.fieldKey] = filter.fieldValue
+        return acc
+      }, {}),
+    }),
+    [resourceId, sort, filters],
+  )
+
+  const { records, isLoading, isError } = useDgsData(params)
+
+  // Should display nothing if there is an realtime error
+  // as any rendering will likely seems jank and useless
+  if ((isError || !records || records.length === 0) && !isLoading) {
+    return null
+  }
+
+  switch (component.type) {
+    // Disabling for now so its easier to extend in the future
+    case "contactinformation":
+      return (
+        records ??
+        Array.from(
+          { length: DEFAULT_NUMBER_OF_RECORDS_FOR_LOADING },
+          () => ({}),
+        )
+      ).map((record, index) => (
+        <DgsTransformedContactInformation
+          key={`${component.type}-${index}`}
+          record={record}
+          {...component}
+          layout={layout}
+          isLoading={isLoading}
+          headingLevel={headingLevel}
+        />
+      ))
+
+    default:
+      const _exhaustiveCheck: never = component.type
+      return <></>
+  }
+}
