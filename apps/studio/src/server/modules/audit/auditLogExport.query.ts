@@ -201,8 +201,7 @@ type DisplayableAuditLogEvent = Exclude<
   | "CancelSchedulePublish"
   | "ScheduleUnpublish"
   | "CancelScheduleUnpublish"
-  // Not emitted yet; add descriptions once their deltas exist
-  | "AssetCreate"
+  // Not emitted yet; add a description once its delta exists
   | "AssetDelete"
 >
 
@@ -227,6 +226,7 @@ const AUDIT_LOGS_EVENTS_QUERIES: Record<
   // The delta stores the REQUESTED report type, so the description reflects
   // the user's ask verbatim.
   AuditLogExportCreate: sql<string>`CONCAT('Audit log export requested for ', al.delta -> 'after' ->> 'auditLogDateRange', ' (', al.delta -> 'after' ->> 'reportType', ')')`,
+  AssetCreate: sql<string>`CONCAT('Asset "', al.delta -> 'after' ->> 's3Key', '" uploaded')`,
 }
 
 // NOTE: As with the access report, string-alias columns keep their quotes in
@@ -365,6 +365,8 @@ export const activityReportQuery = ({
         .then(AUDIT_LOGS_EVENTS_QUERIES[AuditLogEvent.Logout])
         .when("al.eventType", "=", AuditLogEvent.AuditLogExportCreate)
         .then(AUDIT_LOGS_EVENTS_QUERIES[AuditLogEvent.AuditLogExportCreate])
+        .when("al.eventType", "=", AuditLogEvent.AssetCreate)
+        .then(AUDIT_LOGS_EVENTS_QUERIES[AuditLogEvent.AssetCreate])
         .else("-")
         .end()
         .as("Description"),

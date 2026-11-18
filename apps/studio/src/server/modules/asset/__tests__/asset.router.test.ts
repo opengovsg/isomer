@@ -6,6 +6,7 @@ import {
   createMockRequest,
 } from "tests/integration/helpers/iron-session"
 import {
+  setupAdminPermissions,
   setupEditorPermissions,
   setupFolder,
   setupIsomerAdmin,
@@ -16,9 +17,16 @@ import { vi } from "vitest"
 import { deleteFile, generateSignedPutUrl, putObjectDirect } from "~/lib/s3"
 import { MAX_DELETE_ASSET_URLS } from "~/schemas/asset"
 import { createCallerFactory } from "~/server/trpc"
-import { IsomerAdminRole, ResourceType } from "~prisma/generated/generatedEnums"
+import {
+  AssetLinkSource,
+  AssetStatus,
+  AuditLogEvent,
+  IsomerAdminRole,
+  ResourceType,
+} from "~prisma/generated/generatedEnums"
 
 import { invalidateAssetPaths } from "../../aws/cloudfront.service"
+import { db } from "../../database"
 import { assetRouter } from "../asset.router"
 
 // Mock the S3 client to prevent credential loading issues in CI
@@ -138,6 +146,26 @@ describe("asset.router", async () => {
       )
     })
 
+    it("should not register an asset when the user lacks permission", async () => {
+      // Arrange
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+      })
+
+      // Act
+      const result = caller.getPresignedPutUrl({
+        siteId: site.id,
+        resourceId: page.id,
+        fileName: "denied.png",
+        fileSize: 1,
+      })
+
+      // Assert
+      await expect(result).rejects.toMatchObject({ code: "FORBIDDEN" })
+      const assets = await db.selectFrom("Asset").select("id").execute()
+      expect(assets).toEqual([])
+    })
+
     it("should return success if user has permission to update resource", async () => {
       // Arrange
       const { site, folder } = await setupFolder({})
@@ -190,7 +218,125 @@ describe("asset.router", async () => {
         ContentType: "image/png",
         ContentDisposition: expect.stringMatching(/^inline; filename=.+/),
         ContentLength: fileSize,
+        Tagging: "private=true",
       })
+    })
+
+    it("should register the asset, link it to the resource and audit it", async () => {
+      // Arrange
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+      })
+      await setupEditorPermissions({
+        siteId: site.id,
+        userId: String(session.userId),
+      })
+
+      // Act
+      const { fileKey } = await caller.getPresignedPutUrl({
+        siteId: site.id,
+        resourceId: page.id,
+        fileName: "photo.png",
+        fileSize: 1,
+      })
+
+      // Assert
+      const asset = await db
+        .selectFrom("Asset")
+        .selectAll()
+        .where("s3Key", "=", fileKey)
+        .executeTakeFirstOrThrow()
+      expect(asset).toMatchObject({
+        siteId: site.id,
+        uploadedBy: String(session.userId),
+        status: AssetStatus.PENDING_UPLOAD,
+        unreferencedAt: null,
+      })
+      const links = await db
+        .selectFrom("AssetLink")
+        .selectAll()
+        .where("assetId", "=", asset.id)
+        .execute()
+      expect(links).toEqual([
+        expect.objectContaining({
+          resourceId: page.id,
+          source: AssetLinkSource.RESOURCE,
+          usedInDraft: false,
+          usedInPublished: false,
+        }),
+      ])
+      const auditLog = await db
+        .selectFrom("AuditLog")
+        .selectAll()
+        .where("eventType", "=", AuditLogEvent.AssetCreate)
+        .executeTakeFirstOrThrow()
+      expect(auditLog).toMatchObject({
+        siteId: site.id,
+        userId: String(session.userId),
+        delta: {
+          before: null,
+          after: expect.objectContaining({ s3Key: fileKey }),
+        },
+      })
+    })
+
+    it("should link a site-wide upload to its source", async () => {
+      // Arrange
+      const { site } = await setupPageResource({
+        resourceType: ResourceType.Page,
+      })
+      await setupAdminPermissions({
+        siteId: site.id,
+        userId: String(session.userId),
+      })
+
+      // Act
+      const { fileKey } = await caller.getPresignedPutUrl({
+        siteId: site.id,
+        source: AssetLinkSource.NAVBAR,
+        fileName: "icon.png",
+        fileSize: 1,
+      })
+
+      // Assert
+      const link = await db
+        .selectFrom("AssetLink")
+        .innerJoin("Asset", "Asset.id", "AssetLink.assetId")
+        .select(["AssetLink.resourceId", "AssetLink.source"])
+        .where("Asset.s3Key", "=", fileKey)
+        .executeTakeFirstOrThrow()
+      expect(link).toEqual({ resourceId: null, source: AssetLinkSource.NAVBAR })
+    })
+
+    it("should register an upload with no link target without linking it", async () => {
+      // Arrange
+      const { site } = await setupPageResource({
+        resourceType: ResourceType.Page,
+      })
+      await setupAdminPermissions({
+        siteId: site.id,
+        userId: String(session.userId),
+      })
+
+      // Act
+      const { fileKey } = await caller.getPresignedPutUrl({
+        siteId: site.id,
+        fileName: "legacy-tab.png",
+        fileSize: 1,
+      })
+
+      // Assert
+      const asset = await db
+        .selectFrom("Asset")
+        .select("id")
+        .where("s3Key", "=", fileKey)
+        .executeTakeFirstOrThrow()
+      const links = await db
+        .selectFrom("AssetLink")
+        .select("id")
+        .where("assetId", "=", asset.id)
+        .execute()
+      expect(links).toEqual([])
     })
 
     it("should return contentType and contentDisposition for client to send with PUT", async () => {
@@ -533,6 +679,65 @@ describe("asset.router", async () => {
         fileKey: expect.stringContaining(".svg"),
       })
       expect(putObjectDirect).toHaveBeenCalledTimes(1)
+    })
+
+    it("should register a successful SVG upload as uploaded and private", async () => {
+      // Arrange
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+      })
+      await setupEditorPermissions({
+        siteId: site.id,
+        userId: String(session.userId),
+      })
+
+      // Act
+      const { fileKey } = await caller.uploadSvg({
+        siteId: site.id,
+        resourceId: page.id,
+        fileName: "icon.svg",
+        content: '<svg xmlns="http://www.w3.org/2000/svg"></svg>',
+      })
+
+      // Assert
+      const asset = await db
+        .selectFrom("Asset")
+        .selectAll()
+        .where("s3Key", "=", fileKey)
+        .executeTakeFirstOrThrow()
+      expect(asset.status).toBe(AssetStatus.UPLOADED)
+      expect(asset.unreferencedAt).not.toBeNull()
+      expect(putObjectDirect).toHaveBeenCalledWith(
+        expect.objectContaining({ Key: fileKey, Tagging: "private=true" }),
+      )
+    })
+
+    it("should leave the asset pending when the SVG write fails", async () => {
+      // Arrange
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+      })
+      await setupEditorPermissions({
+        siteId: site.id,
+        userId: String(session.userId),
+      })
+      vi.mocked(putObjectDirect).mockRejectedValueOnce(new Error("S3 down"))
+
+      // Act
+      const result = caller.uploadSvg({
+        siteId: site.id,
+        resourceId: page.id,
+        fileName: "icon.svg",
+        content: '<svg xmlns="http://www.w3.org/2000/svg"></svg>',
+      })
+
+      // Assert
+      await expect(result).rejects.toThrow()
+      const asset = await db
+        .selectFrom("Asset")
+        .select("status")
+        .executeTakeFirstOrThrow()
+      expect(asset.status).toBe(AssetStatus.PENDING_UPLOAD)
     })
 
     it("should reject fileName not ending in .svg", async () => {

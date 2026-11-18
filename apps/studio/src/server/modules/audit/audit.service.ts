@@ -1,4 +1,5 @@
 import type {
+  Asset,
   AuditLogEvent,
   AuditLogExportReportType,
   Blob,
@@ -189,6 +190,40 @@ export type RedirectEventLogProps = {
 }[keyof RedirectEventDeltaMap]
 
 export const logRedirectEvent: AuditLogger<RedirectEventLogProps> = async (
+  tx,
+  { eventType, delta, by, ip, siteId },
+) => {
+  await tx
+    .insertInto("AuditLog")
+    .values({
+      siteId,
+      eventType,
+      delta,
+      userId: by.id,
+      ipAddress: ip,
+      metadata: {},
+    })
+    .execute()
+}
+
+interface AssetEventDeltaMap {
+  AssetCreate: {
+    before: null
+    after: Asset
+  }
+}
+
+export type AssetEventLogProps = {
+  [K in keyof AssetEventDeltaMap]: {
+    eventType: K
+    delta: AssetEventDeltaMap[K]
+    by: User
+    ip?: string
+    siteId: Site["id"]
+  }
+}[keyof AssetEventDeltaMap]
+
+export const logAssetEvent: AuditLogger<AssetEventLogProps> = async (
   tx,
   { eventType, delta, by, ip, siteId },
 ) => {

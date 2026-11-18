@@ -1,3 +1,4 @@
+import { deleteAssetLinksForResourceTree } from "~/server/modules/asset/assetLink.service"
 import { db } from "~/server/modules/database"
 
 import { FileLogger } from "../FileLogger"
@@ -15,6 +16,11 @@ export const deleteCollectionById = async ({
 }: DeleteCollectionByIdInput) => {
   try {
     await db.transaction().execute(async (tx) => {
+      await deleteAssetLinksForResourceTree(tx, {
+        siteId,
+        resourceIds: [collectionId],
+      })
+
       // Step 1: Find all child resources of the collection
       const childResources = await tx
         .selectFrom("Resource")

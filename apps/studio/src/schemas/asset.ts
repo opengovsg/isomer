@@ -7,6 +7,7 @@ import {
   MAX_SVG_FILE_SIZE_BYTES,
 } from "~/lib/fileUpload"
 import { formatFileSizeLimit } from "~/utils/formatFileSizeLimit"
+import { AssetLinkSource } from "~prisma/generated/generatedEnums"
 
 // Combine allowed extensions from existing constants
 const ALLOWED_EXTENSIONS = [
@@ -74,6 +75,28 @@ const fileSizeRefine = (
   })
 }
 
+// Page uploads link to their resource; uploads from site settings name the
+// site-wide section instead
+export const siteWideAssetSourceSchema = z.enum([
+  AssetLinkSource.SITE_CONFIG,
+  AssetLinkSource.NAVBAR,
+  AssetLinkSource.FOOTER,
+])
+export type SiteWideAssetSource = z.infer<typeof siteWideAssetSourceSchema>
+
+const assetLinkTargetRefine = (
+  { resourceId, source }: { resourceId?: string; source?: SiteWideAssetSource },
+  ctx: z.RefinementCtx,
+) => {
+  if (resourceId === undefined || source === undefined) return
+
+  ctx.addIssue({
+    code: "custom",
+    path: ["source"],
+    message: "Upload for either a page or a site-wide section, not both",
+  })
+}
+
 const getPresignedPutUrlBaseSchema = z.object({
   siteId: z.number().min(1),
   tags: z
@@ -85,12 +108,14 @@ const getPresignedPutUrlBaseSchema = z.object({
     )
     .optional(),
   resourceId: z.string().optional(),
+  source: siteWideAssetSourceSchema.optional(),
   fileSize: fileSizeSchema,
   fileName: fileNameSchema,
 })
 
-export const getPresignedPutUrlSchema =
-  getPresignedPutUrlBaseSchema.superRefine(fileSizeRefine)
+export const getPresignedPutUrlSchema = getPresignedPutUrlBaseSchema
+  .superRefine(fileSizeRefine)
+  .superRefine(assetLinkTargetRefine)
 
 // Subset of getPresignedPutUrlSchema for client-side pre-upload validation
 // (previewing fileName/fileSize errors before the mutation fires). Picked from
@@ -100,7 +125,7 @@ export const fileNameAndSizeSchema = getPresignedPutUrlBaseSchema
   .pick({ fileName: true, fileSize: true })
   .superRefine(fileSizeRefine)
 
-export const uploadSvgSchema = z.object({
+const uploadSvgBaseSchema = z.object({
   siteId: z.number().min(1),
   fileName: z
     .string()
@@ -119,8 +144,13 @@ export const uploadSvgSchema = z.object({
     error: `SVG file size must not exceed ${MAX_SVG_FILE_SIZE_BYTES / 1_000_000} MB`,
   }),
   resourceId: z.string().optional(),
+  source: siteWideAssetSourceSchema.optional(),
   tags: z.array(z.object({ key: z.string(), value: z.string() })).optional(),
 })
+
+export const uploadSvgSchema = uploadSvgBaseSchema.superRefine(
+  assetLinkTargetRefine,
+)
 
 export const getPresignedGetUrlSchema = z.object({
   siteId: z.number().min(1),

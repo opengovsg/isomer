@@ -34,6 +34,7 @@ import { isResourceMoveValid } from "~/utils/resources"
 import { AuditLogEvent } from "~prisma/generated/generatedEnums"
 
 import type { PermissionsProps } from "../permissions/permissions.type"
+import { deleteAssetLinksForResourceTree } from "../asset/assetLink.service"
 import { logResourceEvent } from "../audit/audit.service"
 import { db, ResourceType } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
@@ -910,6 +911,11 @@ export const resourceRouter = router({
           siteId: Number(siteId),
           resourceId: String(resourceId),
           byUserId: user.id,
+        })
+
+        await deleteAssetLinksForResourceTree(tx, {
+          siteId: Number(siteId),
+          resourceIds: [String(resourceId)],
         })
 
         return tx
