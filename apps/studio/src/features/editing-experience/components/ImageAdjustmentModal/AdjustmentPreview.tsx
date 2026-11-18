@@ -392,6 +392,19 @@ export const AdjustmentPreview = ({
     </Text>
   )
 
+  // An empty previewStates means the config couldn't determine a frame to
+  // show (e.g. the collection thumbnail's parent layout hasn't resolved yet).
+  if (previewStates.length === 0) {
+    return (
+      <VStack ref={railRef} align="stretch" spacing="1rem" w="100%">
+        {fetchErrorBanner}
+        <Text textStyle="caption-2" color="base.content.medium">
+          Preview unavailable
+        </Text>
+      </VStack>
+    )
+  }
+
   return (
     <VStack ref={railRef} align="stretch" spacing="1rem" w="100%">
       {fetchErrorBanner}
