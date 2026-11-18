@@ -130,6 +130,8 @@ interface ImageAdjustmentModalProps {
   imageFieldName: string
   // The object that holds the field, such as one InfoCards card.
   fieldHost: Record<string, unknown> | undefined
+  // The host's position in its array, when it is an array item.
+  fieldHostIndex?: number
   // The just-uploaded original, kept in the browser. The canvas, preview and
   // save bake from it while the malware scan still blocks the uploaded copy.
   originalFile?: File
@@ -154,6 +156,7 @@ export const ImageAdjustmentModal = ({
   block,
   imageFieldName,
   fieldHost,
+  fieldHostIndex,
   originalFile,
   pageLayout,
   value,
@@ -551,9 +554,8 @@ export const ImageAdjustmentModal = ({
                     block={block}
                     imageFieldName={imageFieldName}
                     fieldHost={fieldHost}
-                    buildSingleItemPreviewBlock={
-                      config.buildSingleItemPreviewBlock
-                    }
+                    fieldHostIndex={fieldHostIndex}
+                    buildPreview={config.buildPreview}
                     skipRealComponentPreview={config.skipRealComponentPreview}
                     objectFit={previewObjectFit}
                     pageLayout={pageLayout}
