@@ -15,16 +15,31 @@ import {
   shouldBlockIndexing,
 } from "@opengovsg/isomer-components"
 import { notFound } from "next/navigation"
+import { readFileSync } from "node:fs"
+import { isAbsolute, join, relative } from "node:path"
 
 import { serializeForInlineScript } from "@isomer/validators"
 
 export const dynamic = "force-static"
 
 const INDEX_PAGE_PERMALINK = "_index"
-const isModuleNotFoundError = (error: unknown) =>
+const SCHEMA_DIR = join(process.cwd(), "schema")
+
+const isEnoent = (error: unknown) =>
   error instanceof Error &&
   "code" in error &&
-  ["MODULE_NOT_FOUND", "ERR_MODULE_NOT_FOUND"].includes(error.code as string)
+  (error as { code?: string }).code === "ENOENT"
+
+// Webpack turns a dynamic `import("@/schema/${permalink}.json")` into one server
+// chunk per schema file and then minifies each chunk. The export only needs
+// the JSON, so read the file instead.
+const readSchemaFile = (relativePath: string): IsomerPageSchemaType => {
+  const filePath = join(SCHEMA_DIR, relativePath)
+  const fromSchemaDir = relative(SCHEMA_DIR, filePath)
+  if (fromSchemaDir.startsWith("..") || isAbsolute(fromSchemaDir)) notFound()
+
+  return JSON.parse(readFileSync(filePath, "utf8")) as IsomerPageSchemaType
+}
 
 interface ParamsContent {
   permalink: string[]
@@ -62,34 +77,24 @@ const lastModifiedByPermalink = new Map(
 
 const getSchema = async ({ permalink }: Pick<ParamsContent, "permalink">) => {
   const joinedPermalink: string = permalink.join("/")
+  // A folder index lives at `folder/_index.json`. The site root is `_index.json`.
+  const indexPath =
+    joinedPermalink === ""
+      ? `${INDEX_PAGE_PERMALINK}.json`
+      : `${joinedPermalink}/${INDEX_PAGE_PERMALINK}.json`
 
-  const schema = (await import(`@/schema/${joinedPermalink}.json`)
-    // oxlint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
-    .then((module) => module.default)
-    // NOTE: If the initial import is missing,
-    // this might be the case where the file is an index page
-    // and has `_index` appended to the original permalink
-    // so we have to do another import w the appended index path
-    .catch(async (error: unknown) => {
-      if (!isModuleNotFoundError(error)) throw error
-
-      if (joinedPermalink === "") {
-        // oxlint-disable-next-line @typescript-eslint/no-unsafe-return
-        return import(`@/schema/${INDEX_PAGE_PERMALINK}.json`).then(
-          // oxlint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
-          (module) => module.default,
-        )
-      }
-      // oxlint-disable-next-line @typescript-eslint/no-unsafe-return
-      return import(
-        `@/schema/${joinedPermalink}/${INDEX_PAGE_PERMALINK}.json`
-        // oxlint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
-      ).then((module) => module.default)
-    })
-    .catch((error: unknown) => {
-      if (isModuleNotFoundError(error)) notFound()
-      throw error
-    })) as IsomerPageSchemaType
+  let schema: IsomerPageSchemaType
+  try {
+    schema = readSchemaFile(`${joinedPermalink}.json`)
+  } catch (error) {
+    if (!isEnoent(error)) throw error
+    try {
+      schema = readSchemaFile(indexPath)
+    } catch (indexError) {
+      if (isEnoent(indexError)) notFound()
+      throw indexError
+    }
+  }
 
   const lastModified =
     lastModifiedByPermalink.get(joinedPermalink) || new Date().toISOString()
