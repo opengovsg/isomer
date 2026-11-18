@@ -1,4 +1,5 @@
 import crypto from "crypto"
+import { deleteAssetLinksForResourceTree } from "~/server/modules/asset/asset.service"
 import { db, jsonb } from "~/server/modules/database"
 import { ResourceState, ResourceType } from "~prisma/generated/generatedEnums"
 
@@ -103,9 +104,20 @@ export const createCollectionWithTagCategories = async (
 }
 
 // Cascades to the index page and any collection items (Resource.parent is
-// onDelete: Cascade).
+// onDelete: Cascade), so their asset links are cleared first.
 export const deleteCollection = (collectionId: string) =>
-  db.deleteFrom("Resource").where("id", "=", collectionId).execute()
+  db.transaction().execute(async (tx) => {
+    const { siteId } = await tx
+      .selectFrom("Resource")
+      .select("siteId")
+      .where("id", "=", collectionId)
+      .executeTakeFirstOrThrow()
+    await deleteAssetLinksForResourceTree(tx, {
+      siteId,
+      resourceIds: [collectionId],
+    })
+    await tx.deleteFrom("Resource").where("id", "=", collectionId).execute()
+  })
 
 export const createCollectionLink = async ({
   collectionId,

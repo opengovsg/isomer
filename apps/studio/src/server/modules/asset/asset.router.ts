@@ -9,14 +9,19 @@ import { protectedProcedure, router } from "~/server/trpc"
 import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
 import { invalidateAssetPaths } from "../aws/cloudfront.service"
+import { db } from "../database"
 import { validateUserIsIsomerAdmin } from "../permissions/permissions.service"
+import { getUserById } from "../user/user.service"
 import {
   deleteAssetsByUrl,
   doAllFileKeysBelongToSite,
   getFileKey,
   getPresignedGetUrl,
   getPresignedPutUrl,
+  markSvgUploaded,
+  PRIVATE_ASSET_TAG,
   putFileDirect,
+  registerAssetUpload,
   sanitizeSvg,
   validateUserPermissionsForAsset,
 } from "./asset.service"
@@ -27,7 +32,7 @@ export const assetRouter = router({
     .mutation(
       async ({
         ctx,
-        input: { tags, siteId, fileName, fileSize, resourceId },
+        input: { tags, siteId, fileName, fileSize, resourceId, source },
       }) => {
         await validateUserPermissionsForAsset({
           siteId,
@@ -36,12 +41,30 @@ export const assetRouter = router({
           userId: ctx.user.id,
         })
 
+        if (resourceId === undefined && source === undefined) {
+          ctx.logger.warn(
+            { siteId, fileName },
+            "Upload has no link target; registering the asset without a link",
+          )
+        }
+
+        const user = await getUserById(ctx.user.id)
         const fileKey = getFileKey({ siteId, fileName })
+
+        await db.transaction().execute((tx) =>
+          registerAssetUpload(tx, {
+            siteId,
+            key: fileKey,
+            by: user,
+            resourceId,
+            source,
+          }),
+        )
 
         const uploadConfig = await getPresignedPutUrl({
           key: fileKey,
           fileSize,
-          tags,
+          tags: [...(tags ?? []), PRIVATE_ASSET_TAG],
         })
 
         ctx.logger.info(
@@ -137,7 +160,7 @@ export const assetRouter = router({
     .mutation(
       async ({
         ctx,
-        input: { siteId, fileName, content, resourceId, tags },
+        input: { siteId, fileName, content, resourceId, source, tags },
       }) => {
         await validateUserPermissionsForAsset({
           siteId,
@@ -146,14 +169,34 @@ export const assetRouter = router({
           userId: ctx.user.id,
         })
 
+        if (resourceId === undefined && source === undefined) {
+          ctx.logger.warn(
+            { siteId, fileName },
+            "Upload has no link target; registering the asset without a link",
+          )
+        }
+
+        const user = await getUserById(ctx.user.id)
         const fileKey = getFileKey({ siteId, fileName })
         const sanitized = sanitizeSvg(content)
 
+        const asset = await db.transaction().execute((tx) =>
+          registerAssetUpload(tx, {
+            siteId,
+            key: fileKey,
+            by: user,
+            resourceId,
+            source,
+          }),
+        )
+
+        // A failed write leaves the asset pending for the reconcile job
         await putFileDirect({
           key: fileKey,
           body: sanitized,
-          tags,
+          tags: [...(tags ?? []), PRIVATE_ASSET_TAG],
         })
+        await markSvgUploaded(asset.id)
 
         ctx.logger.info(
           {

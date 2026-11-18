@@ -27,6 +27,8 @@ import { MAX_BATCH_RESOURCE_IDS } from "~/schemas/resource"
 import * as auditService from "~/server/modules/audit/audit.service"
 import { createCallerFactory } from "~/server/trpc"
 import {
+  AssetLinkSource,
+  AssetStatus,
   ResourceState,
   ResourceType,
   ScheduledAction,
@@ -4435,6 +4437,80 @@ describe("resource.router", async () => {
         .where("id", "=", redirect.id)
         .executeTakeFirstOrThrow()
       expect(after.deletedAt).toBeNull()
+    })
+
+    it("should clear asset links across a deleted folder's subtree", async () => {
+      // Arrange
+      const { folder, site } = await setupFolder()
+      await setupAdminPermissions({ userId: session.userId, siteId: site.id })
+      const { folder: nestedFolder } = await setupFolder({
+        siteId: site.id,
+        parentId: folder.id,
+        permalink: "nested-folder",
+      })
+      const { page } = await setupPageResource({
+        siteId: site.id,
+        parentId: nestedFolder.id,
+        resourceType: "Page",
+        permalink: "nested-page",
+      })
+      const [unusedAsset, usedElsewhereAsset] = await db
+        .insertInto("Asset")
+        .values([
+          {
+            siteId: site.id,
+            s3Key: `${site.id}/unused/a.png`,
+            status: AssetStatus.UPLOADED,
+          },
+          {
+            siteId: site.id,
+            s3Key: `${site.id}/shared/b.png`,
+            status: AssetStatus.UPLOADED,
+          },
+        ])
+        .returningAll()
+        .execute()
+      await db
+        .insertInto("AssetLink")
+        .values([
+          {
+            assetId: unusedAsset!.id,
+            resourceId: page.id,
+            source: AssetLinkSource.RESOURCE,
+          },
+          {
+            assetId: usedElsewhereAsset!.id,
+            resourceId: page.id,
+            source: AssetLinkSource.RESOURCE,
+          },
+          {
+            assetId: usedElsewhereAsset!.id,
+            source: AssetLinkSource.NAVBAR,
+            usedInPublished: true,
+          },
+        ])
+        .execute()
+
+      // Act
+      await caller.delete({ resourceId: folder.id, siteId: site.id })
+
+      // Assert
+      const remainingLinks = await db
+        .selectFrom("AssetLink")
+        .select(["assetId", "source"])
+        .execute()
+      expect(remainingLinks).toEqual([
+        { assetId: usedElsewhereAsset!.id, source: AssetLinkSource.NAVBAR },
+      ])
+      const assets = await db
+        .selectFrom("Asset")
+        .select(["id", "unreferencedAt"])
+        .orderBy("id")
+        .execute()
+      expect(assets).toEqual([
+        { id: unusedAsset!.id, unreferencedAt: expect.any(Date) },
+        { id: usedElsewhereAsset!.id, unreferencedAt: null },
+      ])
     })
 
     it("should delete a folder and all its children (recursively) successfully", async () => {

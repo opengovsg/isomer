@@ -1,5 +1,8 @@
 import type { z } from "zod"
-import type { getPresignedPutUrlSchema } from "~/schemas/asset"
+import type {
+  getPresignedPutUrlSchema,
+  SiteWideAssetSource,
+} from "~/schemas/asset"
 import { IMAGE_ACCEPTED_MIME_TYPE_MAPPING } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
 import { create as createContentDisposition } from "content-disposition"
@@ -16,13 +19,23 @@ import {
   putObjectDirect,
 } from "~/lib/s3"
 import { getServerDomPurify } from "~/lib/server-dom-purify"
+import {
+  AssetLinkSource,
+  AssetStatus,
+  AuditLogEvent,
+} from "~prisma/generated/generatedEnums"
 
+import type { DB, Transaction, User } from "../database"
 import type { AssetPermissionsProps } from "../permissions/permissions.type"
+import { logAssetEvent } from "../audit/audit.service"
 import { db } from "../database"
 import { bulkValidateUserPermissionsForResources } from "../permissions/permissions.service"
 
 const logger = createBaseLogger({ path: "asset.service" })
 const bucket = env.NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME
+
+// Blocks public reads at the Access Point until a published page uses the asset
+export const PRIVATE_ASSET_TAG = { key: "private", value: "true" }
 
 export interface UploadConfig {
   presignedPutUrl: string
@@ -150,6 +163,124 @@ export const getPresignedPutUrl = async ({
     Tagging: tags && generateTagsQueryString(tags),
   })
   return { presignedPutUrl, contentType, contentDisposition }
+}
+
+interface RegisterAssetUploadProps {
+  siteId: number
+  key: string
+  by: User
+  resourceId?: string
+  source?: SiteWideAssetSource
+}
+
+// Runs before any bytes reach S3 so that no uploaded object goes untracked.
+// Without a link target the asset is registered unlinked; its links come from
+// later saves.
+export const registerAssetUpload = async (
+  tx: Transaction<DB>,
+  { siteId, key, by, resourceId, source }: RegisterAssetUploadProps,
+) => {
+  const asset = await tx
+    .insertInto("Asset")
+    .values({ siteId, s3Key: key, uploadedBy: by.id })
+    .returningAll()
+    .executeTakeFirstOrThrow()
+
+  if (resourceId !== undefined) {
+    await tx
+      .insertInto("AssetLink")
+      .values({
+        assetId: asset.id,
+        resourceId,
+        source: AssetLinkSource.RESOURCE,
+      })
+      .execute()
+  } else if (source !== undefined) {
+    await tx
+      .insertInto("AssetLink")
+      .values({ assetId: asset.id, source })
+      .execute()
+  }
+
+  await logAssetEvent(tx, {
+    eventType: AuditLogEvent.AssetCreate,
+    delta: { before: null, after: asset },
+    by,
+    siteId,
+  })
+
+  return asset
+}
+
+// The server's own PUT is the completion signal for SVGs. A fresh upload has
+// no usage yet, so its 90-day clock starts now.
+export const markSvgUploaded = async (assetId: string) => {
+  await db
+    .updateTable("Asset")
+    .set({ status: AssetStatus.UPLOADED, unreferencedAt: new Date() })
+    .where("id", "=", assetId)
+    .where("status", "=", AssetStatus.PENDING_UPLOAD)
+    .execute()
+}
+
+// AssetLink.resourceId is RESTRICT, so a delete must clear links for the
+// resource and every descendant that Resource.parent will cascade to.
+// Removing the assets this orphans is left to the removal flow.
+export const deleteAssetLinksForResourceTree = async (
+  tx: Transaction<DB>,
+  { siteId, resourceIds }: { siteId: number; resourceIds: string[] },
+) => {
+  if (resourceIds.length === 0) return
+
+  const deletedLinks = await tx
+    .withRecursive("subtree", (eb) =>
+      eb
+        .selectFrom("Resource")
+        .where("Resource.siteId", "=", siteId)
+        .where("Resource.id", "in", resourceIds)
+        .select("Resource.id")
+        // `union` dedupes, so a cyclic parent chain cannot recurse forever
+        .union((fb) =>
+          fb
+            .selectFrom("Resource")
+            .innerJoin("subtree", "subtree.id", "Resource.parentId")
+            .where("Resource.siteId", "=", siteId)
+            .select("Resource.id"),
+        ),
+    )
+    .deleteFrom("AssetLink")
+    .where("AssetLink.resourceId", "in", (eb) =>
+      eb.selectFrom("subtree").select("subtree.id"),
+    )
+    .returning("AssetLink.assetId")
+    .execute()
+
+  const assetIds = [...new Set(deletedLinks.map(({ assetId }) => assetId))]
+  if (assetIds.length === 0) return
+
+  await tx
+    .updateTable("Asset")
+    .set({ unreferencedAt: new Date() })
+    .where("Asset.id", "in", assetIds)
+    .where("Asset.status", "=", AssetStatus.UPLOADED)
+    .where("Asset.unreferencedAt", "is", null)
+    .where((eb) =>
+      eb.not(
+        eb.exists(
+          eb
+            .selectFrom("AssetLink")
+            .whereRef("AssetLink.assetId", "=", "Asset.id")
+            .where((ub) =>
+              ub.or([
+                ub("AssetLink.usedInDraft", "=", true),
+                ub("AssetLink.usedInPublished", "=", true),
+              ]),
+            )
+            .select("AssetLink.id"),
+        ),
+      ),
+    )
+    .execute()
 }
 
 // Tags every object in the asset's folder, not just the original: CloudFront

@@ -1,6 +1,7 @@
 import type { IsomerSiteConfigProps } from "@opengovsg/isomer-components"
 import { sql } from "kysely"
 import { normalizeRedirectSource } from "~/schemas/redirect/utils"
+import { deleteAssetLinksForResourceTree } from "~/server/modules/asset/asset.service"
 import { db, jsonb } from "~/server/modules/database"
 
 export { ensureUserOnboarded } from "./user"
@@ -60,18 +61,37 @@ export const resetSiteTheme = (siteId: number) =>
 
 /** Delete a single resource row created during a test. */
 export const deleteResource = (resourceId: string) =>
-  db.deleteFrom("Resource").where("id", "=", resourceId).execute()
+  db.transaction().execute(async (tx) => {
+    const { siteId } = await tx
+      .selectFrom("Resource")
+      .select("siteId")
+      .where("id", "=", resourceId)
+      .executeTakeFirstOrThrow()
+    await deleteAssetLinksForResourceTree(tx, {
+      siteId,
+      resourceIds: [resourceId],
+    })
+    await tx.deleteFrom("Resource").where("id", "=", resourceId).execute()
+  })
 
 /** Delete resources on a site whose title matches a SQL LIKE pattern. */
 export const deleteResourcesByTitleLike = (
   siteId: number,
   titlePattern: string,
 ) =>
-  db
-    .deleteFrom("Resource")
-    .where("siteId", "=", siteId)
-    .where("title", "like", titlePattern)
-    .execute()
+  db.transaction().execute(async (tx) => {
+    const resources = await tx
+      .selectFrom("Resource")
+      .select("id")
+      .where("siteId", "=", siteId)
+      .where("title", "like", titlePattern)
+      .execute()
+    const resourceIds = resources.map(({ id }) => id)
+    await deleteAssetLinksForResourceTree(tx, { siteId, resourceIds })
+    if (resourceIds.length > 0) {
+      await tx.deleteFrom("Resource").where("id", "in", resourceIds).execute()
+    }
+  })
 
 /** Insert a live redirect row for publish-conflict E2E scenarios. */
 export const seedRedirect = (opts: {

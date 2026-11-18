@@ -853,6 +853,34 @@ describe("auditLogExport.query", () => {
       )
     })
 
+    it("renders an AssetCreate description from the uploaded key", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      const editor = await setupUser({ email: "uploader@agency.gov.sg" })
+      await insertAuditLog({
+        eventType: AuditLogEvent.AssetCreate,
+        userId: editor.id,
+        siteId: site.id,
+        delta: {
+          before: null,
+          after: { s3Key: `${site.id}/uuid/annual-report.pdf` },
+        },
+        createdAt: new Date("2024-03-14T02:00:00Z"),
+      })
+
+      // Act
+      const rows = await getActivityReportRows({
+        siteId: site.id,
+        auditLogDateRange,
+      })
+
+      // Assert
+      expect(rows).toHaveLength(1)
+      expect(rows[0]?.Description).toBe(
+        `Asset "${site.id}/uuid/annual-report.pdf" uploaded`,
+      )
+    })
+
     it("renders RedirectCreate, RedirectCreate-revival and RedirectDelete descriptions", async () => {
       const { site } = await setupSite()
       const user = await setupUser({ email: "editor@agency.gov.sg" })

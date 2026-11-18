@@ -6,7 +6,11 @@ import {
   MAX_IMG_FILE_SIZE_BYTES,
 } from "~/lib/fileUpload"
 
-import { fileNameAndSizeSchema, getPresignedPutUrlSchema } from "../asset"
+import {
+  fileNameAndSizeSchema,
+  getPresignedPutUrlSchema,
+  uploadSvgSchema,
+} from "../asset"
 
 describe("getPresignedPutUrlSchema", () => {
   const validBaseData = {
@@ -326,5 +330,60 @@ describe("fileNameAndSizeSchema", () => {
         "File size must not exceed 5 MB",
       )
     }
+  })
+})
+
+describe("upload link target", () => {
+  const presignBase = { siteId: 1, fileName: "logo.png", fileSize: 1 }
+  const svgBase = { siteId: 1, fileName: "logo.svg", content: "<svg />" }
+
+  it("should accept a site-wide source without a resourceId", () => {
+    // Arrange / Act
+    const presign = getPresignedPutUrlSchema.safeParse({
+      ...presignBase,
+      source: "NAVBAR",
+    })
+    const svg = uploadSvgSchema.safeParse({ ...svgBase, source: "FOOTER" })
+
+    // Assert
+    expect(presign.success).toBe(true)
+    expect(svg.success).toBe(true)
+  })
+
+  it("should reject a source together with a resourceId", () => {
+    // Arrange / Act
+    const presign = getPresignedPutUrlSchema.safeParse({
+      ...presignBase,
+      resourceId: "1",
+      source: "SITE_CONFIG",
+    })
+    const svg = uploadSvgSchema.safeParse({
+      ...svgBase,
+      resourceId: "1",
+      source: "SITE_CONFIG",
+    })
+
+    // Assert
+    expect(presign.success).toBe(false)
+    expect(svg.success).toBe(false)
+  })
+
+  it("should reject RESOURCE as a source, since page uploads pass resourceId", () => {
+    // Arrange / Act
+    const result = getPresignedPutUrlSchema.safeParse({
+      ...presignBase,
+      source: "RESOURCE",
+    })
+
+    // Assert
+    expect(result.success).toBe(false)
+  })
+
+  it("should accept neither a resourceId nor a source", () => {
+    // Arrange / Act
+    const result = getPresignedPutUrlSchema.safeParse(presignBase)
+
+    // Assert
+    expect(result.success).toBe(true)
   })
 })
