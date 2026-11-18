@@ -218,6 +218,7 @@ describe("asset.router", async () => {
         ContentType: "image/png",
         ContentDisposition: expect.stringMatching(/^inline; filename=.+/),
         ContentLength: fileSize,
+        Tagging: "private=true",
       })
     })
 
@@ -363,6 +364,7 @@ describe("asset.router", async () => {
           presignedPutUrl: "https://example.com/signed-url",
           contentType: "application/pdf",
           contentDisposition: expect.stringMatching(/^inline; filename=.+/),
+          tagging: "private=true",
         },
       })
     })

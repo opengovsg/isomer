@@ -156,15 +156,16 @@ export const getPresignedPutUrl = async ({
 }): Promise<UploadConfig> => {
   const contentType = getContentTypeFromKey(key)
   const contentDisposition = getContentDispositionForKey(key)
+  const tagging = tags && generateTagsQueryString(tags)
   const presignedPutUrl = await generateSignedPutUrl({
     Bucket: bucket,
     Key: key,
     ContentType: contentType,
     ContentDisposition: contentDisposition,
     ContentLength: fileSize,
-    Tagging: tags && generateTagsQueryString(tags),
+    Tagging: tagging,
   })
-  return { presignedPutUrl, contentType, contentDisposition }
+  return { presignedPutUrl, contentType, contentDisposition, tagging }
 }
 
 interface RegisterAssetUploadProps {

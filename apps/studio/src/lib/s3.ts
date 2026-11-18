@@ -90,6 +90,9 @@ export const generateSignedPutUrl = async ({
         "content-disposition",
         "content-length",
       ]),
+      // S3 ignores x-amz-tagging in the query string, so keep it a signed
+      // header that the browser must send
+      unhoistableHeaders: new Set(["x-amz-tagging"]),
     },
   )
 }
