@@ -4513,6 +4513,41 @@ describe("resource.router", async () => {
       ])
     })
 
+    it("should keep a pending upload's asset when its page is deleted mid-upload", async () => {
+      // Arrange
+      const { page, site } = await setupPageResource({ resourceType: "Page" })
+      await setupAdminPermissions({ userId: session.userId, siteId: site.id })
+      const pendingAsset = await db
+        .insertInto("Asset")
+        .values({ siteId: site.id, s3Key: `${site.id}/pending/c.pdf` })
+        .returningAll()
+        .executeTakeFirstOrThrow()
+      await db
+        .insertInto("AssetLink")
+        .values({
+          assetId: pendingAsset.id,
+          resourceId: page.id,
+          source: AssetLinkSource.RESOURCE,
+        })
+        .execute()
+
+      // Act
+      await caller.delete({ resourceId: page.id, siteId: site.id })
+
+      // Assert: the upload may still land, so completion must find the row
+      const links = await db.selectFrom("AssetLink").select("id").execute()
+      expect(links).toEqual([])
+      const asset = await db
+        .selectFrom("Asset")
+        .select(["status", "unreferencedAt"])
+        .where("id", "=", pendingAsset.id)
+        .executeTakeFirstOrThrow()
+      expect(asset).toEqual({
+        status: AssetStatus.PENDING_UPLOAD,
+        unreferencedAt: null,
+      })
+    })
+
     it("should delete a folder and all its children (recursively) successfully", async () => {
       // Arrange
       const { folder: folderToUse, site } = await setupFolder()
