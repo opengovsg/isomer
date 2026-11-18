@@ -555,9 +555,7 @@ export const ImageAdjustmentModal = ({
                     imageFieldName={imageFieldName}
                     fieldHost={fieldHost}
                     fieldHostIndex={fieldHostIndex}
-                    buildSingleItemPreviewBlock={
-                      config.buildSingleItemPreviewBlock
-                    }
+                    buildPreview={config.buildPreview}
                     skipRealComponentPreview={config.skipRealComponentPreview}
                     objectFit={previewObjectFit}
                     pageLayout={pageLayout}
