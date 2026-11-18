@@ -5,6 +5,7 @@ import type {
 } from "~/interfaces/complex/CollectionBlock"
 import { BiRightArrowAlt } from "react-icons/bi"
 import { tv } from "~/lib/tv"
+import { getEffectiveImageAdjustment } from "~/utils/getEffectiveImageAdjustment"
 import { getHeadingTag } from "~/utils/getHeadingTag"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 import { getResourceIdFromReferenceLink } from "~/utils/getResourceIdFromReferenceLink"
@@ -92,10 +93,10 @@ const SingleCard = ({
 }: CollectionBlockSingleCardProps): JSX.Element => {
   const isExternalLink = !!referenceLinkHref && isExternalUrl(referenceLinkHref)
   const CardTitleTag = getHeadingTag(headingLevel)
-  // Focal point only applies to cover-fit; a letterboxed image stays centred.
-  const effectiveImageAdjustment = isContainNeeded
-    ? undefined
-    : image?.imageAdjustment
+  const effectiveImageAdjustment = getEffectiveImageAdjustment(
+    image?.imageAdjustment,
+    isContainNeeded,
+  )
 
   const renderImage = () => {
     if (!image?.src) {
