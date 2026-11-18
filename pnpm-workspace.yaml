@@ -291,10 +291,10 @@ catalogs:
     "@tiptap/pm": ^3.33.1
     "@tiptap/react": ^3.33.1
   trpc:
-    "@trpc/client": ^11.22.1
-    "@trpc/next": ^11.22.1
-    "@trpc/react-query": ^11.22.1
-    "@trpc/server": ^11.22.1
+    "@trpc/client": ^11.28.0
+    "@trpc/next": ^11.28.0
+    "@trpc/react-query": ^11.28.0
+    "@trpc/server": ^11.28.0
   vitest:
     "@vitejs/plugin-react": ^6.2.1
     "@vitest/browser-playwright": ^5.1.0
