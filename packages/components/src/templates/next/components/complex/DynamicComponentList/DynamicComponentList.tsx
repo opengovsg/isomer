@@ -43,11 +43,7 @@ export const DynamicComponentList = ({
     // Disabling for now so its easier to extend in the future
     case "contactinformation":
       return (
-        records ??
-        Array.from(
-          { length: DEFAULT_NUMBER_OF_RECORDS_FOR_LOADING },
-          () => ({}),
-        )
+        records ?? Array.from({ length: DEFAULT_NUMBER_OF_RECORDS_FOR_LOADING })
       ).map((record, index) => (
         <DgsTransformedContactInformation
           key={`${component.type}-${index}`}
