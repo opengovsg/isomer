@@ -20,8 +20,8 @@ import {
   FaXTwitter,
 } from "react-icons/fa6"
 import { IoLogoGithub } from "react-icons/io"
-import { IsomerLogo } from "~/assets/IsomerLogo"
-import { OgpLogo } from "~/assets/OgpLogo"
+import { IsomerLogo, IsomerLogoSymbol } from "~/assets/IsomerLogo"
+import { OgpLogo, OgpLogoSymbol } from "~/assets/OgpLogo"
 import { tv } from "~/lib/tv"
 import { twMerge } from "~/lib/twMerge"
 import { getFormattedDate } from "~/utils/getFormattedDate"
@@ -282,6 +282,24 @@ const LegalSection = ({
   )
 }
 
+// One definition for both footer copies. `display: none` would drop the
+// symbols from the document so `<use>` could not paint them.
+const FooterLogoSprite = () => {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+      focusable="false"
+      width="0"
+      height="0"
+      className="pointer-events-none absolute overflow-hidden"
+    >
+      <IsomerLogoSymbol />
+      <OgpLogoSymbol />
+    </svg>
+  )
+}
+
 const CreditsSection = () => {
   return (
     <div className="prose-label-md-regular flex flex-col gap-6 lg:flex-row lg:gap-8 xl:gap-20">
@@ -424,6 +442,7 @@ const FooterDesktop = ({
 export const Footer = (props: FooterProps) => {
   return (
     <footer className="bg-base-canvas-inverse text-base-content-inverse">
+      <FooterLogoSprite />
       <FooterMobile {...props} />
       <FooterDesktop {...props} />
     </footer>
