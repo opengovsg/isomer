@@ -197,6 +197,8 @@ interface AdjustmentPreviewProps {
   // The object that holds the field. Equals `block` for a root-level field,
   // and is the single item, e.g. one InfoCards card, for an array-nested one.
   fieldHost?: Record<string, unknown>
+  // The host's position in its array, when it is an array item.
+  fieldHostIndex?: number
   // Builds a one-item block for an array-nested field. Without it the
   // preview uses the framed-image approximation.
   buildSingleItemPreviewBlock?: BuildSingleItemPreviewBlock
@@ -226,6 +228,7 @@ export const AdjustmentPreview = ({
   block,
   imageFieldName,
   fieldHost,
+  fieldHostIndex,
   buildSingleItemPreviewBlock,
   skipRealComponentPreview,
   objectFit = "cover",
@@ -298,7 +301,7 @@ export const AdjustmentPreview = ({
       ? buildSingleItemPreviewBlock?.(
           block,
           { ...fieldHost, ...patch },
-          fieldHost,
+          fieldHostIndex,
         )
       : { component: { ...block, ...patch } as IsomerComponent }
     if (!built) return null

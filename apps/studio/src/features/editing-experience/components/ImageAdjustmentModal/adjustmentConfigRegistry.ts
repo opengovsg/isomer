@@ -44,16 +44,15 @@ const buildSingleCardPreviewBlock: BuildSingleItemPreviewBlock = (
 const buildSingleSlidePreviewBlock: BuildSingleItemPreviewBlock = (
   block,
   slide,
-  fieldHost,
+  slideIndex,
 ) => {
   if (block.type !== "hero" || block.variant !== "carousel") return undefined
+  if (slideIndex === undefined) return undefined
   const editedSlide = slide as (typeof block.slides)[number]
-  const activeIndex = block.slides.indexOf(
-    fieldHost as (typeof block.slides)[number],
+  const slides = block.slides.map((s, i) =>
+    i === slideIndex ? editedSlide : s,
   )
-  if (activeIndex === -1) return undefined
-  const slides = block.slides.with(activeIndex, editedSlide)
-  return { component: { ...block, slides }, activeIndex }
+  return { component: { ...block, slides }, activeIndex: slideIndex }
 }
 
 // The three breakpoint widths every editor preview uses. Only the aspect
@@ -170,31 +169,11 @@ const heroCarouselConfig = (block: IsomerComponent): AdjustmentConfig => {
   // Centred gradient slides link to the guide only, with no template.
   const links = layoutConfig.preUploadLinks
   const centredLinks = links && (({ templateUrl: _, ...rest }) => rest)(links)
+  // Everything else matches the single hero of that layout.
   return {
+    ...layoutConfig,
     componentType: "hero:carousel",
-    imageField: "backgroundUrl",
-    cropMode: "custom",
-    focalEnabled: true,
-    maxRenderedWidthPx: layoutConfig.maxRenderedWidthPx,
-    maxRenderedHeightPx: layoutConfig.maxRenderedHeightPx,
-    // Pre-measure guesses only. Gradient: 16:10, 2:1 and 5:2, as in
-    // HERO_GRADIENT_CONFIG. Block: the image column is h-80 below lg and
-    // half-width with min-h 500 at lg, giving 7:6, 12:5 and 5:4.
-    previewStates: responsivePreviewStates(
-      isBlockLayout
-        ? {
-            mobile: { width: 7, height: 6 },
-            tablet: { width: 12, height: 5 },
-            desktop: { width: 5, height: 4 },
-          }
-        : {
-            mobile: { width: 16, height: 10 },
-            tablet: { width: 2, height: 1 },
-            desktop: { width: 5, height: 2 },
-          },
-    ),
     buildSingleItemPreviewBlock: buildSingleSlidePreviewBlock,
-    preUploadCopy: layoutConfig.preUploadCopy,
     preUploadLinks: isCentred ? centredLinks : links,
   }
 }

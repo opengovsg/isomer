@@ -1,14 +1,13 @@
-import type { ImageAdjustment } from "~/interfaces/complex/Image"
 import type { HeadingTag } from "~/utils/getHeadingTag"
 import { tv } from "~/lib/tv"
 
-import { ImageClientWithAdjustment } from "../../../internal/ImageClient"
+import { ImageClient } from "../../../internal/ImageClient"
 import { LinkButton } from "../../../internal/LinkButton/LinkButton"
 
 export interface HeroCarouselSlideView {
   backgroundUrl: string
-  // Per-slide focal/crop sibling, forwarded to ImageClientWithAdjustment below.
-  imageAdjustment?: ImageAdjustment
+  // The slide's focal point as a CSS object-position, resolved on the server.
+  objectPosition?: string
   title: string
   subtitle?: string
   primaryLabel?: string
@@ -73,12 +72,12 @@ export const CarouselSlideImages = ({
         className={slideImageStyles({ isCurrent })}
         aria-hidden={!isCurrent}
       >
-        <ImageClientWithAdjustment
+        <ImageClient
           src={slide.backgroundUrl}
           alt=""
           width="100%"
           className="absolute inset-0 h-full w-full object-cover object-center"
-          imageAdjustment={slide.imageAdjustment}
+          objectPosition={slide.objectPosition}
           assetsBaseUrl={assetsBaseUrl}
           lazyLoading={index === 0 ? false : true}
         />
