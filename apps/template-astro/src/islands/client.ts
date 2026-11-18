@@ -64,7 +64,7 @@ export const hydrateIslands = () => {
       // A fresh element each time: Preact doesn't allow rendering one twice.
       const tree = () =>
         withIslandIds(
-          id ?? "",
+          id,
           React.createElement(IslandContent, { Component, props: parsed }),
         )
       if (import.meta.env.DEV)

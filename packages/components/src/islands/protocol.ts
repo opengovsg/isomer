@@ -46,7 +46,7 @@ export const islandAttributes = ({
 export const readIslandAttributes = (island: Element) => ({
   name: island.getAttribute("data-component") ?? "",
   hydrate: (island.getAttribute("data-hydrate") ?? "load") as HydrateWhen,
-  id: island.getAttribute("data-island-id") ?? undefined,
+  id: island.getAttribute("data-island-id") ?? "",
   props: island.getAttribute("data-props") ?? "{}",
 })
 

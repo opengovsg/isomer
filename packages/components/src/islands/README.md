@@ -8,7 +8,7 @@ the host's job (`apps/template-astro/src/islands/`).
 | ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `island.tsx`  | `island(name, Component, { hydrate })` marks a component as an island. It always renders inside `<isomer-island>`, in Studio, Storybook and published sites alike. A hydrating host plugs in through `IslandHost` and renders each island's tree with `IslandContent`. |
 | `registry.ts` | `islands`: every island's name → a lazy `import()` of its module. `island()` only accepts names listed here, and `__tests__/registry.test.ts` checks each module exports the island under that name.                                                                   |
-| `protocol.ts` | The markup: `HydrateWhen`, the tags, and helpers that write (`islandAttributes`, `slotAttributes`) and read (`readIslandAttributes`, `readSlotMarker`) the attributes, so both ends share one definition.                                                              |
+| `protocol.ts` | The markup: `HydrateWhen`, the tags, and helpers that write (`islandAttributes`, `slotAttributes`) and read (`readIslandAttributes`, `isSlotMarker`) the attributes, so both ends share one definition.                                                                |
 
 ## Making a component an island
 
