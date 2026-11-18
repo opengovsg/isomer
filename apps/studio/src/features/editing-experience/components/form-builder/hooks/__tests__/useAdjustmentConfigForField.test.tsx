@@ -81,6 +81,25 @@ describe("useAdjustmentConfigForField", () => {
     expect(result.current.fieldHost).toBe(card)
   })
 
+  it("reads an array item's index from the path, and none for other hosts", () => {
+    const data = {
+      type: "infocards",
+      variant: "cardsWithImages",
+      image: { src: "/1/uuid/thumb.png" },
+      cards: [{ imageUrl: "/a.png" }, { imageUrl: "/b.png" }],
+    }
+
+    expect(
+      renderWithData(data, "cards.1.imageUrl").result.current.fieldHostIndex,
+    ).toBe(1)
+    expect(
+      renderWithData(data, "imageUrl").result.current.fieldHostIndex,
+    ).toBeUndefined()
+    expect(
+      renderWithData(data, "image.src").result.current.fieldHostIndex,
+    ).toBeUndefined()
+  })
+
   it("returns undefined for a nested, unregistered field", () => {
     const data = {
       type: "infocards",
