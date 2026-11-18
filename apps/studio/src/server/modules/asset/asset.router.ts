@@ -64,7 +64,7 @@ export const assetRouter = router({
         const uploadConfig = await getPresignedPutUrl({
           key: fileKey,
           fileSize,
-          tags,
+          tags: [...(tags ?? []), PRIVATE_ASSET_TAG],
         })
 
         ctx.logger.info(
