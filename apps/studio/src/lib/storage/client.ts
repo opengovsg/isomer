@@ -11,6 +11,7 @@ export const performUpload = async (
     presignedPutUrl: config.presignedPutUrl,
     contentType: config.contentType,
     contentDisposition: config.contentDisposition,
+    tagging: config.tagging,
   })
   return `/${fileKey}`
 }

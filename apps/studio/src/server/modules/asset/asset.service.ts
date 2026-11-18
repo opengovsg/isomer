@@ -41,6 +41,8 @@ export interface UploadConfig {
   presignedPutUrl: string
   contentType: string
   contentDisposition: string
+  // Set only when the URL signs x-amz-tagging; the PUT must then send it as is
+  tagging?: string
 }
 
 // Server-side allowlist: extension (lowercase, e.g. ".jpg") -> MIME (used for signed upload metadata)
