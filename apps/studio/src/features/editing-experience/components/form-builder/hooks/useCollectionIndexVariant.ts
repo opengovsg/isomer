@@ -21,5 +21,8 @@ export const useCollectionIndexVariant = ({
     enabled,
   })
 
-  return data?.variant ?? "pending"
+  // A new collection saves no layout, and the published site then renders
+  // "collection". Only a page that hasn't loaded is pending.
+  if (!data) return "pending"
+  return data.variant ?? "collection"
 }
