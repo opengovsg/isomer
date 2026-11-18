@@ -54,7 +54,7 @@ markup protocol constants                     browser: hydrateIslands() lazy-loa
 3. **The host renders and hydrates them** (`apps/template-astro/src/islands/`):
    - **`server.tsx`**: `IslandServerProvider` plugs into `IslandHost`, so every island additionally carries its props as JSON, its hydration timing and an id. Server-rendered `children` (e.g. `NotificationClient`'s body) become static `<isomer-slot>` HTML that the browser reuses as-is, like Astro's default slot.
    - **`client.ts`**: `hydrateIslands()` lazy-loads only the islands on the page and hydrates each at its timing (`load`, `visible` or `idle`).
-4. **Each island is SSR'd as its own React root** with a unique `identifierPrefix`. Without this, `useId` values (react-aria depends on them) would mismatch on hydration.
+4. **Each island is SSR'd as its own root, and ids are counted from the island's id on both sides.** Every `"react"` import goes through `src/islands/react.ts` (React on the server, `preact/compat` in the browser), which overrides `useId` with a per-island counter and makes `useSyncExternalStore` return the server snapshot while hydrating, as React does. Preact keeps server attributes as they are on hydration and never re-applies them. Without this, ids (react-aria's included) differ between the server HTML and later client renders, and `aria-*` references break. To make react-aria's ids go through it on the server too, `@react-aria/*` is bundled into the server build: about +1 s at 1k pages (9.9 → 11.0 s), unchanged at 10k (34.7 → 34.8 s), and +0.3 KB of JS per page.
 5. **Preact in the browser.** The build aliases `react`/`react-dom` to `preact/compat` **for the client bundle only**. Server rendering stays on React, so the HTML is identical either way.
 
 ### Component changes (`packages/components`)
@@ -83,7 +83,7 @@ These are Astro's official integrations for React and Preact components. We rend
 2. **Boundaries belong with the components.** `island()` declares them once in `packages/components`, where Studio sees them too. The integrations would need them restated in `.astro` files that Studio never renders.
 3. **Island props in our tree carry React nodes.** Server-rendered elements are passed as props to interactive components. Astro slots only carry children passed from `.astro` markup.
 4. **We needed control over hydration:**
-   - **Each island SSR'd as its own root with an `identifierPrefix`**, so react-aria's `useId` values match.
+   - **Each island SSR'd as its own root, with `useId` counted from the island's id** (`src/islands/react.ts`), so ids match between server and browser.
    - **Per-island timing** (`load` / `visible` / `idle`) declared next to the component.
    - **A client runtime swap** (Preact / React) that doesn't touch server rendering.
 
@@ -140,12 +140,13 @@ Cold builds on an Apple Silicon laptop with default cores. Peak RSS is summed ac
   - No `first:` / `last:` / `only:` variants on an island's root element; set spacing from the parent.
 - **Mistakes that fail silently, and how they're covered today:**
   - **An interactive component that isn't wrapped in `island()`** renders as static HTML: clicks do nothing, and nothing errors. Covered by code review and the islands README today; custom lint rules can be added if this turns out to bite (e.g. flag components using state/effect hooks that aren't islands or only rendered inside one).
-  - **Browser-only state read during the first render** (sessionStorage, user agent) leaves stale UI after hydration. This happened with the notification banner and was fixed by reading after mount. `pnpm test:hydration` builds the site with `astro build --devOutput`, so islands hydrate with React's development build, and loads every page fresh and with the "dismissed" flags pre-set. It fails on hydration warnings and on the dismissed banner being visible. Reintroducing the notification bug makes it fail, but only through the banner assertion: when an island renders _less_ than the server HTML at its root, React (even in development) silently keeps the stale markup. The development build does report mismatches _inside_ an island's markup.
-  - **`useId` under Preact.** react-aria generates its label and description IDs with `useId` (we also call it directly in `Table`, `SearchableTableClientUI` and `DateRangeFilterInput`), and `preact/compat`'s IDs differ from React's server-rendered ones. It works today because elements created at the same time reference each other consistently. It would break if a server-rendered element pointed (`aria-*`) at an element created after hydration. Banning `useId` in our code wouldn't remove the risk, because react-aria uses it internally. An `aria-*`-references-resolve check in the interaction tests would catch it.
+  - **Browser-only state read during the first render** (sessionStorage, user agent) leaves stale UI after hydration. This happened with the notification banner and was fixed by reading after mount. `pnpm test:hydration` builds the site with `astro build --devOutput` and loads every page fresh and with the "dismissed" flags pre-set. It fails on hydration mismatches and on the dismissed banner being visible.
+  - **`useId` under Preact.** `preact/compat` ignores `identifierPrefix`, restarts its ids at `P0-0` in every island, and its `useSyncExternalStore` ignores the server snapshot, so react-aria prefixed client ids with a random number. Since Preact keeps the server's attributes on hydration, elements mounted later pointed (`aria-*`) at ids that didn't exist. `src/islands/react.ts` fixes it by owning `useId` on both sides. It relies on the server and the browser calling `useId` in the same order, which the hydration check verifies, along with a test that ids inside islands are unique and every `aria-*`/`for` reference resolves.
+  - **React-only props.** Props React 18 treats as attributes can mean something else to Preact, which sets DOM properties. HeroCarousel's `inert: ""` (React 18's workaround) became `inert = false` in Preact, so hidden slides became reachable after the first rotation; it's now `"true"`, with a rotation test. `suppressHydrationWarning` was written into the page as an attribute; it's gone.
 - **Wrapper-element side effects.** `<isomer-island>` is `display: contents`, so layout ignores it. A parent's child-combinator rules (`parent > *`, `space-y-*`, `divide-*`) still skip island roots. No failures turned up in the coverage site, and Studio now shows the same behaviour as published sites.
 - **Preact compatibility is ours to verify:**
   - react-aria and headlessui run on `preact/compat`. They pass our interaction tests, but React upstream doesn't support this setup.
-  - Preact doesn't report hydration mismatches in production, so only the visual and interaction tests catch them.
+  - Preact keeps the server HTML on hydration and only reports mismatched element types (in `preact/debug`), never text or attributes. So development builds run our own check (`src/islands/hydration-check.ts`): each island is rendered once more off-page and compared node by node with the server HTML. Planted element, text and attribute mismatches all fail `pnpm test:hydration`. React's development build, which this used to rely on, missed islands that render less than the server HTML.
   - Going back to React means removing the client-only `preact/compat` alias in `astro.config.ts` (measured: still −65%, also 19/19).
 - **More, smaller JS requests:** about 20–50 files per page versus Next's 10, with dynamic-import chains. HTTP/2 handles the request count. Adding `modulepreload` hints for each page's islands would flatten the chain.
 - **Next features re-implemented or dropped:**
@@ -251,7 +252,7 @@ pnpm fixture:make fixtures/coverage 60 && pnpm fixture apply fixtures/coverage
 pnpm exec playwright test --project=astro                # 19 visual + interaction checks vs the Next screenshots
 pnpm measure --files / /content/                         # first-load bytes + per-file JS breakdown
 pnpm variants --reuse-next preact-islands                # -> results/variants/*.md (other variants need variants.patch)
-pnpm test:hydration                                      # dev-mode React build: hydration warnings + dismissed-banner checks
+pnpm test:hydration                                      # dev build: islands' hydration check + dismissed-banner checks
 pnpm bench 100,1000,10000 3 next,astro         # -> results/bench-results.json
 pnpm fixture restore                                     # put both apps' sample sites back
 ```

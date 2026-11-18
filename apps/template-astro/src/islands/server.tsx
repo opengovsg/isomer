@@ -19,6 +19,8 @@ import {
 import { createElement, isValidElement, useId } from "react"
 import { renderToString } from "react-dom/server"
 
+import { withIslandIds, withoutIslandIds } from "./react"
+
 const isServerRendered = (value: unknown) =>
   isValidElement(value) || (Array.isArray(value) && value.some(isValidElement))
 
@@ -48,7 +50,9 @@ const Slot = ({ children }: { children?: ReactNode }) =>
   createElement(
     SLOT_TAG,
     slotAttributes,
-    <InsideIsland.Provider value={false}>{children}</InsideIsland.Provider>,
+    <InsideIsland.Provider value={false}>
+      {withoutIslandIds(children)}
+    </InsideIsland.Provider>,
   )
 
 const ServerIsland = ({ name, hydrate, Component, props }: HostIslandProps) => {
@@ -56,17 +60,20 @@ const ServerIsland = ({ name, hydrate, Component, props }: HostIslandProps) => {
   const { children, ...rest } = props
   const hasSlot = isServerRendered(children)
 
-  // Rendered as a separate root with its own identifierPrefix, exactly like the browser hydrates
-  // it, so useId values (react-aria depends on them) match between server and client.
+  // Rendered as a separate root, exactly like the browser hydrates it, with ids counted from the
+  // island's id (see ./react). identifierPrefix keeps the ids of islands in its slot unique.
   const html = renderToString(
-    <IslandContent
-      Component={Component}
-      props={
-        hasSlot
-          ? { ...rest, children: <Slot>{children as ReactNode}</Slot> }
-          : props
-      }
-    />,
+    withIslandIds(
+      id,
+      <IslandContent
+        Component={Component}
+        props={
+          hasSlot
+            ? { ...rest, children: <Slot>{children as ReactNode}</Slot> }
+            : props
+        }
+      />,
+    ),
     { identifierPrefix: id },
   )
 

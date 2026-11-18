@@ -1,6 +1,6 @@
-// Builds the coverage fixture (plus a site notification) with `astro build --devOutput`, so islands
-// hydrate with React's development build, which reports hydration mismatches that production
-// React and Preact stay silent about. Then runs the hydration and interaction tests against it.
+// Builds the coverage fixture (plus a site notification) with `astro build --devOutput`, which turns
+// on the islands' hydration check (apps/template-astro/src/islands/hydration-check.ts): Preact
+// itself stays silent about most mismatches. Then runs the hydration and interaction tests against it.
 //   node scripts/hydration-check.mjs
 import { execFileSync, spawnSync } from "node:child_process"
 import path from "node:path"

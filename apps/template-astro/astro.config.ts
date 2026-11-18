@@ -1,9 +1,11 @@
+import { fileURLToPath } from "node:url"
 import { defineConfig } from "astro/config"
 import postcssPresetEnv from "postcss-preset-env"
 import tailwindcss from "tailwindcss"
 
-// Production client bundles only: SSR stays React, and dev / --devOutput builds keep React's
-// development build, which reports hydration mismatches.
+// Every "react" import goes through src/islands/react.ts, which then imports the real one:
+// React on the server, preact/compat in the browser.
+const REACT = fileURLToPath(new URL("src/islands/react.ts", import.meta.url))
 const PREACT_ALIASES: Record<string, string> = {
   "react-dom/client": "preact/compat/client",
   "react-dom": "preact/compat",
@@ -25,16 +27,18 @@ export default defineConfig({
   vite: {
     // isomer-components is a linked workspace package: without this, dev loads React twice.
     resolve: { dedupe: ["react", "react-dom"] },
+    // Bundled, so react-aria's ids also go through src/islands/react.ts on the server.
+    ssr: { noExternal: [/^@react-aria\//, /^react-aria/] },
     css: { postcss: { plugins: [tailwindcss(), postcssPresetEnv()] } },
     plugins: [
       {
         // resolve.alias can't be scoped to one environment.
-        name: "isomer-preact-client",
+        name: "isomer-react",
         enforce: "pre",
-        applyToEnvironment: (env) =>
-          env.name === "client" && process.env.NODE_ENV === "production",
         resolveId(source, importer, options) {
-          const target = PREACT_ALIASES[source]
+          if (source === "react" && importer !== REACT) return REACT
+          const target =
+            this.environment.name === "client" ? PREACT_ALIASES[source] : undefined
           return target
             ? this.resolve(target, import.meta.dirname + "/package.json", {
                 ...options,

@@ -31,6 +31,17 @@ test("hero carousel changes slide", async ({ page, errors: _ }) => {
   await expect(carousel.getByText(/^Slide 2:/)).toBeInViewport()
 })
 
+test("hero carousel keeps hidden slides inert", async ({ page, errors: _ }) => {
+  await page.goto(PAGES.home)
+  await settle(page)
+  const carousel = page.getByRole("region", { name: "Hero carousel" })
+  await carousel.getByRole("button", { name: "Pause slide rotation" }).click()
+  await carousel.getByRole("button", { name: "Next slide" }).click()
+  const slides = carousel.locator('[aria-roledescription="slide"]')
+  await expect(slides.nth(0)).toHaveJSProperty("inert", true)
+  await expect(slides.nth(1)).toHaveJSProperty("inert", false)
+})
+
 test("image gallery navigates", async ({ page, errors: _ }) => {
   await page.goto(PAGES.content)
   const gallery = page.getByRole("region", { name: "Image gallery" })

@@ -9,8 +9,8 @@ export const PAGES = {
   notFound: "/does-not-exist/",
 }
 
-// Fails the test on any page error or hydration problem: React's development warnings, or its
-// minified production errors (#418/#423/#425).
+// Fails the test on any page error or hydration problem: the islands' hydration check in development
+// builds, or React's errors (#418/#423/#425) on the Next build.
 const HYDRATION_PROBLEM =
   /hydrat|server HTML|did not match|Did not expect server|Minified React error #4(18|23|25)/i
 export const test = base.extend<{ errors: string[] }>({

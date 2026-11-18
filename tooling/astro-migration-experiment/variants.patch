@@ -1,6 +1,6 @@
 --- a/apps/template-astro/astro.config.ts
 +++ b/apps/template-astro/astro.config.ts
-@@ -11,6 +11,18 @@
+@@ -13,6 +13,18 @@
    "react/jsx-dev-runtime": "preact/jsx-dev-runtime",
    react: "preact/compat",
  }
@@ -19,7 +19,7 @@
  
  export default defineConfig({
    output: "static",
-@@ -20,7 +32,8 @@
+@@ -22,7 +34,8 @@
    prefetch: false,
    devToolbar: { enabled: false },
    experimental: {
@@ -29,19 +29,40 @@
    },
    vite: {
      // isomer-components is a linked workspace package: without this, dev loads React twice.
-@@ -32,9 +45,10 @@
-         name: "isomer-preact-client",
-         enforce: "pre",
-         applyToEnvironment: (env) =>
--          env.name === "client" && process.env.NODE_ENV === "production",
-+          env.name === "client" && process.env.NODE_ENV === "production" &&
-+          SWAP_CLIENT_RUNTIME,
+@@ -38,7 +51,9 @@
          resolveId(source, importer, options) {
--          const target = PREACT_ALIASES[source]
-+          const target = CLIENT_ALIASES[source]
+           if (source === "react" && importer !== REACT) return REACT
+           const target =
+-            this.environment.name === "client" ? PREACT_ALIASES[source] : undefined
++            this.environment.name === "client" && SWAP_CLIENT_RUNTIME
++              ? CLIENT_ALIASES[source]
++              : undefined
            return target
              ? this.resolve(target, import.meta.dirname + "/package.json", {
                  ...options,
+--- a/apps/template-astro/src/islands/client.ts
++++ b/apps/template-astro/src/islands/client.ts
+@@ -33,6 +33,11 @@
+     ? requestIdleCallback(callback)
+     : setTimeout(callback, 200)
+ 
++// EXPERIMENT: loader for ISLANDS_MODE=whole-tree (see render.tsx).
++const EXPERIMENT_ISLANDS: Record<string, () => Promise<object>> = {
++  RenderEngine: () => import("@opengovsg/isomer-components"),
++}
++
+ const importReact = () =>
+   Promise.all([import("./react"), import("react-dom/client")])
+ 
+@@ -44,7 +49,7 @@
+ 
+   for (const element of elements) {
+     const { name, hydrate: when, id, props } = readIslandAttributes(element)
+-    const load = islands[name as IslandName]
++    const load = islands[name as IslandName] ?? EXPERIMENT_ISLANDS[name]
+     // Read the slot's HTML now, before any island's hydration can change the DOM.
+     const slotHtml = element.querySelector(SLOT_TAG)?.innerHTML
+ 
 --- a/apps/template-astro/src/lib/render.tsx
 +++ b/apps/template-astro/src/lib/render.tsx
 @@ -8,6 +8,8 @@
@@ -75,26 +96,3 @@
      appScripts,
      siteJsonLd,
      pageJsonLd: withPageJsonLd
---- a/apps/template-astro/src/islands/client.ts
-+++ b/apps/template-astro/src/islands/client.ts
-@@ -34,6 +34,11 @@
-     ? requestIdleCallback(callback)
-     : setTimeout(callback, 200)
- 
-+// EXPERIMENT: loader for ISLANDS_MODE=whole-tree (see render.tsx).
-+const EXPERIMENT_ISLANDS: Record<string, () => Promise<object>> = {
-+  RenderEngine: () => import("@opengovsg/isomer-components"),
-+}
-+
- const importReact = () =>
-   Promise.all([import("react"), import("react-dom/client")])
- 
-@@ -45,7 +50,7 @@
- 
-   for (const element of elements) {
-     const { name, hydrate: when, id, props } = readIslandAttributes(element)
--    const load = islands[name as IslandName]
-+    const load = islands[name as IslandName] ?? EXPERIMENT_ISLANDS[name]
-     // Read the slot's HTML now, before any island's hydration can change the DOM.
-     const slotHtml = id
-       ? element.querySelector(slotSelector(id))?.innerHTML

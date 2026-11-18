@@ -1,6 +1,6 @@
 // Browser half of this site's islands runtime: hydrates every <isomer-island> rendered by ./server.
-// Only the modules of islands on the page are downloaded, and React (preact/compat in production)
-// is only downloaded if the page has an island at all.
+// Only the modules of islands on the page are downloaded, and React (preact/compat) is only
+// downloaded if the page has an island at all.
 import type { IslandName } from "@opengovsg/isomer-components/islands"
 import type { ComponentType } from "react"
 import {
@@ -34,7 +34,7 @@ const whenIdle = (callback: () => void) =>
     : setTimeout(callback, 200)
 
 const importReact = () =>
-  Promise.all([import("react"), import("react-dom/client")])
+  Promise.all([import("./react"), import("react-dom/client")])
 
 export const hydrateIslands = () => {
   const elements = document.querySelectorAll<HTMLElement>(ISLAND_TAG)
@@ -49,24 +49,31 @@ export const hydrateIslands = () => {
     const slotHtml = element.querySelector(SLOT_TAG)?.innerHTML
 
     const hydrate = async () => {
-      const [[{ createElement }, { hydrateRoot }], module] = await Promise.all([
-        react,
-        load(),
-      ])
+      const [
+        [{ default: React, whileHydrating, withIslandIds }, { hydrateRoot }],
+        module,
+      ] = await Promise.all([react, load()])
       const Component = (module as Record<string, ComponentType>)[name]
       if (!Component) throw new Error(`[isomer-islands] ${name} isn't exported`)
       const parsed = JSON.parse(props) as Record<string, unknown>
       if (isSlotMarker(parsed.children))
-        parsed.children = createElement(SLOT_TAG, {
+        parsed.children = React.createElement(SLOT_TAG, {
           ...slotAttributes,
-          suppressHydrationWarning: true,
           dangerouslySetInnerHTML: { __html: slotHtml ?? "" },
         })
-      hydrateRoot(
-        element,
-        createElement(IslandContent, { Component, props: parsed }),
-        { identifierPrefix: id },
-      )
+      // A fresh element each time: Preact doesn't allow rendering one twice.
+      const tree = () =>
+        withIslandIds(
+          id ?? "",
+          React.createElement(IslandContent, { Component, props: parsed }),
+        )
+      if (import.meta.env.DEV)
+        (await import("./hydration-check")).checkHydration(
+          name,
+          element,
+          tree(),
+        )
+      whileHydrating(() => hydrateRoot(element, tree()))
     }
 
     if (when === "visible") whenVisible(element, () => void hydrate())
