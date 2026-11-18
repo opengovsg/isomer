@@ -16,6 +16,7 @@ import {
   BRIEF_TOAST_SETTINGS,
   SETTINGS_TOAST_MESSAGES,
 } from "~/constants/toast"
+import { UploadLinkTargetProvider } from "~/contexts/UploadLinkTargetContext"
 import { ErrorProvider } from "~/features/editing-experience/components/form-builder/ErrorProvider"
 import FormBuilder from "~/features/editing-experience/components/form-builder/FormBuilder"
 import { EditSettingsPreview } from "~/features/editing-experience/components/preview/EditSettingsPreview"
@@ -28,7 +29,7 @@ import { useQueryParse } from "~/hooks/useQueryParse"
 import { logoSettingsValidator } from "~/schemas/site"
 import { SiteSettingsLayout } from "~/templates/layouts/SiteSettingsLayout"
 import { trpc } from "~/utils/trpc"
-import { ResourceType } from "~prisma/generated/generatedEnums"
+import { AssetLinkSource, ResourceType } from "~prisma/generated/generatedEnums"
 
 const LogoSettingsPage: NextPageWithLayout = () => {
   const { siteId: rawSiteId } = useQueryParse(siteSchema)
@@ -118,7 +119,11 @@ LogoSettingsPage.getLayout = (page) => {
   return (
     <PermissionsBoundary
       resourceType={ResourceType.RootPage}
-      page={SiteSettingsLayout(page)}
+      page={SiteSettingsLayout(
+        <UploadLinkTargetProvider source={AssetLinkSource.SITE_CONFIG}>
+          {page}
+        </UploadLinkTargetProvider>,
+      )}
     />
   )
 }

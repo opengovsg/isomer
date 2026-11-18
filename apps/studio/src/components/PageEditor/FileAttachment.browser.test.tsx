@@ -32,7 +32,7 @@ const renderFileAttachment = (
         setHref={setHref}
         onUploadedFile={onUploadedFile}
         siteId={1}
-        resourceId="1"
+        target={{ resourceId: "1" }}
         maxSizeInBytes={5_000_000}
         acceptedFileTypes={FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING}
         {...props}

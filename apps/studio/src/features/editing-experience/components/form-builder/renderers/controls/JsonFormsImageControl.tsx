@@ -14,6 +14,7 @@ import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { pageOrLinkSchema } from "~/features/editing-experience/schema"
 import { useQueryParse } from "~/hooks/useQueryParse"
+import { useUploadLinkTarget } from "~/hooks/useUploadLinkTarget"
 import { MAX_IMG_FILE_SIZE_BYTES } from "~/lib/fileUpload"
 
 import { useAssetUpload } from "../../hooks/useAssetUpload"
@@ -43,7 +44,8 @@ function JsonFormsImageControl({
   data,
   schema,
 }: JsonFormsImageControlProps) {
-  const { siteId, pageId, linkId } = useQueryParse(pageOrLinkSchema)
+  const { siteId } = useQueryParse(pageOrLinkSchema)
+  const uploadTarget = useUploadLinkTarget()
   const { handleAssetUpload, isLoading } = useAssetUpload({})
   const toast = useToast()
 
@@ -75,16 +77,18 @@ function JsonFormsImageControl({
           onClick={() => handleChange(path, undefined)}
         />
       ) : (
-        <FileAttachment
-          maxSizeInBytes={schema.maxSizeInBytes ?? MAX_IMG_FILE_SIZE_BYTES}
-          acceptedFileTypes={
-            schema.allowedMimeTypeMappings ?? IMAGE_ACCEPTED_MIME_TYPE_MAPPING
-          }
-          siteId={siteId}
-          resourceId={(pageId ?? linkId) ? String(pageId ?? linkId) : undefined}
-          setHref={handleUploaded}
-          isLoading={isLoading}
-        />
+        uploadTarget && (
+          <FileAttachment
+            maxSizeInBytes={schema.maxSizeInBytes ?? MAX_IMG_FILE_SIZE_BYTES}
+            acceptedFileTypes={
+              schema.allowedMimeTypeMappings ?? IMAGE_ACCEPTED_MIME_TYPE_MAPPING
+            }
+            siteId={siteId}
+            target={uploadTarget}
+            setHref={handleUploaded}
+            isLoading={isLoading}
+          />
+        )
       )}
       {!!errors && (
         <FormErrorMessage>

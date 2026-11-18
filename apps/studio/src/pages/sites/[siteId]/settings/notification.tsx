@@ -21,6 +21,7 @@ import {
   BRIEF_TOAST_SETTINGS,
   SETTINGS_TOAST_MESSAGES,
 } from "~/constants/toast"
+import { UploadLinkTargetProvider } from "~/contexts/UploadLinkTargetContext"
 import {
   ErrorProvider,
   useBuilderErrors,
@@ -36,7 +37,7 @@ import { useQueryParse } from "~/hooks/useQueryParse"
 import { SiteSettingsLayout } from "~/templates/layouts/SiteSettingsLayout"
 import { ajv } from "~/utils/ajv"
 import { trpc } from "~/utils/trpc"
-import { ResourceType } from "~prisma/generated/generatedEnums"
+import { AssetLinkSource, ResourceType } from "~prisma/generated/generatedEnums"
 
 type SiteNotification = NonNullable<Notification["notification"]>
 
@@ -228,7 +229,11 @@ NotificationSettingsPage.getLayout = (page) => {
   return (
     <PermissionsBoundary
       resourceType={ResourceType.RootPage}
-      page={SiteSettingsLayout(page)}
+      page={SiteSettingsLayout(
+        <UploadLinkTargetProvider source={AssetLinkSource.SITE_CONFIG}>
+          {page}
+        </UploadLinkTargetProvider>,
+      )}
     />
   )
 }
