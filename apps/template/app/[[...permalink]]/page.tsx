@@ -23,10 +23,7 @@ import { serializeForInlineScript } from "@isomer/validators"
 export const dynamic = "force-static"
 
 const INDEX_PAGE_PERMALINK = "_index"
-const SCHEMA_DIR = join(
-  process.cwd(),
-  process.env.NODE_ENV === "development" ? ".local-publish/schema" : "schema",
-)
+const SCHEMA_DIR = join(process.cwd(), "schema")
 
 const readSchemaFile = (
   relativePath: string,
