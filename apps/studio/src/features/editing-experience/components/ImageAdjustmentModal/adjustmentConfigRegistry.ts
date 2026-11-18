@@ -527,22 +527,40 @@ const IMAGE_GALLERY_CONFIG: AdjustmentConfig = {
 // CollectionBlock frame depends on the live item count, so it is not previewed.
 // The listing renders on a different page, so this skips the real-component
 // preview like ImageGallery does. Fit and fill work as on InfoCards.
-const buildCollectionThumbnailConfig = (
-  collectionVariant?: "collection" | "blog",
-): AdjustmentConfig => {
-  const isBlogVariant = collectionVariant === "blog"
+const COLLECTION_THUMBNAIL_GUIDE_LINK = {
+  guideLabel: "thumbnail",
+  guideUrl:
+    "https://support.isomer.gov.sg/en/articles/18459803-managing-collection-thumbnails",
+}
 
-  return {
+const buildCollectionThumbnailConfig = (
+  collectionVariant: "collection" | "blog" | "pending" = "pending",
+): AdjustmentConfig => {
+  const base = {
     componentType: "collection:thumbnail",
     imageField: "src",
     cropMode: "custom",
     focalEnabled: true,
     ownsImageFitField: true,
+    skipRealComponentPreview: true,
+  } as const
+
+  // The parent's layout isn't known yet (still loading, or the lookup
+  // failed), so there is no frame to show without guessing one that might not
+  // match the real card. An empty previewStates renders "Preview unavailable".
+  // The recommended size is also layout-specific, so it's withheld too.
+  if (collectionVariant === "pending") {
+    return { ...base, previewStates: [] }
+  }
+
+  const isBlogVariant = collectionVariant === "blog"
+
+  return {
+    ...base,
     // Warn below the recommended size in preUploadCopy, which differs by
     // layout (CollectionCard list vs BlogCard).
     maxRenderedWidthPx: isBlogVariant ? 640 : 400,
     maxRenderedHeightPx: 320,
-    skipRealComponentPreview: true,
     // Neither card changes ratio across breakpoints, so all three preview
     // states share one.
     previewStates: isBlogVariant
@@ -559,11 +577,7 @@ const buildCollectionThumbnailConfig = (
     preUploadCopy: isBlogVariant
       ? "Recommended 640 × 320 px."
       : "Recommended 400 × 320 px.",
-    preUploadLinks: {
-      guideLabel: "thumbnail",
-      guideUrl:
-        "https://support.isomer.gov.sg/en/articles/18459803-managing-collection-thumbnails",
-    },
+    preUploadLinks: COLLECTION_THUMBNAIL_GUIDE_LINK,
   }
 }
 
