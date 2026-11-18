@@ -15,15 +15,14 @@ const sizes = sizesArg.split(",").map(Number)
 
 const VARIANTS = {
   next: { cwd: TEMPLATE, clean: [".next", "out"], env: {} },
-  astro: {
+  // apps/template-astro as is (parallel prerendering). In results/bench-results.json the
+  // "astro" rows are single-process and "astro-parallel" rows parallel.
+  astro: { cwd: APP, clean: [".astro", "out"], env: {} },
+  // Needs `git apply tooling/astro-migration-experiment/variants.patch`.
+  "astro-single": {
     cwd: APP,
     clean: [".astro", "out"],
-    env: {},
-  },
-  "astro-parallel": {
-    cwd: APP,
-    clean: [".astro", "out"],
-    env: { ASTRO_PARALLEL_PRERENDER: "1" },
+    env: { ASTRO_PARALLEL_PRERENDER: "0" },
   },
 }
 

@@ -16,10 +16,10 @@ const PAGES = [
   "/database/",
 ]
 const VARIANTS = {
-  "preact-islands": {}, // the default
+  "preact-islands": {}, // apps/template-astro as is
+  // The rest need `git apply tooling/astro-migration-experiment/variants.patch` (redact also needs
+  // the @tanstack/redact dependency).
   "react-islands": { ISLANDS_RUNTIME: "react" },
-  // These two need `git apply tooling/astro-migration-experiment/variants.patch` (+ the
-  // @tanstack/redact dependency); they were removed from apps/template-astro after the experiment.
   "redact-islands": { ISLANDS_RUNTIME: "redact" },
   "whole-tree-react": { ISLANDS_MODE: "whole-tree", ISLANDS_RUNTIME: "react" },
 }

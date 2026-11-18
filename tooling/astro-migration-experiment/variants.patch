@@ -1,10 +1,11 @@
 --- a/apps/template-astro/astro.config.ts
 +++ b/apps/template-astro/astro.config.ts
-@@ -12,6 +12,16 @@
+@@ -10,6 +10,18 @@
    "react/jsx-dev-runtime": "preact/jsx-dev-runtime",
    react: "preact/compat",
  }
-+// EXPERIMENT: ISLANDS_RUNTIME=redact hydrates with TanStack Redact instead (needs @tanstack/redact).
++// EXPERIMENT switches for the measured alternatives:
++// ISLANDS_RUNTIME=react (no swap) | redact (TanStack Redact, needs @tanstack/redact)
 +const REDACT_ALIASES: Record<string, string> = {
 +  "react-dom/client": "@tanstack/redact/dom-client",
 +  "react-dom": "@tanstack/redact/dom",
@@ -14,12 +15,28 @@
 +}
 +const CLIENT_ALIASES =
 +  process.env.ISLANDS_RUNTIME === "redact" ? REDACT_ALIASES : PREACT_ALIASES
- const USE_PREACT = process.env.ISLANDS_RUNTIME !== "react"
++const SWAP_CLIENT_RUNTIME = process.env.ISLANDS_RUNTIME !== "react"
  
  export default defineConfig({
-@@ -38,7 +48,7 @@
+   output: "static",
+@@ -19,7 +31,8 @@
+   prefetch: false,
+   devToolbar: { enabled: false },
+   experimental: {
+-    parallelPrerender: true,
++    // EXPERIMENT: ASTRO_PARALLEL_PRERENDER=0 renders in a single process
++    parallelPrerender: process.env.ASTRO_PARALLEL_PRERENDER !== "0",
+   },
+   vite: {
+     // isomer-components is a linked workspace package: without this, dev loads React twice.
+@@ -31,9 +44,11 @@
+         name: "isomer-preact-client",
+         enforce: "pre",
          applyToEnvironment: (env) =>
-           env.name === "client" && env.config.command === "build" && USE_PREACT,
+-          env.name === "client" && env.config.command === "build",
++          env.name === "client" &&
++          env.config.command === "build" &&
++          SWAP_CLIENT_RUNTIME,
          resolveId(source, importer, options) {
 -          const target = PREACT_ALIASES[source]
 +          const target = CLIENT_ALIASES[source]
