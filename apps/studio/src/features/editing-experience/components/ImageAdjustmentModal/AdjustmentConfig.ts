@@ -37,9 +37,10 @@ export interface AdjustmentRenderContext {
   // block to key the registry off, so the hook sets this from the resource type.
   isCollectionThumbnail?: boolean
   // The parent collection's "Layout" setting: "collection" is the 1-column
-  // CollectionCard, "blog" the 2-column BlogCard. Undefined while loading,
-  // which resolves to the 1-column frame.
-  collectionVariant?: "collection" | "blog"
+  // CollectionCard, "blog" the 2-column BlogCard. "pending" while loading or
+  // on failure — the registry then shows "Preview unavailable" rather than
+  // guessing a frame that might not match the real card.
+  collectionVariant?: "collection" | "blog" | "pending"
 }
 
 // What a preview builder gets. The modal fills this in.
