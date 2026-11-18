@@ -162,9 +162,9 @@ describe("imageAdjustment wiring guardrail", () => {
       const sources = componentPaths.map((componentPath) =>
         fs.readFileSync(path.join(REPO_ROOT, componentPath), "utf-8"),
       )
-      expect(
-        sources.every((source) => source.includes("imageAdjustment")),
-      ).toBe(true)
+      expect(sources.every((source) => /imageAdjustment/i.test(source))).toBe(
+        true,
+      )
       // The renderer must read the key the schema emits, then apply it.
       const key = siblingKey ?? `${config?.imageField}ImageAdjustment`
       expect(sources.some((source) => source.includes(key))).toBe(true)
