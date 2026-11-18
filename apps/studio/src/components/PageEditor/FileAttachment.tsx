@@ -95,10 +95,9 @@ export const FileAttachment = ({
               // for filename validation to avoid the deliberate SVG rejection
               // in fileNameAndSizeSchema.
               const isSvg = file.name.toLowerCase().endsWith(".svg")
+              // `.shape` because Zod rejects `.pick()` on a refined schema
               const parseResult = isSvg
-                ? uploadSvgSchema
-                    .pick({ fileName: true })
-                    .safeParse({ fileName: file.name })
+                ? uploadSvgSchema.shape.fileName.safeParse(file.name)
                 : fileNameAndSizeSchema.safeParse({
                     fileName: file.name,
                     fileSize: file.size,

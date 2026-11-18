@@ -70,6 +70,21 @@ describe("FileAttachment", () => {
     expect(onUploadedFile.mock.calls[0]?.[0]).toHaveProperty("name", file.name)
   })
 
+  it("uploads an SVG after validating its file name", async () => {
+    // Arrange
+    const { setHref, getFileInput } = renderFileAttachment({
+      acceptedFileTypes: { ".svg": "image/svg+xml" },
+    })
+    const file = new File(["<svg />"], "logo.svg", { type: "image/svg+xml" })
+
+    // Act
+    await userEvent.upload(getFileInput(), file)
+
+    // Assert
+    await waitFor(() => expect(setHref).toHaveBeenCalledWith(UPLOADED_PATH))
+    expect(uploadFile).toHaveBeenCalledOnce()
+  })
+
   it("asks for confirmation before uploading a risky file", async () => {
     // Arrange
     const { setHref, getFileInput } = renderFileAttachment({

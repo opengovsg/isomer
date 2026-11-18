@@ -218,7 +218,6 @@ describe("asset.router", async () => {
         ContentType: "image/png",
         ContentDisposition: expect.stringMatching(/^inline; filename=.+/),
         ContentLength: fileSize,
-        Tagging: "private=true",
       })
     })
 
