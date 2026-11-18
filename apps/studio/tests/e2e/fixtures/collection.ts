@@ -1,5 +1,5 @@
 import crypto from "crypto"
-import { deleteAssetLinksForResourceTree } from "~/server/modules/asset/asset.service"
+import { deleteAssetLinksForResourceTree } from "~/server/modules/asset/assetLink.service"
 import { db, jsonb } from "~/server/modules/database"
 import { ResourceState, ResourceType } from "~prisma/generated/generatedEnums"
 

@@ -1,7 +1,7 @@
 import type { IsomerSiteConfigProps } from "@opengovsg/isomer-components"
 import { sql } from "kysely"
 import { normalizeRedirectSource } from "~/schemas/redirect/utils"
-import { deleteAssetLinksForResourceTree } from "~/server/modules/asset/asset.service"
+import { deleteAssetLinksForResourceTree } from "~/server/modules/asset/assetLink.service"
 import { db, jsonb } from "~/server/modules/database"
 
 export { ensureUserOnboarded } from "./user"

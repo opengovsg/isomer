@@ -1,4 +1,4 @@
-import { deleteAssetLinksForResourceTree } from "~/server/modules/asset/asset.service"
+import { deleteAssetLinksForResourceTree } from "~/server/modules/asset/assetLink.service"
 import { db } from "~/server/modules/database"
 
 import { FileLogger } from "../FileLogger"
