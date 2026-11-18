@@ -29,17 +29,17 @@
    },
    vite: {
      // isomer-components is a linked workspace package: without this, dev loads React twice.
-@@ -38,7 +51,9 @@
+@@ -38,8 +51,8 @@
          resolveId(source, importer, options) {
            if (source === "react" && importer !== REACT) return REACT
            const target =
--            this.environment.name === "client" ? PREACT_ALIASES[source] : undefined
+-            this.environment.name === "client"
+-              ? PREACT_ALIASES[source]
 +            this.environment.name === "client" && SWAP_CLIENT_RUNTIME
 +              ? CLIENT_ALIASES[source]
-+              : undefined
+               : undefined
            return target
              ? this.resolve(target, import.meta.dirname + "/package.json", {
-                 ...options,
 --- a/apps/template-astro/src/islands/client.ts
 +++ b/apps/template-astro/src/islands/client.ts
 @@ -33,6 +33,11 @@
@@ -65,11 +65,16 @@
  
 --- a/apps/template-astro/src/lib/render.tsx
 +++ b/apps/template-astro/src/lib/render.tsx
-@@ -8,6 +8,8 @@
+@@ -1,4 +1,5 @@
+ import type { IsomerPageSchemaType } from "@opengovsg/isomer-components"
++import type { IslandName } from "@opengovsg/isomer-components/islands"
+ import type { ReactNode } from "react"
+ import {
+   getPageJsonLd,
+@@ -8,6 +9,7 @@
    RenderEngine,
    RenderPageHead,
  } from "@opengovsg/isomer-components"
-+import type { IslandName } from "@opengovsg/isomer-components/islands"
 +import { island } from "@opengovsg/isomer-components/islands"
  import { renderToString } from "react-dom/server"
  

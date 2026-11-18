@@ -1,5 +1,5 @@
-import { fileURLToPath } from "node:url"
 import { defineConfig } from "astro/config"
+import { fileURLToPath } from "node:url"
 import postcssPresetEnv from "postcss-preset-env"
 import tailwindcss from "tailwindcss"
 
@@ -38,7 +38,9 @@ export default defineConfig({
         resolveId(source, importer, options) {
           if (source === "react" && importer !== REACT) return REACT
           const target =
-            this.environment.name === "client" ? PREACT_ALIASES[source] : undefined
+            this.environment.name === "client"
+              ? PREACT_ALIASES[source]
+              : undefined
           return target
             ? this.resolve(target, import.meta.dirname + "/package.json", {
                 ...options,
