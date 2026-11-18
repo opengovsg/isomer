@@ -1,5 +1,3 @@
-"use client"
-
 import type { VicaWidgetClientProps } from "~/interfaces"
 import { useInteractionScriptLoader } from "~/hooks/useInteractionScriptLoader"
 import { island } from "~/islands/island"

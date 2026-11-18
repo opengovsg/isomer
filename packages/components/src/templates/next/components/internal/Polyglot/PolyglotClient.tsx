@@ -1,5 +1,3 @@
-"use client"
-
 import type { PolyglotClientProps } from "~/interfaces"
 import { useInteractionScriptLoader } from "~/hooks/useInteractionScriptLoader"
 import { useQueryParams } from "~/hooks/useQueryParams"

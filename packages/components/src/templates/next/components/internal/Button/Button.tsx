@@ -1,5 +1,3 @@
-"use client"
-
 import type { AriaButtonProps } from "@react-aria/button"
 import type { VariantProps } from "tailwind-variants"
 import { useButton } from "@react-aria/button"

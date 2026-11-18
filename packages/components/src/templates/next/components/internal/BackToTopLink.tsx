@@ -1,5 +1,3 @@
-"use client"
-
 import { BiUpArrowAlt } from "react-icons/bi"
 import { island } from "~/islands/island"
 import { tv } from "~/lib/tv"

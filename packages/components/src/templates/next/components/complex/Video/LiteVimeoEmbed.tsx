@@ -1,5 +1,3 @@
-"use client"
-
 import { useEffect, useState } from "react"
 import { island } from "~/islands/island"
 import { twMerge } from "~/lib/twMerge"

@@ -1,5 +1,3 @@
-"use client"
-
 import { useEffect, useRef, useState } from "react"
 import { BiLinkExternal } from "react-icons/bi"
 import { island } from "~/islands/island"

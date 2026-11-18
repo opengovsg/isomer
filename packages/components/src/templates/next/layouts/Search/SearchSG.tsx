@@ -1,5 +1,3 @@
-"use client"
-
 import { useSearchSGScript } from "~/hooks/useSearchSGScript"
 import { island } from "~/islands/island"
 

@@ -1,5 +1,3 @@
-"use client"
-
 import type { FetchDgsMetadataOutput } from "~/utils/dgs/fetchDgsMetadata"
 import { useEffect, useState } from "react"
 import { fetchDgsMetadata } from "~/utils/dgs/fetchDgsMetadata"

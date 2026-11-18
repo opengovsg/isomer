@@ -1,5 +1,3 @@
-"use client"
-
 import type { MicrosoftClarityProps } from "~/interfaces"
 import { useEffect } from "react"
 import { useInteractionScriptLoader } from "~/hooks/useInteractionScriptLoader"

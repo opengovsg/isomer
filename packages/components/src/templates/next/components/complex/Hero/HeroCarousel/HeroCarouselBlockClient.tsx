@@ -1,5 +1,3 @@
-"use client"
-
 import type { HeadingTag } from "~/utils/getHeadingTag"
 import {
   HERO_BLOCK_IMAGE_POSITION,

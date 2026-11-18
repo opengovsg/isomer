@@ -1,5 +1,3 @@
-"use client"
-
 import type { DgsApiDatasetSearchParams } from "~/hooks/useDgsData/types"
 import type { DynamicComponentListProps } from "~/interfaces"
 import { useMemo } from "react"

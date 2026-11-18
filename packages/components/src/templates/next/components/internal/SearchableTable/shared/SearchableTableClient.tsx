@@ -1,5 +1,3 @@
-"use client"
-
 import type { SearchableTableClientProps } from "~/interfaces"
 import { useDeferredValue, useMemo, useState } from "react"
 import { island } from "~/islands/island"

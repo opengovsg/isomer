@@ -1,5 +1,3 @@
-"use client"
-
 import type { DynamicDataBannerProps } from "~/interfaces"
 import { useEffect, useState } from "react"
 import { BiError } from "react-icons/bi"

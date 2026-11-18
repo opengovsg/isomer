@@ -1,5 +1,3 @@
-"use client"
-
 import type { ImageClientProps } from "~/interfaces"
 import { useEffect, useRef, useState } from "react"
 import { island } from "~/islands/island"

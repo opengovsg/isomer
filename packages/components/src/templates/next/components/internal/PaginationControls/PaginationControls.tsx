@@ -1,5 +1,3 @@
-"use client"
-
 import { useBreakpoint } from "~/hooks/useBreakpoint"
 
 import type { PaginationProps } from "../../../types/Pagination"

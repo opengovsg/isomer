@@ -1,5 +1,3 @@
-"use client"
-
 import type { DateFilterDisplayEntry } from "~/interfaces/internal/DateFilter"
 import { useMemo } from "react"
 import { island } from "~/islands/island"

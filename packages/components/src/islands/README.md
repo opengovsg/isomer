@@ -12,8 +12,6 @@ the host's job (`apps/template-astro/src/islands/`).
 ## Making a component an island
 
 ```tsx
-"use client"
-
 import { island } from "~/islands/island"
 
 const NavbarClientComponent = (props: NavbarClientProps) => {

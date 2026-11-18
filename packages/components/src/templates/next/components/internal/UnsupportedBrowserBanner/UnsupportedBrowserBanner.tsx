@@ -1,5 +1,3 @@
-"use client"
-
 import type { SupportedBrowserBannerProps } from "~/utils/isSupportedBrowser"
 import { useEffect, useState } from "react"
 import { BiInfoCircle, BiX } from "react-icons/bi"

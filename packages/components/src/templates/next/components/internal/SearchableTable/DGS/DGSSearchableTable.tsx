@@ -1,5 +1,3 @@
-"use client"
-
 import type { DGSSearchableTableProps } from "~/interfaces"
 import { useMemo } from "react"
 import { useDgsMetadata } from "~/hooks/useDgsMetadata"

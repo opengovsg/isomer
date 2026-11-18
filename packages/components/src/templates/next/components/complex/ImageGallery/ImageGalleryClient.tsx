@@ -1,5 +1,3 @@
-"use client"
-
 import type { ImageGalleryClientProps } from "~/interfaces/complex/ImageGallery"
 import { useCallback, useMemo, useRef, useState, useTransition } from "react"
 import { useBreakpoint } from "~/hooks/useBreakpoint"

@@ -1,5 +1,3 @@
-"use client"
-
 import type { NotificationClientProps } from "~/interfaces"
 import { useIsNotificationDismissed } from "~/hooks/useIsNotificationDismissed"
 import { island } from "~/islands/island"

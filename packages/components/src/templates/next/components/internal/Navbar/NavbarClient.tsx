@@ -1,5 +1,3 @@
-"use client"
-
 import type { NavbarClientProps } from "~/interfaces"
 import {
   useCallback,

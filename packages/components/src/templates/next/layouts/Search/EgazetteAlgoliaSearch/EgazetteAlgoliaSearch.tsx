@@ -1,5 +1,3 @@
-"use client"
-
 import type { EgazetteAlgoliaSearchProps } from "~/interfaces/internal/EgazetteAlgoliaSearchInputBox"
 import algoliasearch from "algoliasearch/lite"
 import { useMemo } from "react"

@@ -1,5 +1,3 @@
-"use client"
-
 import type { AriaTextFieldOptions } from "@react-aria/textfield"
 import type { ClassNames } from "~/utils/rac"
 import { useFocusRing } from "@react-aria/focus"

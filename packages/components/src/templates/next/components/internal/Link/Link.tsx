@@ -1,8 +1,8 @@
+import type { ElementType } from "react"
 import type { LinkProps } from "~/interfaces/internal/Link"
 import { BiRightArrowAlt } from "react-icons/bi"
 import { tv } from "~/lib/tv"
 import { twMerge } from "~/lib/twMerge"
-import { useLinkComponent } from "~/templates/next/context/LinkComponentContext"
 import { focusRing, focusVisibleHighlight } from "~/utils/tailwind"
 
 const linkStyles = tv({
@@ -27,7 +27,6 @@ export const Link = ({
   children,
   ...rest
 }: LinkProps) => {
-  const LinkComponent = useLinkComponent()
   const cssStyles = twMerge(
     isWithFocusVisibleHighlight ? fvHighlightLinkStyles() : linkStyles(),
     className,
@@ -35,7 +34,8 @@ export const Link = ({
   const externalLinkProps = isExternal
     ? { target: "_blank", rel: "noopener nofollow" }
     : {}
-  const ElementToRender = href ? (LinkComponent ?? "a") : "span"
+  // ElementType, as before: the props (e.g. `disabled`) are spread onto whichever element renders.
+  const ElementToRender = (href ? "a" : "span") as ElementType
 
   return (
     <ElementToRender

@@ -1,5 +1,3 @@
-"use client"
-
 import type { SVGProps, SyntheticEvent } from "react"
 import { useEffect, useState } from "react"
 import { island } from "~/islands/island"

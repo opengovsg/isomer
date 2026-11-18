@@ -1,5 +1,3 @@
-"use client"
-
 import type { NavbarProps } from "~/interfaces/internal/Navbar"
 import { FocusScope } from "@react-aria/focus"
 import { forwardRef } from "react"

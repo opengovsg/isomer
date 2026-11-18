@@ -1,5 +1,3 @@
-"use client"
-
 import type { Dispatch, SetStateAction } from "react"
 import type { NavbarClientProps } from "~/interfaces"
 import { useButton } from "@react-aria/button"
