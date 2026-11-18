@@ -1,4 +1,5 @@
 import type { CollectionCardProps } from "~/interfaces"
+import { getEffectiveImageAdjustment } from "~/utils/getEffectiveImageAdjustment"
 import { isExternalUrl } from "~/utils/isExternalUrl"
 
 import { cardImageStyles } from "../CollectionCard/cardImageStyles"
@@ -30,10 +31,10 @@ export const BlogCard = ({
 }): JSX.Element => {
   const isExternalLink = !!referenceLinkHref && isExternalUrl(referenceLinkHref)
   const hasDateFilters = (dateFilterDisplayEntries?.length ?? 0) > 0
-  // See CollectionCard's identical derivation.
-  const effectiveImageAdjustment = isContainNeeded
-    ? undefined
-    : image?.imageAdjustment
+  const effectiveImageAdjustment = getEffectiveImageAdjustment(
+    image?.imageAdjustment,
+    isContainNeeded,
+  )
 
   return (
     // NOTE: In smaller viewports, we render a border between items for easy distinguishing

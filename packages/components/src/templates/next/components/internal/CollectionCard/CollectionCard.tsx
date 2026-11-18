@@ -1,4 +1,5 @@
 import type { CollectionCardProps } from "~/interfaces"
+import { getEffectiveImageAdjustment } from "~/utils/getEffectiveImageAdjustment"
 import { isExternalUrl } from "~/utils/isExternalUrl"
 
 import { ImageClientWithAdjustment } from "../ImageClient"
@@ -30,11 +31,10 @@ export const CollectionCard = ({
 }): JSX.Element => {
   const isExternalLink = !!referenceLinkHref && isExternalUrl(referenceLinkHref)
   const hasDateFilters = (dateFilterDisplayEntries?.length ?? 0) > 0
-  // Focal point applies only to a "cover" thumbnail. A "contain" image,
-  // including the fallbacks, is letterboxed and stays centred.
-  const effectiveImageAdjustment = isContainNeeded
-    ? undefined
-    : image?.imageAdjustment
+  const effectiveImageAdjustment = getEffectiveImageAdjustment(
+    image?.imageAdjustment,
+    isContainNeeded,
+  )
 
   return (
     <Link
