@@ -28,6 +28,12 @@ export const useAdjustmentConfigForField = (path: string) => {
   const pageLayout = editorDrawerContext?.previewPageState.layout
   const pathParts = path.split(".")
   const fieldName = pathParts.pop() ?? ""
+  // The host's position in its array, e.g. 1 for "slides.1". Undefined when
+  // the host is not an array item.
+  const lastParentPart = Number(pathParts.at(-1))
+  const fieldHostIndex = Number.isInteger(lastParentPart)
+    ? lastParentPart
+    : undefined
   const parentPath = pathParts.join(".")
 
   // Matches the key generateAdjustableImageFields emits. A per-field key lets
@@ -66,6 +72,7 @@ export const useAdjustmentConfigForField = (path: string) => {
     () => ({
       block: ownerBlock,
       fieldHost,
+      fieldHostIndex,
       fieldName,
       siblingPath,
       currentAdjustment,
@@ -78,6 +85,7 @@ export const useAdjustmentConfigForField = (path: string) => {
     [
       ownerBlock,
       fieldHost,
+      fieldHostIndex,
       fieldName,
       siblingPath,
       currentAdjustment,
