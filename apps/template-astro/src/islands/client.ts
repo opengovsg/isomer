@@ -1,15 +1,16 @@
 // Browser half of this site's islands runtime: hydrates every <isomer-island> rendered by ./server.
-// Only the modules of islands present on the page are downloaded (islandLoaders), and React (or
-// preact/compat, see astro.config.ts) is only downloaded if the page has an island.
+// Only the modules of islands on the page are downloaded, and React (preact/compat in production)
+// is only downloaded if the page has an island at all.
+import type { IslandName } from "@opengovsg/isomer-components/islands"
 import type { ComponentType } from "react"
 import {
-  InsideIsland,
-  ISLAND_ATTRS,
-  ISLAND_STYLE,
+  IslandContent,
+  islands,
   ISLAND_TAG,
-  islandLoaders,
-  SLOT_KEY,
+  readIslandAttributes,
+  isSlotMarker,
   SLOT_TAG,
+  slotAttributes,
 } from "@opengovsg/isomer-components/islands"
 
 const whenVisible = (island: HTMLElement, callback: () => void) => {
@@ -36,48 +37,39 @@ const importReact = () =>
   Promise.all([import("react"), import("react-dom/client")])
 
 export const hydrateIslands = () => {
-  const islands = document.querySelectorAll<HTMLElement>(ISLAND_TAG)
-  if (islands.length === 0) return
+  const elements = document.querySelectorAll<HTMLElement>(ISLAND_TAG)
+  if (elements.length === 0) return
   // Shared by every island; started now so it downloads alongside the island modules.
   const react = importReact()
 
-  for (const island of islands) {
-    const name = island.getAttribute(ISLAND_ATTRS.component) ?? ""
-    const when = island.getAttribute(ISLAND_ATTRS.hydrate)
-    const islandId = island.getAttribute(ISLAND_ATTRS.islandId) ?? undefined
-    const props = island.getAttribute(ISLAND_ATTRS.props) ?? "{}"
+  for (const element of elements) {
+    const { name, hydrate: when, id, props } = readIslandAttributes(element)
+    const load = islands[name as IslandName]
     // Read the slot's HTML now, before any island's hydration can change the DOM.
-    const slotHtml = island.querySelector(
-      `${SLOT_TAG}[${ISLAND_ATTRS.slot}="${CSS.escape(islandId ?? "")}"]`,
-    )?.innerHTML
+    const slotHtml = element.querySelector(SLOT_TAG)?.innerHTML
 
     const hydrate = async () => {
-      const load = islandLoaders[name]
-      if (!load) throw new Error(`[isomer-islands] unknown island ${name}`)
-      const [[{ createElement }, { hydrateRoot }], Component] =
-        await Promise.all([react, load()])
+      const [[{ createElement }, { hydrateRoot }], module] = await Promise.all([
+        react,
+        load(),
+      ])
+      const Component = (module as Record<string, ComponentType>)[name]
+      if (!Component) throw new Error(`[isomer-islands] ${name} isn't exported`)
       const parsed = JSON.parse(props) as Record<string, unknown>
-      const slot = parsed.children as Record<string, unknown> | undefined
-      if (slot && typeof slot === "object" && SLOT_KEY in slot)
+      if (isSlotMarker(parsed.children))
         parsed.children = createElement(SLOT_TAG, {
-          [ISLAND_ATTRS.slot]: slot[SLOT_KEY],
-          style: ISLAND_STYLE,
+          ...slotAttributes,
           suppressHydrationWarning: true,
           dangerouslySetInnerHTML: { __html: slotHtml ?? "" },
         })
-      // Inside InsideIsland, the island() wrapper renders its component plainly.
-      const element = createElement(
-        InsideIsland.Provider,
-        { value: true },
-        createElement(
-          Component as ComponentType<Record<string, unknown>>,
-          parsed,
-        ),
+      hydrateRoot(
+        element,
+        createElement(IslandContent, { Component, props: parsed }),
+        { identifierPrefix: id },
       )
-      hydrateRoot(island, element, { identifierPrefix: islandId })
     }
 
-    if (when === "visible") whenVisible(island, () => void hydrate())
+    if (when === "visible") whenVisible(element, () => void hydrate())
     else if (when === "idle") whenIdle(() => void hydrate())
     else void hydrate()
   }

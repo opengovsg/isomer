@@ -1,6 +1,6 @@
 --- a/apps/template-astro/astro.config.ts
 +++ b/apps/template-astro/astro.config.ts
-@@ -10,6 +10,18 @@
+@@ -11,6 +11,18 @@
    "react/jsx-dev-runtime": "preact/jsx-dev-runtime",
    react: "preact/compat",
  }
@@ -19,7 +19,7 @@
  
  export default defineConfig({
    output: "static",
-@@ -19,7 +31,8 @@
+@@ -20,7 +32,8 @@
    prefetch: false,
    devToolbar: { enabled: false },
    experimental: {
@@ -29,13 +29,12 @@
    },
    vite: {
      // isomer-components is a linked workspace package: without this, dev loads React twice.
-@@ -31,9 +44,11 @@
+@@ -32,9 +45,10 @@
          name: "isomer-preact-client",
          enforce: "pre",
          applyToEnvironment: (env) =>
--          env.name === "client" && env.config.command === "build",
-+          env.name === "client" &&
-+          env.config.command === "build" &&
+-          env.name === "client" && process.env.NODE_ENV === "production",
++          env.name === "client" && process.env.NODE_ENV === "production" &&
 +          SWAP_CLIENT_RUNTIME,
          resolveId(source, importer, options) {
 -          const target = PREACT_ALIASES[source]
@@ -45,28 +44,29 @@
                  ...options,
 --- a/apps/template-astro/src/lib/render.tsx
 +++ b/apps/template-astro/src/lib/render.tsx
-@@ -8,6 +8,7 @@
+@@ -8,6 +8,8 @@
    RenderEngine,
    RenderPageHead,
  } from "@opengovsg/isomer-components"
++import type { IslandName } from "@opengovsg/isomer-components/islands"
 +import { island } from "@opengovsg/isomer-components/islands"
  import { renderToString } from "react-dom/server"
  
  import { serializeForInlineScript } from "@isomer/validators"
-@@ -54,6 +55,12 @@
+@@ -54,6 +56,12 @@
    "h",
  )
  
 +// EXPERIMENT: ISLANDS_MODE=whole-tree hydrates the entire page as one island.
 +const Engine =
 +  process.env.ISLANDS_MODE === "whole-tree"
-+    ? island("RenderEngine", RenderEngine, { hydrate: "load" })
++    ? island("RenderEngine" as IslandName, RenderEngine, { hydrate: "load" })
 +    : RenderEngine
 +
  export const renderPage = (
    schema: IsomerPageSchemaType,
    { withPageJsonLd = true } = {},
-@@ -62,7 +69,7 @@
+@@ -62,7 +70,7 @@
    return {
      head: toHtml(<RenderPageHead {...renderSchema} />, "m"),
      headScripts,
@@ -77,25 +77,24 @@
      pageJsonLd: withPageJsonLd
 --- a/apps/template-astro/src/islands/client.ts
 +++ b/apps/template-astro/src/islands/client.ts
-@@ -59,6 +59,12 @@
-   )
- }
+@@ -34,6 +34,11 @@
+     ? requestIdleCallback(callback)
+     : setTimeout(callback, 200)
  
 +// EXPERIMENT: loader for ISLANDS_MODE=whole-tree (see render.tsx).
-+const EXPERIMENT_LOADERS: Record<string, () => Promise<unknown>> = {
-+  RenderEngine: () =>
-+    import("@opengovsg/isomer-components").then((m) => m.RenderEngine),
++const EXPERIMENT_ISLANDS: Record<string, () => Promise<object>> = {
++  RenderEngine: () => import("@opengovsg/isomer-components"),
 +}
 +
  const importReact = () =>
    Promise.all([import("react"), import("react-dom/client")])
  
-@@ -82,7 +88,7 @@
-     )
+@@ -45,7 +50,7 @@
  
-     const hydrate = async () => {
--      const load = islandLoaders[name]
-+      const load = islandLoaders[name] ?? EXPERIMENT_LOADERS[name]
-       if (!load) throw new Error(`[isomer-islands] unknown island ${name}`)
-       const [[{ createElement }, { hydrateRoot }], Component] =
-         await Promise.all([react, load()])
+   for (const element of elements) {
+     const { name, hydrate: when, id, props } = readIslandAttributes(element)
+-    const load = islands[name as IslandName]
++    const load = islands[name as IslandName] ?? EXPERIMENT_ISLANDS[name]
+     // Read the slot's HTML now, before any island's hydration can change the DOM.
+     const slotHtml = id
+       ? element.querySelector(slotSelector(id))?.innerHTML

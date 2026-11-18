@@ -1,29 +1,25 @@
 // Server half of this site's islands runtime. Wrap the rendered tree in <IslandServerProvider> and
-// every island() from @opengovsg/isomer-components renders as:
+// each island() renders with everything the browser needs to hydrate it (see the markup in
+// @opengovsg/isomer-components/islands protocol.ts).
 //
-//   <isomer-island data-component="NavbarClient" data-hydrate="load"
-//                  data-island-id=":R1:" data-props='{"items":[...]}'>
-//     …the component's server-rendered HTML…
-//   </isomer-island>
-//
-// Props must be JSON. The one exception is `children` holding server-rendered React nodes: it is
-// rendered once into <isomer-slot data-slot="…"> and serialized as { "$slot": "…" }, and the
-// browser reuses that HTML as-is (same idea as Astro's default slot).
-import type { IslandRenderArgs } from "@opengovsg/isomer-components/islands"
+// Props must be JSON. The one exception is `children` holding server-rendered content: it's
+// rendered once into a slot and the browser reuses that HTML as-is (like Astro's default slot).
+import type { HostIslandProps } from "@opengovsg/isomer-components/islands"
 import type { PropsWithChildren, ReactNode } from "react"
 import {
   InsideIsland,
-  ISLAND_ATTRS,
-  ISLAND_STYLE,
+  IslandContent,
+  IslandHost,
+  islandAttributes,
   ISLAND_TAG,
-  IslandRendererContext,
-  SLOT_KEY,
   SLOT_TAG,
+  SLOT_MARKER,
+  slotAttributes,
 } from "@opengovsg/isomer-components/islands"
 import { createElement, isValidElement, useId } from "react"
 import { renderToString } from "react-dom/server"
 
-const isReactNode = (value: unknown) =>
+const isServerRendered = (value: unknown) =>
   isValidElement(value) || (Array.isArray(value) && value.some(isValidElement))
 
 const isPlainObject = (value: object) => {
@@ -31,15 +27,7 @@ const isPlainObject = (value: object) => {
   return proto === Object.prototype || proto === null
 }
 
-// Slot contents are ordinary server-rendered markup, so islands inside them are islands again.
-const Slot = ({ slotId, children }: { slotId: string; children?: ReactNode }) =>
-  createElement(
-    SLOT_TAG,
-    { [ISLAND_ATTRS.slot]: slotId, style: ISLAND_STYLE },
-    createElement(InsideIsland.Provider, { value: false }, children),
-  )
-
-/** data-props JSON. Dates become ISO strings (toJSON); anything else that isn't JSON fails the build. */
+/** Props as JSON. Dates become ISO strings (toJSON); anything else that isn't JSON fails the build. */
 const serializeProps = (props: Record<string, unknown>, name: string) =>
   JSON.stringify(props, (key, value: unknown) => {
     const isJson =
@@ -55,53 +43,53 @@ const serializeProps = (props: Record<string, unknown>, name: string) =>
     return value
   })
 
-const ServerIsland = ({
-  name,
-  hydrate,
-  props,
-  renderContent,
-}: IslandRenderArgs) => {
-  const islandId = useId()
+// Slot contents are ordinary server-rendered markup, so islands inside them are islands again.
+const Slot = ({ children }: { children?: ReactNode }) =>
+  createElement(
+    SLOT_TAG,
+    slotAttributes,
+    <InsideIsland.Provider value={false}>{children}</InsideIsland.Provider>,
+  )
+
+const ServerIsland = ({ name, hydrate, Component, props }: HostIslandProps) => {
+  const id = useId()
   const { children, ...rest } = props
-  const slotted = isReactNode(children)
+  const hasSlot = isServerRendered(children)
 
   // Rendered as a separate root with its own identifierPrefix, exactly like the browser hydrates
   // it, so useId values (react-aria depends on them) match between server and client.
   const html = renderToString(
-    renderContent(
-      slotted
-        ? {
-            ...rest,
-            children: createElement(
-              Slot,
-              { slotId: islandId },
-              children as ReactNode,
-            ),
-          }
-        : props,
-    ),
-    { identifierPrefix: islandId },
+    <IslandContent
+      Component={Component}
+      props={
+        hasSlot
+          ? { ...rest, children: <Slot>{children as ReactNode}</Slot> }
+          : props
+      }
+    />,
+    { identifierPrefix: id },
   )
 
   return createElement(ISLAND_TAG, {
-    [ISLAND_ATTRS.component]: name,
-    [ISLAND_ATTRS.hydrate]: hydrate,
-    [ISLAND_ATTRS.islandId]: islandId,
-    [ISLAND_ATTRS.props]: serializeProps(
-      slotted ? { ...rest, children: { [SLOT_KEY]: islandId } } : props,
+    ...islandAttributes({
       name,
-    ),
-    style: ISLAND_STYLE,
+      hydrate,
+      id,
+      props: serializeProps(
+        hasSlot ? { ...rest, children: SLOT_MARKER } : props,
+        name,
+      ),
+    }),
     dangerouslySetInnerHTML: { __html: html },
   })
 }
 
-const renderServerIsland = (args: IslandRenderArgs) =>
-  createElement(ServerIsland, args)
+const renderServerIsland = (island: HostIslandProps) => (
+  <ServerIsland {...island} />
+)
 
-export const IslandServerProvider = ({ children }: PropsWithChildren) =>
-  createElement(
-    IslandRendererContext.Provider,
-    { value: renderServerIsland },
-    children,
-  )
+export const IslandServerProvider = ({ children }: PropsWithChildren) => (
+  <IslandHost.Provider value={renderServerIsland}>
+    {children}
+  </IslandHost.Provider>
+)

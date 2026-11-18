@@ -1,2 +1,3 @@
 export * from "./island"
-export { islandLoaders } from "./loaders"
+export * from "./protocol"
+export * from "./registry"

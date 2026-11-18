@@ -21,7 +21,7 @@ On a synthetic 60-page coverage site, compared with today's Next build:
 - **Visual and interaction parity holds.** All 19 Playwright checks pass: pixel comparison of 6 page types × 2 viewports against the Next build, plus interaction tests for every interactive island.
 - **Studio renders the same DOM as published sites.** Island boundaries are declared in `packages/components` with `island()`, so Studio's preview renders the same `<isomer-island>` markup. There's no build-time rewriting that only the published site sees.
 
-The costs are about 260 lines of islands runtime that we'd own (72 in components, 191 in the Astro app), a few rules for component authors, and porting work still to do for CodeBuild, Studio's local publish and the e2e test.
+The costs are about 380 lines of islands code that we'd own (205 in components, of which ~60 is the island registry; 175 in the Astro app), a few rules for component authors, and porting work still to do for CodeBuild, Studio's local publish and the e2e test.
 
 ## Problem
 
@@ -41,7 +41,7 @@ packages/components                          apps/template-astro
 island("NavbarClient", NavbarClientImpl)     build:   renderToString(<IslandServerProvider>
   renders <isomer-island> everywhere                    <RenderEngine/>)
   (Studio, Storybook, published site)                 → <isomer-island data-component data-hydrate
-islandLoaders: name → import()                            data-island-id data-props>…SSR HTML…
+islands registry: name → import()                         data-island-id data-props>…SSR HTML…
 markup protocol constants                     browser: hydrateIslands() lazy-loads only the
                                                        islands on the page, hydrates each with Preact
 ```
@@ -49,10 +49,10 @@ markup protocol constants                     browser: hydrateIslands() lazy-loa
 1. **Astro is the static-site shell only.** It provides routing via `getStaticPaths` from `sitemap.json`, Vite, CSS handling and static output. Pages call `react-dom/server`'s `renderToString` on `RenderEngine` directly. We don't use `@astrojs/react` or `@astrojs/preact`; see below for why. No custom Vite plugins are involved in islands.
 2. **Islands are declared in `packages/components`** (`src/islands/`, with a README):
    - **`island(name, Component, { hydrate })`** (`hydrate` is required) wraps each of the 29 boundary components (the interactive components that server-rendered code renders). It always renders `<isomer-island data-component="…">` (`display: contents`) around the component, in every host. Studio's preview and the published site therefore have the same DOM.
-   - **`islandLoaders`** maps each island name to a lazy `import()` of its module. A unit test fails if it drifts from the `island()` calls.
-   - **The markup protocol** (tag, attribute and slot-marker names, `IslandRendererContext`, `InsideIsland`) is exported, so the host doesn't repeat the strings.
+   - **The `islands` registry** maps each island name to a lazy `import()` of its module. `island()` only accepts registered names (a missing entry doesn't typecheck), and a unit test checks each module exports the island under its name.
+   - **The markup protocol** (`protocol.ts`): the tags, plus helpers that write and read the attributes and the slot marker, so the host doesn't repeat any strings.
 3. **The host renders and hydrates them** (`apps/template-astro/src/islands/`):
-   - **`server.tsx`**: `IslandServerProvider` plugs into `IslandRendererContext`, so every island additionally carries its props as JSON, its hydration timing and an id. Server-rendered `children` (e.g. `NotificationClient`'s body) become static `<isomer-slot>` HTML that the browser reuses as-is, like Astro's default slot.
+   - **`server.tsx`**: `IslandServerProvider` plugs into `IslandHost`, so every island additionally carries its props as JSON, its hydration timing and an id. Server-rendered `children` (e.g. `NotificationClient`'s body) become static `<isomer-slot>` HTML that the browser reuses as-is, like Astro's default slot.
    - **`client.ts`**: `hydrateIslands()` lazy-loads only the islands on the page and hydrates each at its timing (`load`, `visible` or `idle`).
 4. **Each island is SSR'd as its own React root** with a unique `identifierPrefix`. Without this, `useId` values (react-aria depends on them) would mismatch on hydration.
 5. **Preact in the browser.** The build aliases `react`/`react-dom` to `preact/compat` **for the client bundle only**. Server rendering stays on React, so the HTML is identical either way.
@@ -63,7 +63,7 @@ These declare island boundaries explicitly, and remove workarounds that existed 
 
 | Change                                                                                                                                                 | Why                                                                                                                                                                                                               |
 | ------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `island()` + `islandLoaders` on the 29 boundary components (`src/islands/`, new `./islands` package export)                                            | Explicit boundaries, rendered identically in every host. This replaced a Vite plugin that rewrote `"use client"` imports at build time (see Alternatives).                                                        |
+| `island()` + the `islands` registry on the 29 boundary components (`src/islands/`, new `./islands` package export)                                     | Explicit boundaries, rendered identically in every host. This replaced a Vite plugin that rewrote `"use client"` imports at build time (see Alternatives).                                                        |
 | Removed every `"use client"` directive, `LinkComponentProvider` and its context                                                                        | Only meaningful to Next (RSC boundaries, swapping in `next/link`). `island()` now marks boundaries; Studio's preview stops link navigation with one capture-phase click handler instead of a fake link component. |
 | Deleted `ScrollToTop`                                                                                                                                  | Workaround for `next/link` scroll restoration                                                                                                                                                                     |
 | Spacing for `ImageGallery` and `BackToTopLink` set from their parents, not with `first:` variants on the island root                                   | Inside `<isomer-island>`, the root is always `:first-child`                                                                                                                                                       |
@@ -131,9 +131,9 @@ Cold builds on an Apple Silicon laptop with default cores. Peak RSS is summed ac
 
 ## What got harder
 
-- **We own an islands runtime.** About 260 lines: `island.ts` (72) in components, `server.tsx` and `client.ts` (191) in the Astro app, plus the 29-entry `islandLoaders` map. Next did this for us.
+- **We own an islands runtime.** About 380 lines: `island.tsx`, `protocol.ts` and the `registry.ts` table (205) in components, `server.tsx` and `client.ts` (175) in the Astro app. Each file reads on its own, and both ends of the markup come from `protocol.ts`. Next did this for us.
 - **Rules for component authors** (in `packages/components/src/islands/README.md`):
-  - Wrap a component in `island()` and add it to `islandLoaders` only if it needs React state or effects and server-rendered code renders it. The loader test fails if an `island()` has no loader, or a loader returns a different island than its name.
+  - Wrap a component in `island(name, Component, { hydrate })` and register it in `islands` only if it needs React state or effects and server-rendered code renders it. An unregistered name doesn't typecheck, and the registry test fails if a module doesn't export the island under its name.
   - Island props must be plain JSON data (`Date`s become ISO strings). Server-rendered content can only be passed as `children`, which becomes a slot. Anything else, e.g. functions or React elements in other props, fails the build with the prop name.
   - React context doesn't cross into an island.
   - Read browser-only state (storage, user agent) after mount. Each island is its own React root, which doesn't repair a first render that differs from the server HTML.
