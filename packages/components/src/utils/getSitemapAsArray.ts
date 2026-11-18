@@ -1,11 +1,13 @@
 import type { IsomerSitemap } from "~/types"
 
-export const getSitemapAsArray = (sitemap: IsomerSitemap) => {
+import { getCachedSitemapArray } from "./sitemapArrayCache"
+
+const flattenSitemap = (sitemap: IsomerSitemap) => {
   const result: IsomerSitemap[] = []
 
   const traverse = (node: IsomerSitemap) => {
     if (node.permalink) {
-      const { children, ...rest } = node
+      const { children: _children, ...rest } = node
       result.push(rest)
     }
     if (node.children && node.children.length > 0) {
@@ -16,3 +18,6 @@ export const getSitemapAsArray = (sitemap: IsomerSitemap) => {
   traverse(sitemap)
   return result
 }
+
+export const getSitemapAsArray = (sitemap: IsomerSitemap) =>
+  getCachedSitemapArray(sitemap, flattenSitemap)

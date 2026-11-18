@@ -5,6 +5,7 @@ import DOMPurify from "isomorphic-dompurify"
 import { escape, isEqual } from "lodash-es"
 
 import { getReferenceLinkHref } from "./getReferenceLinkHref"
+import { memoizeStringInput } from "./stringInputCache"
 
 type MarkTypes = Marks["type"]
 
@@ -27,9 +28,9 @@ interface GetTextAsHtmlArgs {
 }
 
 // DOMPurify returns HTML with entities escaped, ready for the HTML consumer.
-function stripHtmlTags(input: string): string {
-  return DOMPurify.sanitize(input, { ALLOWED_TAGS: [] })
-}
+const stripHtmlTags = memoizeStringInput((input: string) =>
+  DOMPurify.sanitize(input, { ALLOWED_TAGS: [] }),
+)
 
 // Converts the text node with marks into the appropriate HTML
 export const getTextAsHtml = ({

@@ -4,7 +4,9 @@
     ".storybook",
     "node_modules",
     "build",
+    "./src/**/*.test.ts",
     "./src/**/*.test.tsx",
+    "./src/**/*.benchmark.test.ts",
     "./src/**/*.stories.tsx"
   ]
 }
