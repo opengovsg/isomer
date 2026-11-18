@@ -6,8 +6,7 @@ import type {
 // FROZEN CONTRACT (W0-A / ISOM-2587). The per-component declaration that drives
 // the component-agnostic image adjustment modal (W0-D). Every per-component
 // fan-out task (M2/M3) adds one entry implementing this shape; the modal reads
-// it and contains no component-specific logic of its own. Change this only with
-// orchestrator sign-off — it is the interface the whole feature is built on.
+// it and contains no component-specific logic of its own.
 
 // fixed  = one or more locked aspect ratios.
 // custom = free-form crop (native Image block, P2 — out of scope for v1).
@@ -42,14 +41,14 @@ export interface AdjustmentRenderContext {
 }
 
 // Builds the block the real-component preview renders for an image inside an
-// array. `editedItem` has the adjusted image patched in, and `fieldHost` is the
-// same item before patching, so a builder can find its index in the array.
+// array. `editedItem` has the adjusted image patched in, and `itemIndex` is
+// its position in that array, taken from the form path.
 // Return undefined to use the framed-image preview. Set `activeIndex` when the
 // component shows one item at a time, like the hero carousel.
 export type BuildSingleItemPreviewBlock = (
   ownerBlock: IsomerComponent,
   editedItem: Record<string, unknown>,
-  fieldHost: Record<string, unknown>,
+  itemIndex: number | undefined,
 ) => { component: IsomerComponent; activeIndex?: number } | undefined
 
 export interface AdjustmentConfig {

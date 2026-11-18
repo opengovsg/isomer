@@ -195,7 +195,7 @@ describe("resolveAdjustmentConfig", () => {
       const preview = withImages!.buildSingleItemPreviewBlock!(
         block as IsomerComponent,
         editedCard,
-        originalCard,
+        0,
       )!.component as Record<string, unknown>
       expect(preview.cards).toEqual([editedCard])
       expect(preview.title).toBe("")
@@ -222,7 +222,7 @@ describe("resolveAdjustmentConfig", () => {
       const preview = withImages?.buildSingleItemPreviewBlock?.(
         block as IsomerComponent,
         editedCard,
-        cardB,
+        1,
       )?.component
       const html = renderBlockHtml(preview, "content")
 
@@ -246,7 +246,7 @@ describe("resolveAdjustmentConfig", () => {
       const preview = fullImage?.buildSingleItemPreviewBlock?.(
         block as IsomerComponent,
         editedCard,
-        card,
+        0,
       )?.component
       const html = renderBlockHtml(preview, "content")
 
@@ -407,7 +407,7 @@ describe("resolveAdjustmentConfig", () => {
       }
     })
 
-    it("hero carousel guidance and warning size follow the carousel layout", () => {
+    it("hero carousel guidance, warning size and preview shapes follow the carousel layout", () => {
       const resolve = (carousel?: { layout: string }) =>
         resolveAdjustmentConfig({
           block: { type: "hero", variant: "carousel", carousel },
@@ -431,6 +431,7 @@ describe("resolveAdjustmentConfig", () => {
         expect(config?.preUploadLinks).toEqual(expected?.preUploadLinks)
         expect(config?.maxRenderedWidthPx).toBe(expected?.maxRenderedWidthPx)
         expect(config?.maxRenderedHeightPx).toBe(expected?.maxRenderedHeightPx)
+        expect(config?.previewStates).toEqual(expected?.previewStates)
       }
     })
 
@@ -452,7 +453,7 @@ describe("resolveAdjustmentConfig", () => {
       expect(config?.preUploadLinks?.templateUrl).toBeUndefined()
     })
 
-    it("hero carousel previews the edited slide in the real component, keeping its siblings so the band height still reflects the tallest slide", () => {
+    it("hero carousel builder swaps in the edited slide, keeps its siblings and reports its index", () => {
       const first = { title: "First" }
       const second = { title: "Second" }
       const third = { title: "Third" }
@@ -472,37 +473,20 @@ describe("resolveAdjustmentConfig", () => {
       const built = config?.buildSingleItemPreviewBlock?.(
         block as never,
         edited,
-        second,
+        1,
       )
       expect(built).toMatchObject({
         component: { slides: [first, edited, third] },
         activeIndex: 1,
       })
-    })
-
-    it("hero carousel preview shapes follow the carousel layout (gradient when absent)", () => {
-      const ratios = (carousel?: { layout: string }) =>
-        Object.fromEntries(
-          (
-            resolveAdjustmentConfig({
-              block: { type: "hero", variant: "carousel", carousel },
-              fieldName: "backgroundUrl",
-            })?.previewStates ?? []
-          ).map((s) => [s.id, s.aspectRatio]),
-        )
-      const gradient = {
-        mobile: { width: 16, height: 10 },
-        tablet: { width: 2, height: 1 },
-        desktop: { width: 5, height: 2 },
-      }
-
-      expect(ratios({ layout: "block" })).toEqual({
-        mobile: { width: 7, height: 6 },
-        tablet: { width: 12, height: 5 },
-        desktop: { width: 5, height: 4 },
-      })
-      expect(ratios({ layout: "gradient" })).toEqual(gradient)
-      expect(ratios()).toEqual(gradient)
+      // No index means the framed-image fallback.
+      expect(
+        config?.buildSingleItemPreviewBlock?.(
+          block as never,
+          edited,
+          undefined,
+        ),
+      ).toBeUndefined()
     })
 
     it("fixed-crop (baked-once, same shape every breakpoint) components have focal disabled", () => {
