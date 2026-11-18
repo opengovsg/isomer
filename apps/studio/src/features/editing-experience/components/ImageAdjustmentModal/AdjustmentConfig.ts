@@ -62,6 +62,7 @@ export interface AdjustmentPreviewBuild {
   component: IsomerComponent
   // Wraps the rendered component, e.g. in a context provider. The preview
   // calls it as a plain function, so React never remounts the component.
+  // It must not call hooks.
   wrapPreview?: (children: ReactNode) => ReactNode
 }
 
