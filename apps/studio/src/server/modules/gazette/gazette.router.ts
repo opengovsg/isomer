@@ -805,7 +805,7 @@ export const gazetteRouter = router({
         const sanitizedFileName = filenamify(fileName, { replacement: "-" })
         const fileKey = `${year}/${category}/${subcategory}/${sanitizedFileName}`
 
-        const { presignedPutUrl, contentType, contentDisposition, tagging } =
+        const { presignedPutUrl, contentType, contentDisposition } =
           await getPresignedPutUrl({
             key: fileKey,
             fileSize,
@@ -827,7 +827,6 @@ export const gazetteRouter = router({
           presignedPutUrl,
           contentType,
           contentDisposition,
-          tagging,
         }
       },
     ),

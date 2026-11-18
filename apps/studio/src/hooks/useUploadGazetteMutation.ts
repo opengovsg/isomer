@@ -41,34 +41,28 @@ export const useUploadGazetteMutation = ({
         category,
         subcategory,
       }) => {
-        const {
-          fileKey,
-          presignedPutUrl,
-          contentType,
-          contentDisposition,
-          tagging,
-        } = await getPresignedPutUrl({
-          siteId,
-          resourceId,
-          fileName: fileName ?? file.name,
-          fileSize: file.size,
-          year,
-          category,
-          subcategory,
-          tags: scheduledAt
-            ? [
-                {
-                  key: "scheduledAt",
-                  value: scheduledAt.getTime().toString(),
-                },
-              ]
-            : undefined,
-        })
+        const { fileKey, presignedPutUrl, contentType, contentDisposition } =
+          await getPresignedPutUrl({
+            siteId,
+            resourceId,
+            fileName: fileName ?? file.name,
+            fileSize: file.size,
+            year,
+            category,
+            subcategory,
+            tags: scheduledAt
+              ? [
+                  {
+                    key: "scheduledAt",
+                    value: scheduledAt.getTime().toString(),
+                  },
+                ]
+              : undefined,
+          })
         const path = await performUpload(file, fileKey, {
           presignedPutUrl,
           contentType,
           contentDisposition,
-          tagging,
         })
 
         return { path }

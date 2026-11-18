@@ -152,7 +152,6 @@ export const gazetteHandlers = {
         contentType: "application/pdf",
         contentDisposition:
           "inline; filename*=UTF-8''MOCK_STORYBOOK_GAZETTE.pdf",
-        tagging: undefined,
       })),
   },
   create: {

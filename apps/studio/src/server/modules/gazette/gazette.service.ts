@@ -129,8 +129,6 @@ export const getPresignedPutUrl = async ({
   presignedPutUrl: string
   contentType: string
   contentDisposition: string
-  // Set only when the URL signs x-amz-tagging; the PUT must then send it as is
-  tagging?: string
 }> => {
   const contentType = getContentTypeFromKey(key)
   const contentDisposition = getContentDispositionForKey(key)
