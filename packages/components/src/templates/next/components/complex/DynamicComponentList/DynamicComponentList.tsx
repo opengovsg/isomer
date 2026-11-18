@@ -1,19 +1,10 @@
 import type { DynamicComponentListProps } from "~/interfaces"
+import { omit } from "lodash-es"
 
 import { DynamicComponentListClient } from "./DynamicComponentListClient"
 
-// Server wrapper so `site` (which holds the whole sitemap) is not serialized
-// into the RSC payload of every page using this client component
-export const DynamicComponentList = ({
-  dataSource,
-  component,
-  layout,
-  headingLevel,
-}: DynamicComponentListProps) => (
-  <DynamicComponentListClient
-    dataSource={dataSource}
-    component={component}
-    layout={layout}
-    headingLevel={headingLevel}
-  />
+// `site` holds the whole sitemap; keep it out of the client component's
+// props, which are serialized into every page's RSC payload
+export const DynamicComponentList = (props: DynamicComponentListProps) => (
+  <DynamicComponentListClient {...omit(props, "site")} />
 )

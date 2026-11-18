@@ -16,10 +16,7 @@ export const DynamicComponentListClient = ({
   component,
   layout,
   headingLevel,
-}: Pick<
-  DynamicComponentListProps,
-  "dataSource" | "component" | "layout" | "headingLevel"
->) => {
+}: Omit<DynamicComponentListProps, "site">) => {
   const params = useMemo(
     () => ({
       resourceId,
