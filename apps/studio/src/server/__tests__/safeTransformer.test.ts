@@ -27,8 +27,8 @@ describe("safeSuperjson.deserialize", () => {
     const nestedMap = superjson.serialize({ a: [{ m: new Map([["k", "v"]]) }] })
 
     // Act / Assert
-    expect(() => deserialize(set)).toThrow(/Set and Map/)
-    expect(() => deserialize(nestedMap)).toThrow(/Set and Map/)
+    expect(() => deserialize(set)).toThrow(/unsupported type/)
+    expect(() => deserialize(nestedMap)).toThrow(/unsupported type/)
   })
 
   it("rejects a set annotation hidden in array-shaped children", () => {
@@ -39,7 +39,7 @@ describe("safeSuperjson.deserialize", () => {
     }
 
     // Act / Assert
-    expect(() => deserialize(payload)).toThrow(/Set and Map/)
+    expect(() => deserialize(payload)).toThrow(TRPCError)
   })
 
   it("rejects the O(n²) Set + referentialEqualities payload quickly", () => {
@@ -74,9 +74,28 @@ describe("safeSuperjson.deserialize", () => {
     expectRejectedFast(payload)
   })
 
+  it("rejects annotations outside the allowlist", () => {
+    // Arrange: bigint rebuild is quadratic in digits
+    const payload = { json: "7".repeat(100), meta: { values: ["bigint"] } }
+
+    // Act / Assert
+    expect(() => deserialize(payload)).toThrow(/unsupported type/)
+  })
+
+  it("rejects malformed annotation nodes", () => {
+    // Arrange: superjson recurses forever on a string leaf
+    const nodes = [{ a: "x" }, "x", ["undefined", "xyz"], [1]]
+
+    // Act / Assert
+    for (const values of nodes) {
+      const payload = { json: {}, meta: { values } }
+      expect(() => deserialize(payload)).toThrow(/malformed annotations/)
+    }
+  })
+
   it("rejects deeply nested annotations without overflowing the stack", () => {
     // Arrange: plain-object and tuple-shaped chains
-    let objectTree: unknown = null
+    let objectTree: unknown = ["undefined"]
     let tupleTree: unknown = ["undefined"]
     for (let i = 0; i < 200_000; i++) {
       objectTree = { x: objectTree }
@@ -115,7 +134,13 @@ describe("safeSuperjson.deserialize", () => {
   it("round-trips Dates, undefined and shared references", () => {
     // Arrange
     const shared = { at: new Date(0) }
-    const value = { siteId: 1, a: shared, b: [shared], gone: undefined }
+    const value = {
+      siteId: 1,
+      a: shared,
+      b: [shared],
+      gone: undefined,
+      nan: Number.NaN,
+    }
 
     // Act
     const result = deserialize(safeSuperjson.serialize(value)) as typeof value
