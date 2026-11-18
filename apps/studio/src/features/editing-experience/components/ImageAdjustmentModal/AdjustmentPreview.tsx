@@ -24,8 +24,9 @@ import { ASSETS_BASE_URL, generateAssetUrl } from "~/utils/generateAssetUrl"
 
 import type {
   AdjustmentPreviewState,
-  BuildSingleItemPreviewBlock,
+  BuildAdjustmentPreview,
 } from "./AdjustmentConfig"
+import { buildRootPreview } from "./AdjustmentConfig"
 import { chooseBakeMime, fetchImageBlob } from "./useSaveImageAdjustment"
 
 // Site stub for a single-block preview. It fills only the fields the block
@@ -189,14 +190,15 @@ interface AdjustmentPreviewProps {
   // The object that holds the field. Equals `block` for a root-level field,
   // and is the single item, e.g. one InfoCards card, for an array-nested one.
   fieldHost?: Record<string, unknown>
-  // Builds a one-item block for an array-nested field. Without it the
-  // preview uses the framed-image approximation.
-  buildSingleItemPreviewBlock?: BuildSingleItemPreviewBlock
+  // The host's position in its array, when it is an array item.
+  fieldHostIndex?: number
+  // Builds the real-component preview. Defaults to buildRootPreview.
+  buildPreview?: BuildAdjustmentPreview
   // Always use the framed-image approximation. Set for array-nested fields
   // with no builder, e.g. ImageGallery.
   skipRealComponentPreview?: boolean
-  // object-fit for the framed-image approximation and for a nested item's
-  // `imageFit`. Defaults to "cover".
+  // The modal's Fit/Fill choice, for the framed-image approximation and the
+  // preview builder. Defaults to "cover".
   objectFit?: "cover" | "contain"
   // The layout the published page renders at. Defaults to "content".
   pageLayout?: IsomerPageLayoutType
@@ -218,7 +220,8 @@ export const AdjustmentPreview = ({
   block,
   imageFieldName,
   fieldHost,
-  buildSingleItemPreviewBlock,
+  fieldHostIndex,
+  buildPreview = buildRootPreview,
   skipRealComponentPreview,
   objectFit = "cover",
   pageLayout,
@@ -271,43 +274,29 @@ export const AdjustmentPreview = ({
   // adjustment patched in, at the page's own layout.
   const renderPreviewComponent = (): React.ReactNode => {
     if (!block || !fieldHost || !imageFieldName) return null
-    const isNestedField = fieldHost !== block
-    // Some components, e.g. Blockquote, hide the image when `imageAlt` is
-    // empty. Fill it in for the preview only so the image still shows.
-    const existingAlt = fieldHost.imageAlt
-    const hasAlt = typeof existingAlt === "string" && existingAlt.length > 0
-    const patch = {
-      [imageFieldName]: adjustedSrc,
-      [`${imageFieldName}ImageAdjustment`]: adjustment,
-      ...(hasAlt ? {} : { imageAlt: "Preview image" }),
-      // The real component reads a nested item's `imageFit`. Patch in the
-      // modal's Fit/Fill choice so the preview follows the toggle.
-      ...(isNestedField ? { imageFit: objectFit } : {}),
-    }
-    // The real component renders every item, so build a one-item block.
-    // No builder means the framed-image approximation.
-    const component = isNestedField
-      ? buildSingleItemPreviewBlock?.(block, { ...fieldHost, ...patch })
-      : ({ ...block, ...patch } as IsomerComponent)
-    if (!component) return null
+    const built = buildPreview({
+      block,
+      fieldHost,
+      itemIndex: fieldHostIndex,
+      imageFieldName,
+      adjustedSrc,
+      adjustment,
+      objectFit,
+    })
+    if (!built) return null
+    const node = renderComponent({
+      component: built.component,
+      layout: pageLayout ?? "content",
+      site: PREVIEW_SITE_STUB,
+      permalink: "",
+      headingLevel: 1,
+    })
     // On a real page the layout styles `.component-content` from an ancestor
     // selector, see Homepage.tsx. Without this wrapper the text and buttons
     // sit flush left.
     return (
-      <div
-        className={`break-words [&_.component-content]:mx-auto [&_.component-content]:max-w-screen-xl [&_.component-content]:px-6 [&_.component-content]:md:px-10${
-          // InfoCards' grid is the only `auto-rows-max` element. One column
-          // makes the lone card fill the tile.
-          isNestedField ? " [&_.auto-rows-max]:!grid-cols-1" : ""
-        }`}
-      >
-        {renderComponent({
-          component,
-          layout: pageLayout ?? "content",
-          site: PREVIEW_SITE_STUB,
-          permalink: "",
-          headingLevel: 1,
-        })}
+      <div className="break-words [&_.component-content]:mx-auto [&_.component-content]:max-w-screen-xl [&_.component-content]:px-6 [&_.component-content]:md:px-10">
+        {built.wrapPreview ? built.wrapPreview(node) : node}
       </div>
     )
   }
