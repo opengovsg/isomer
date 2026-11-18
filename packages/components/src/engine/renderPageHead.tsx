@@ -3,17 +3,42 @@ import type { IsomerPageSchemaType } from "~/types/schema"
 import { getMetadata } from "./metadata"
 
 /**
+ * Resolves a metadata URL the way Next's metadata API does: an absolute URL is used as-is,
+ * anything else is joined as a path onto the site URL (so `//x` or `x` become `/x`). Content
+ * can hold odd values (e.g. a malformed image URL), so a value that still can't be resolved is
+ * dropped instead of failing the whole site build.
+ */
+export const resolveMetadataUrl = (url?: string, base?: URL) => {
+  if (!url) return undefined
+  try {
+    return new URL(url).toString()
+  } catch {
+    // not absolute: resolve against the site URL below
+  }
+  if (!base) return url
+  const path = `${base.pathname.replace(/\/$/, "")}/${url}`.replace(
+    /\/{2,}/g,
+    "/",
+  )
+  try {
+    return new URL(path, base).toString()
+  } catch {
+    return undefined
+  }
+}
+
+/**
  * The page's <head> tags (title, description, robots, canonical, Open Graph, Twitter, icons),
  * for hosts that render the document themselves. Next consumes getMetadata() instead.
  */
 export const RenderPageHead = (props: IsomerPageSchemaType) => {
   const metadata = getMetadata(props)
   const absolute = (url?: string) =>
-    url && metadata.metadataBase
-      ? new URL(url, metadata.metadataBase).toString()
-      : url
+    resolveMetadataUrl(url, metadata.metadataBase)
   const { openGraph: og } = metadata
-  const images = og.images ?? []
+  const images = (og.images ?? [])
+    .map(({ url }) => absolute(url))
+    .filter((url): url is string => !!url)
   const rss = metadata.alternates.types?.["application/rss+xml"] ?? []
   const title = metadata.title
     ? `${metadata.title} | ${props.site.siteName}`
@@ -45,8 +70,8 @@ export const RenderPageHead = (props: IsomerPageSchemaType) => {
       )}
       <meta property="og:url" content={absolute(og.url)} />
       <meta property="og:site_name" content={og.siteName} />
-      {images.map(({ url }) => (
-        <meta key={url} property="og:image" content={absolute(url)} />
+      {images.map((url) => (
+        <meta key={url} property="og:image" content={url} />
       ))}
       <meta property="og:type" content={og.type} />
       <meta name="twitter:card" content={metadata.twitter.card} />
@@ -54,8 +79,8 @@ export const RenderPageHead = (props: IsomerPageSchemaType) => {
       {og.description && (
         <meta name="twitter:description" content={og.description} />
       )}
-      {images.map(({ url }) => (
-        <meta key={url} name="twitter:image" content={absolute(url)} />
+      {images.map((url) => (
+        <meta key={url} name="twitter:image" content={url} />
       ))}
       <link rel="shortcut icon" href={metadata.icons.shortcut} />
       <link rel="icon" href={metadata.icons.icon} />
