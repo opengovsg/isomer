@@ -107,11 +107,15 @@ export const createCollectionWithTagCategories = async (
 // onDelete: Cascade), so their asset links are cleared first.
 export const deleteCollection = (collectionId: string) =>
   db.transaction().execute(async (tx) => {
-    const { siteId } = await tx
+    const resource = await tx
       .selectFrom("Resource")
       .select("siteId")
       .where("id", "=", collectionId)
-      .executeTakeFirstOrThrow()
+      .executeTakeFirst()
+    // Already gone (the test deleted it): nothing to clean up
+    if (!resource) return
+
+    const { siteId } = resource
     await deleteAssetLinksForResourceTree(tx, {
       siteId,
       resourceIds: [collectionId],

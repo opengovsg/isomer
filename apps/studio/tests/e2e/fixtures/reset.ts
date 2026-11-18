@@ -62,11 +62,15 @@ export const resetSiteTheme = (siteId: number) =>
 /** Delete a single resource row created during a test. */
 export const deleteResource = (resourceId: string) =>
   db.transaction().execute(async (tx) => {
-    const { siteId } = await tx
+    const resource = await tx
       .selectFrom("Resource")
       .select("siteId")
       .where("id", "=", resourceId)
-      .executeTakeFirstOrThrow()
+      .executeTakeFirst()
+    // Already gone (the test deleted it): nothing to clean up
+    if (!resource) return
+
+    const { siteId } = resource
     await deleteAssetLinksForResourceTree(tx, {
       siteId,
       resourceIds: [resourceId],
