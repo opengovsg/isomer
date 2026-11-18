@@ -602,35 +602,35 @@ catalogs:
       version: 3.10.1
   storybook:
     '@storybook/addon-a11y':
-      specifier: 10.6.6
-      version: 10.6.6
+      specifier: 10.6.7
+      version: 10.6.7
     '@storybook/addon-docs':
-      specifier: 10.6.6
-      version: 10.6.6
+      specifier: 10.6.7
+      version: 10.6.7
     '@storybook/addon-links':
-      specifier: 10.6.6
-      version: 10.6.6
+      specifier: 10.6.7
+      version: 10.6.7
     '@storybook/addon-themes':
-      specifier: 10.6.6
-      version: 10.6.6
+      specifier: 10.6.7
+      version: 10.6.7
     '@storybook/addon-vitest':
-      specifier: 10.6.6
-      version: 10.6.6
+      specifier: 10.6.7
+      version: 10.6.7
     '@storybook/nextjs-vite':
-      specifier: 10.6.6
-      version: 10.6.6
+      specifier: 10.6.7
+      version: 10.6.7
     '@storybook/react-vite':
-      specifier: 10.6.6
-      version: 10.6.6
+      specifier: 10.6.7
+      version: 10.6.7
     eslint-plugin-storybook:
-      specifier: 10.6.6
-      version: 10.6.6
+      specifier: 10.6.7
+      version: 10.6.7
     storybook:
-      specifier: 10.6.6
-      version: 10.6.6
+      specifier: 10.6.7
+      version: 10.6.7
     storybook-addon-pseudo-states:
-      specifier: 10.6.6
-      version: 10.6.6
+      specifier: 10.6.7
+      version: 10.6.7
   tanstack-query:
     '@tanstack/query-devtools':
       specifier: ^5.105.2
@@ -643,105 +643,105 @@ catalogs:
       version: 5.107.1
   tiptap:
     '@tiptap/core':
-      specifier: ^3.32.1
-      version: 3.32.2
+      specifier: ^3.33.1
+      version: 3.34.0
     '@tiptap/extension-bold':
-      specifier: ^3.32.1
-      version: 3.32.2
+      specifier: ^3.33.1
+      version: 3.34.0
     '@tiptap/extension-bullet-list':
-      specifier: ^3.32.1
-      version: 3.32.2
+      specifier: ^3.33.1
+      version: 3.34.0
     '@tiptap/extension-character-count':
-      specifier: ^3.32.1
-      version: 3.32.2
+      specifier: ^3.33.1
+      version: 3.34.0
     '@tiptap/extension-document':
-      specifier: ^3.32.1
-      version: 3.32.2
+      specifier: ^3.33.1
+      version: 3.34.0
     '@tiptap/extension-dropcursor':
-      specifier: ^3.32.1
-      version: 3.32.2
+      specifier: ^3.33.1
+      version: 3.34.0
     '@tiptap/extension-gapcursor':
-      specifier: ^3.32.1
-      version: 3.32.2
+      specifier: ^3.33.1
+      version: 3.34.0
     '@tiptap/extension-hard-break':
-      specifier: ^3.32.1
-      version: 3.32.2
+      specifier: ^3.33.1
+      version: 3.34.0
     '@tiptap/extension-heading':
-      specifier: ^3.32.1
-      version: 3.32.2
+      specifier: ^3.33.1
+      version: 3.34.0
     '@tiptap/extension-history':
-      specifier: ^3.32.1
-      version: 3.32.2
+      specifier: ^3.33.1
+      version: 3.34.0
     '@tiptap/extension-horizontal-rule':
-      specifier: ^3.32.1
-      version: 3.32.2
+      specifier: ^3.33.1
+      version: 3.34.0
     '@tiptap/extension-image':
-      specifier: ^3.32.1
-      version: 3.32.2
+      specifier: ^3.33.1
+      version: 3.34.0
     '@tiptap/extension-italic':
-      specifier: ^3.32.1
-      version: 3.32.2
+      specifier: ^3.33.1
+      version: 3.34.0
     '@tiptap/extension-link':
-      specifier: ^3.32.1
-      version: 3.32.2
+      specifier: ^3.33.1
+      version: 3.34.0
     '@tiptap/extension-list-item':
-      specifier: ^3.32.1
-      version: 3.32.2
+      specifier: ^3.33.1
+      version: 3.34.0
     '@tiptap/extension-ordered-list':
-      specifier: ^3.32.1
-      version: 3.32.2
+      specifier: ^3.33.1
+      version: 3.34.0
     '@tiptap/extension-paragraph':
-      specifier: ^3.32.1
-      version: 3.32.2
+      specifier: ^3.33.1
+      version: 3.34.0
     '@tiptap/extension-strike':
-      specifier: ^3.32.1
-      version: 3.32.2
+      specifier: ^3.33.1
+      version: 3.34.0
     '@tiptap/extension-subscript':
-      specifier: ^3.32.1
-      version: 3.32.2
+      specifier: ^3.33.1
+      version: 3.34.0
     '@tiptap/extension-superscript':
-      specifier: ^3.32.1
-      version: 3.32.2
+      specifier: ^3.33.1
+      version: 3.34.0
     '@tiptap/extension-table':
-      specifier: ^3.32.1
-      version: 3.32.2
+      specifier: ^3.33.1
+      version: 3.34.0
     '@tiptap/extension-table-cell':
-      specifier: ^3.32.1
-      version: 3.32.2
+      specifier: ^3.33.1
+      version: 3.34.0
     '@tiptap/extension-table-header':
-      specifier: ^3.32.1
-      version: 3.32.2
+      specifier: ^3.33.1
+      version: 3.34.0
     '@tiptap/extension-table-row':
-      specifier: ^3.32.1
-      version: 3.32.2
+      specifier: ^3.33.1
+      version: 3.34.0
     '@tiptap/extension-text':
-      specifier: ^3.32.1
-      version: 3.32.2
+      specifier: ^3.33.1
+      version: 3.34.0
     '@tiptap/extension-underline':
-      specifier: ^3.32.1
-      version: 3.32.2
+      specifier: ^3.33.1
+      version: 3.34.0
     '@tiptap/html':
-      specifier: ^3.32.1
-      version: 3.32.2
+      specifier: ^3.33.1
+      version: 3.34.0
     '@tiptap/pm':
-      specifier: ^3.32.1
-      version: 3.32.2
+      specifier: ^3.33.1
+      version: 3.34.0
     '@tiptap/react':
-      specifier: ^3.32.1
-      version: 3.32.2
+      specifier: ^3.33.1
+      version: 3.34.0
   trpc:
     '@trpc/client':
-      specifier: ^11.22.1
-      version: 11.24.0
+      specifier: ^11.28.0
+      version: 11.28.3
     '@trpc/next':
-      specifier: ^11.22.1
-      version: 11.24.0
+      specifier: ^11.28.0
+      version: 11.28.3
     '@trpc/react-query':
-      specifier: ^11.22.1
-      version: 11.24.0
+      specifier: ^11.28.0
+      version: 11.28.3
     '@trpc/server':
-      specifier: ^11.22.1
-      version: 11.24.0
+      specifier: ^11.28.0
+      version: 11.28.3
   vitest:
     '@vitejs/plugin-react':
       specifier: ^6.2.1
@@ -903,94 +903,94 @@ importers:
         version: 9.3.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@tiptap/extension-bold':
         specifier: catalog:tiptap
-        version: 3.32.2(@tiptap/core@3.32.2(@tiptap/pm@3.32.2))
+        version: 3.34.0(@tiptap/core@3.34.0(@tiptap/pm@3.34.0))
       '@tiptap/extension-bullet-list':
         specifier: catalog:tiptap
-        version: 3.32.2(@tiptap/extension-list@3.32.2(@tiptap/core@3.32.2(@tiptap/pm@3.32.2))(@tiptap/pm@3.32.2))
+        version: 3.34.0(@tiptap/extension-list@3.34.0(@tiptap/core@3.34.0(@tiptap/pm@3.34.0))(@tiptap/pm@3.34.0))
       '@tiptap/extension-character-count':
         specifier: catalog:tiptap
-        version: 3.32.2(@tiptap/extensions@3.32.2(@tiptap/core@3.32.2(@tiptap/pm@3.32.2))(@tiptap/pm@3.32.2))
+        version: 3.34.0(@tiptap/extensions@3.34.0(@tiptap/core@3.34.0(@tiptap/pm@3.34.0))(@tiptap/pm@3.34.0))
       '@tiptap/extension-document':
         specifier: catalog:tiptap
-        version: 3.32.2(@tiptap/core@3.32.2(@tiptap/pm@3.32.2))
+        version: 3.34.0(@tiptap/core@3.34.0(@tiptap/pm@3.34.0))
       '@tiptap/extension-dropcursor':
         specifier: catalog:tiptap
-        version: 3.32.2(@tiptap/extensions@3.32.2(@tiptap/core@3.32.2(@tiptap/pm@3.32.2))(@tiptap/pm@3.32.2))
+        version: 3.34.0(@tiptap/extensions@3.34.0(@tiptap/core@3.34.0(@tiptap/pm@3.34.0))(@tiptap/pm@3.34.0))
       '@tiptap/extension-gapcursor':
         specifier: catalog:tiptap
-        version: 3.32.2(@tiptap/extensions@3.32.2(@tiptap/core@3.32.2(@tiptap/pm@3.32.2))(@tiptap/pm@3.32.2))
+        version: 3.34.0(@tiptap/extensions@3.34.0(@tiptap/core@3.34.0(@tiptap/pm@3.34.0))(@tiptap/pm@3.34.0))
       '@tiptap/extension-hard-break':
         specifier: catalog:tiptap
-        version: 3.32.2(@tiptap/core@3.32.2(@tiptap/pm@3.32.2))
+        version: 3.34.0(@tiptap/core@3.34.0(@tiptap/pm@3.34.0))
       '@tiptap/extension-heading':
         specifier: catalog:tiptap
-        version: 3.32.2(@tiptap/core@3.32.2(@tiptap/pm@3.32.2))
+        version: 3.34.0(@tiptap/core@3.34.0(@tiptap/pm@3.34.0))
       '@tiptap/extension-history':
         specifier: catalog:tiptap
-        version: 3.32.2(@tiptap/extensions@3.32.2(@tiptap/core@3.32.2(@tiptap/pm@3.32.2))(@tiptap/pm@3.32.2))
+        version: 3.34.0(@tiptap/extensions@3.34.0(@tiptap/core@3.34.0(@tiptap/pm@3.34.0))(@tiptap/pm@3.34.0))
       '@tiptap/extension-horizontal-rule':
         specifier: catalog:tiptap
-        version: 3.32.2(@tiptap/core@3.32.2(@tiptap/pm@3.32.2))(@tiptap/pm@3.32.2)
+        version: 3.34.0(@tiptap/core@3.34.0(@tiptap/pm@3.34.0))(@tiptap/pm@3.34.0)
       '@tiptap/extension-italic':
         specifier: catalog:tiptap
-        version: 3.32.2(@tiptap/core@3.32.2(@tiptap/pm@3.32.2))
+        version: 3.34.0(@tiptap/core@3.34.0(@tiptap/pm@3.34.0))
       '@tiptap/extension-link':
         specifier: catalog:tiptap
-        version: 3.32.2(@tiptap/core@3.32.2(@tiptap/pm@3.32.2))(@tiptap/pm@3.32.2)
+        version: 3.34.0(@tiptap/core@3.34.0(@tiptap/pm@3.34.0))(@tiptap/pm@3.34.0)
       '@tiptap/extension-list-item':
         specifier: catalog:tiptap
-        version: 3.32.2(@tiptap/extension-list@3.32.2(@tiptap/core@3.32.2(@tiptap/pm@3.32.2))(@tiptap/pm@3.32.2))
+        version: 3.34.0(@tiptap/extension-list@3.34.0(@tiptap/core@3.34.0(@tiptap/pm@3.34.0))(@tiptap/pm@3.34.0))
       '@tiptap/extension-ordered-list':
         specifier: catalog:tiptap
-        version: 3.32.2(@tiptap/extension-list@3.32.2(@tiptap/core@3.32.2(@tiptap/pm@3.32.2))(@tiptap/pm@3.32.2))
+        version: 3.34.0(@tiptap/extension-list@3.34.0(@tiptap/core@3.34.0(@tiptap/pm@3.34.0))(@tiptap/pm@3.34.0))
       '@tiptap/extension-paragraph':
         specifier: catalog:tiptap
-        version: 3.32.2(@tiptap/core@3.32.2(@tiptap/pm@3.32.2))
+        version: 3.34.0(@tiptap/core@3.34.0(@tiptap/pm@3.34.0))
       '@tiptap/extension-strike':
         specifier: catalog:tiptap
-        version: 3.32.2(@tiptap/core@3.32.2(@tiptap/pm@3.32.2))
+        version: 3.34.0(@tiptap/core@3.34.0(@tiptap/pm@3.34.0))
       '@tiptap/extension-subscript':
         specifier: catalog:tiptap
-        version: 3.32.2(@tiptap/core@3.32.2(@tiptap/pm@3.32.2))(@tiptap/pm@3.32.2)
+        version: 3.34.0(@tiptap/core@3.34.0(@tiptap/pm@3.34.0))(@tiptap/pm@3.34.0)
       '@tiptap/extension-superscript':
         specifier: catalog:tiptap
-        version: 3.32.2(@tiptap/core@3.32.2(@tiptap/pm@3.32.2))(@tiptap/pm@3.32.2)
+        version: 3.34.0(@tiptap/core@3.34.0(@tiptap/pm@3.34.0))(@tiptap/pm@3.34.0)
       '@tiptap/extension-table':
         specifier: catalog:tiptap
-        version: 3.32.2(@tiptap/core@3.32.2(@tiptap/pm@3.32.2))(@tiptap/pm@3.32.2)
+        version: 3.34.0(@tiptap/core@3.34.0(@tiptap/pm@3.34.0))(@tiptap/pm@3.34.0)
       '@tiptap/extension-table-cell':
         specifier: catalog:tiptap
-        version: 3.32.2(@tiptap/extension-table@3.32.2(@tiptap/core@3.32.2(@tiptap/pm@3.32.2))(@tiptap/pm@3.32.2))
+        version: 3.34.0(@tiptap/extension-table@3.34.0(@tiptap/core@3.34.0(@tiptap/pm@3.34.0))(@tiptap/pm@3.34.0))
       '@tiptap/extension-table-header':
         specifier: catalog:tiptap
-        version: 3.32.2(@tiptap/extension-table@3.32.2(@tiptap/core@3.32.2(@tiptap/pm@3.32.2))(@tiptap/pm@3.32.2))
+        version: 3.34.0(@tiptap/extension-table@3.34.0(@tiptap/core@3.34.0(@tiptap/pm@3.34.0))(@tiptap/pm@3.34.0))
       '@tiptap/extension-table-row':
         specifier: catalog:tiptap
-        version: 3.32.2(@tiptap/extension-table@3.32.2(@tiptap/core@3.32.2(@tiptap/pm@3.32.2))(@tiptap/pm@3.32.2))
+        version: 3.34.0(@tiptap/extension-table@3.34.0(@tiptap/core@3.34.0(@tiptap/pm@3.34.0))(@tiptap/pm@3.34.0))
       '@tiptap/extension-text':
         specifier: catalog:tiptap
-        version: 3.32.2(@tiptap/core@3.32.2(@tiptap/pm@3.32.2))
+        version: 3.34.0(@tiptap/core@3.34.0(@tiptap/pm@3.34.0))
       '@tiptap/extension-underline':
         specifier: catalog:tiptap
-        version: 3.32.2(@tiptap/core@3.32.2(@tiptap/pm@3.32.2))
+        version: 3.34.0(@tiptap/core@3.34.0(@tiptap/pm@3.34.0))
       '@tiptap/pm':
         specifier: catalog:tiptap
-        version: 3.32.2
+        version: 3.34.0
       '@tiptap/react':
         specifier: catalog:tiptap
-        version: 3.32.2(@floating-ui/dom@1.8.0)(@tiptap/core@3.32.2(@tiptap/pm@3.32.2))(@tiptap/pm@3.32.2)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 3.34.0(@floating-ui/dom@1.8.0)(@tiptap/core@3.34.0(@tiptap/pm@3.34.0))(@tiptap/pm@3.34.0)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@trpc/client':
         specifier: catalog:trpc
-        version: 11.24.0(@trpc/server@11.24.0(@types/ws@8.18.1)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.65.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(typescript@6.0.3))(typescript@6.0.3)
+        version: 11.28.3(@trpc/server@11.28.3(@types/ws@8.18.1)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.65.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(typescript@6.0.3))(typescript@6.0.3)
       '@trpc/next':
         specifier: catalog:trpc
-        version: 11.24.0(493479e641b6773febfca71a6c151688)
+        version: 11.28.3(0c6764dc59e88497c2e5f82a8f65aef0)
       '@trpc/react-query':
         specifier: catalog:trpc
-        version: 11.24.0(@tanstack/react-query@5.107.1(@types/react@18.3.31)(react@18.3.1))(@trpc/client@11.24.0(@trpc/server@11.24.0(@types/ws@8.18.1)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.65.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(typescript@6.0.3))(typescript@6.0.3))(@trpc/server@11.24.0(@types/ws@8.18.1)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.65.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(typescript@6.0.3))(react@18.3.1)(typescript@6.0.3)
+        version: 11.28.3(@tanstack/react-query@5.107.1(@types/react@18.3.31)(react@18.3.1))(@trpc/client@11.28.3(@trpc/server@11.28.3(@types/ws@8.18.1)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.65.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(typescript@6.0.3))(typescript@6.0.3))(@trpc/server@11.28.3(@types/ws@8.18.1)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.65.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(typescript@6.0.3))(react@18.3.1)(typescript@6.0.3)
       '@trpc/server':
         specifier: catalog:trpc
-        version: 11.24.0(@types/ws@8.18.1)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.65.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(typescript@6.0.3)
+        version: 11.28.3(@types/ws@8.18.1)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.65.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(typescript@6.0.3)
       '@uidotdev/usehooks':
         specifier: 'catalog:'
         version: 2.4.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -1110,7 +1110,7 @@ importers:
         version: 2.2.6
       tiptap-text-direction:
         specifier: 'catalog:'
-        version: 0.5.0(@tiptap/core@3.32.2(@tiptap/pm@3.32.2))(@tiptap/pm@3.32.2)
+        version: 0.5.0(@tiptap/core@3.34.0(@tiptap/pm@3.34.0))(@tiptap/pm@3.34.0)
       transliteration:
         specifier: 'catalog:'
         version: 2.7.0
@@ -1135,7 +1135,7 @@ importers:
         version: 6.11.0(@types/node@26.6.6)(supports-color@8.1.1)
       '@argos-ci/storybook':
         specifier: catalog:argos
-        version: 6.4.4(@types/node@26.6.6)(@vitest/browser-playwright@5.1.0)(@vitest/browser@5.1.0(msw@3.0.3(@types/node@26.6.6)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3)))(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3))(vitest@5.1.0))(playwright@1.65.1)(storybook@10.6.6(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(supports-color@8.1.1)(vitest@5.1.0)
+        version: 6.4.4(@types/node@26.6.6)(@vitest/browser-playwright@5.1.0)(@vitest/browser@5.1.0(msw@3.0.3(@types/node@26.6.6)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3)))(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3))(vitest@5.1.0))(playwright@1.65.1)(storybook@10.6.7(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(supports-color@8.1.1)(vitest@5.1.0)
       '@babel/plugin-transform-class-properties':
         specifier: catalog:babel
         version: 8.0.1(@babel/core@8.0.1)
@@ -1168,22 +1168,22 @@ importers:
         version: 1.65.1
       '@storybook/addon-a11y':
         specifier: catalog:storybook
-        version: 10.6.6(storybook@10.6.6(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
+        version: 10.6.7(storybook@10.6.7(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
       '@storybook/addon-docs':
         specifier: catalog:storybook
-        version: 10.6.6(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(storybook@10.6.6(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
+        version: 10.6.7(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(storybook@10.6.7(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
       '@storybook/addon-links':
         specifier: catalog:storybook
-        version: 10.6.6(@types/react@18.3.31)(react@18.3.1)(storybook@10.6.6(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
+        version: 10.6.7(@types/react@18.3.31)(react@18.3.1)(storybook@10.6.7(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
       '@storybook/addon-themes':
         specifier: catalog:storybook
-        version: 10.6.6(storybook@10.6.6(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
+        version: 10.6.7(storybook@10.6.7(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
       '@storybook/addon-vitest':
         specifier: catalog:storybook
-        version: 10.6.6(@vitest/browser-playwright@5.1.0)(@vitest/browser@5.1.0(msw@3.0.3(@types/node@26.6.6)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3)))(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3))(vitest@5.1.0))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@10.6.6(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(vitest@5.1.0)
+        version: 10.6.7(@vitest/browser-playwright@5.1.0)(@vitest/browser@5.1.0(msw@3.0.3(@types/node@26.6.6)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3)))(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3))(vitest@5.1.0))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@10.6.7(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(vitest@5.1.0)
       '@storybook/nextjs-vite':
         specifier: catalog:storybook
-        version: 10.6.6(@babel/core@8.0.1)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(babel-plugin-macros@3.1.0)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.65.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(rollup@4.60.1)(storybook@10.6.6(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3))
+        version: 10.6.7(@babel/core@8.0.1)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(babel-plugin-macros@3.1.0)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.65.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(rollup@4.60.1)(storybook@10.6.7(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3))
       '@testing-library/react':
         specifier: 'catalog:'
         version: 16.3.3(@testing-library/dom@10.4.1)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -1237,7 +1237,7 @@ importers:
         version: 11.1.0
       eslint-plugin-storybook:
         specifier: catalog:storybook
-        version: 10.6.6(eslint@9.39.4(jiti@1.21.7)(supports-color@8.1.1))(supports-color@8.1.1)(typescript@6.0.3)
+        version: 10.6.7(eslint@9.39.4(jiti@1.21.7)(supports-color@8.1.1))(supports-color@8.1.1)(typescript@6.0.3)
       mockdate:
         specifier: 'catalog:'
         version: 3.0.5
@@ -1246,10 +1246,10 @@ importers:
         version: 3.0.3(@types/node@26.6.6)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3))
       msw-storybook-addon:
         specifier: 'catalog:'
-        version: 3.0.3(msw@3.0.3(@types/node@26.6.6)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3)))(storybook@10.6.6(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
+        version: 3.0.3(msw@3.0.3(@types/node@26.6.6)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3)))(storybook@10.6.7(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
       msw-trpc:
         specifier: 'catalog:'
-        version: 2.0.1(@trpc/server@11.24.0(@types/ws@8.18.1)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.65.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(typescript@6.0.3))(msw@3.0.3(@types/node@26.6.6)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3)))(typescript@6.0.3)
+        version: 2.0.1(@trpc/server@11.28.3(@types/ws@8.18.1)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.65.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(typescript@6.0.3))(msw@3.0.3(@types/node@26.6.6)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3)))(typescript@6.0.3)
       node-mocks-http:
         specifier: 'catalog:'
         version: 1.18.1(@types/node@26.6.6)
@@ -1273,7 +1273,7 @@ importers:
         version: 3.0.13(supports-color@8.1.1)
       storybook:
         specifier: catalog:storybook
-        version: 10.6.6(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 10.6.7(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       tailwindcss:
         specifier: 'catalog:'
         version: 3.4.19(tsx@4.23.15)(yaml@2.8.3)
@@ -1480,7 +1480,7 @@ importers:
         version: 6.11.0(@types/node@26.5.1)(supports-color@8.1.1)
       '@argos-ci/storybook':
         specifier: catalog:argos
-        version: 6.4.4(@types/node@26.5.1)(@vitest/browser-playwright@5.1.0)(@vitest/browser@5.1.0(msw@3.0.3(@types/node@26.5.1)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3)))(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3))(vitest@5.1.0))(playwright@1.65.1)(storybook@10.6.6(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(supports-color@8.1.1)(vitest@5.1.0)
+        version: 6.4.4(@types/node@26.5.1)(@vitest/browser-playwright@5.1.0)(@vitest/browser@5.1.0(msw@3.0.3(@types/node@26.5.1)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3)))(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3))(vitest@5.1.0))(playwright@1.65.1)(storybook@10.6.7(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(supports-color@8.1.1)(vitest@5.1.0)
       '@isomer/oxlint-config':
         specifier: workspace:*
         version: link:../../tooling/oxlint
@@ -1492,22 +1492,22 @@ importers:
         version: link:../../tooling/typescript
       '@storybook/addon-a11y':
         specifier: catalog:storybook
-        version: 10.6.6(storybook@10.6.6(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
+        version: 10.6.7(storybook@10.6.7(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
       '@storybook/addon-docs':
         specifier: catalog:storybook
-        version: 10.6.6(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(storybook@10.6.6(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
+        version: 10.6.7(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(storybook@10.6.7(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
       '@storybook/addon-links':
         specifier: catalog:storybook
-        version: 10.6.6(@types/react@18.3.31)(react@18.3.1)(storybook@10.6.6(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
+        version: 10.6.7(@types/react@18.3.31)(react@18.3.1)(storybook@10.6.7(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
       '@storybook/addon-themes':
         specifier: catalog:storybook
-        version: 10.6.6(storybook@10.6.6(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
+        version: 10.6.7(storybook@10.6.7(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
       '@storybook/addon-vitest':
         specifier: catalog:storybook
-        version: 10.6.6(@vitest/browser-playwright@5.1.0)(@vitest/browser@5.1.0(msw@3.0.3(@types/node@26.5.1)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3)))(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3))(vitest@5.1.0))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@10.6.6(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(vitest@5.1.0)
+        version: 10.6.7(@vitest/browser-playwright@5.1.0)(@vitest/browser@5.1.0(msw@3.0.3(@types/node@26.5.1)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3)))(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3))(vitest@5.1.0))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@10.6.7(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(vitest@5.1.0)
       '@storybook/react-vite':
         specifier: catalog:storybook
-        version: 10.6.6(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(rollup@4.60.1)(storybook@10.6.6(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3))
+        version: 10.6.7(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(rollup@4.60.1)(storybook@10.6.7(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3))
       '@testing-library/react':
         specifier: 'catalog:'
         version: 16.3.3(@testing-library/dom@10.4.1)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -1540,7 +1540,7 @@ importers:
         version: 4.1.4(browserslist@4.29.5)
       eslint-plugin-storybook:
         specifier: catalog:storybook
-        version: 10.6.6(eslint@9.39.4(jiti@1.21.7)(supports-color@8.1.1))(supports-color@8.1.1)(typescript@6.0.3)
+        version: 10.6.7(eslint@9.39.4(jiti@1.21.7)(supports-color@8.1.1))(supports-color@8.1.1)(typescript@6.0.3)
       mockdate:
         specifier: 'catalog:'
         version: 3.0.5
@@ -1549,7 +1549,7 @@ importers:
         version: 3.0.3(@types/node@26.5.1)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3))
       msw-storybook-addon:
         specifier: 'catalog:'
-        version: 3.0.3(msw@3.0.3(@types/node@26.5.1)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3)))(storybook@10.6.6(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
+        version: 3.0.3(msw@3.0.3(@types/node@26.5.1)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3)))(storybook@10.6.7(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
       npm-run-all2:
         specifier: 'catalog:'
         version: 9.0.4
@@ -1573,10 +1573,10 @@ importers:
         version: 6.1.3
       storybook:
         specifier: catalog:storybook
-        version: 10.6.6(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 10.6.7(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       storybook-addon-pseudo-states:
         specifier: catalog:storybook
-        version: 10.6.6(storybook@10.6.6(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
+        version: 10.6.7(storybook@10.6.7(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
       tailwindcss:
         specifier: 'catalog:'
         version: 3.4.19(tsx@4.23.13)(yaml@2.8.3)
@@ -1960,82 +1960,82 @@ importers:
         version: 22.0.1
       '@tiptap/core':
         specifier: catalog:tiptap
-        version: 3.32.2(@tiptap/pm@3.32.2)
+        version: 3.34.0(@tiptap/pm@3.34.0)
       '@tiptap/extension-bold':
         specifier: catalog:tiptap
-        version: 3.32.2(@tiptap/core@3.32.2(@tiptap/pm@3.32.2))
+        version: 3.34.0(@tiptap/core@3.34.0(@tiptap/pm@3.34.0))
       '@tiptap/extension-bullet-list':
         specifier: catalog:tiptap
-        version: 3.32.2(@tiptap/extension-list@3.32.2(@tiptap/core@3.32.2(@tiptap/pm@3.32.2))(@tiptap/pm@3.32.2))
+        version: 3.34.0(@tiptap/extension-list@3.34.0(@tiptap/core@3.34.0(@tiptap/pm@3.34.0))(@tiptap/pm@3.34.0))
       '@tiptap/extension-document':
         specifier: catalog:tiptap
-        version: 3.32.2(@tiptap/core@3.32.2(@tiptap/pm@3.32.2))
+        version: 3.34.0(@tiptap/core@3.34.0(@tiptap/pm@3.34.0))
       '@tiptap/extension-dropcursor':
         specifier: catalog:tiptap
-        version: 3.32.2(@tiptap/extensions@3.32.2(@tiptap/core@3.32.2(@tiptap/pm@3.32.2))(@tiptap/pm@3.32.2))
+        version: 3.34.0(@tiptap/extensions@3.34.0(@tiptap/core@3.34.0(@tiptap/pm@3.34.0))(@tiptap/pm@3.34.0))
       '@tiptap/extension-gapcursor':
         specifier: catalog:tiptap
-        version: 3.32.2(@tiptap/extensions@3.32.2(@tiptap/core@3.32.2(@tiptap/pm@3.32.2))(@tiptap/pm@3.32.2))
+        version: 3.34.0(@tiptap/extensions@3.34.0(@tiptap/core@3.34.0(@tiptap/pm@3.34.0))(@tiptap/pm@3.34.0))
       '@tiptap/extension-hard-break':
         specifier: catalog:tiptap
-        version: 3.32.2(@tiptap/core@3.32.2(@tiptap/pm@3.32.2))
+        version: 3.34.0(@tiptap/core@3.34.0(@tiptap/pm@3.34.0))
       '@tiptap/extension-heading':
         specifier: catalog:tiptap
-        version: 3.32.2(@tiptap/core@3.32.2(@tiptap/pm@3.32.2))
+        version: 3.34.0(@tiptap/core@3.34.0(@tiptap/pm@3.34.0))
       '@tiptap/extension-history':
         specifier: catalog:tiptap
-        version: 3.32.2(@tiptap/extensions@3.32.2(@tiptap/core@3.32.2(@tiptap/pm@3.32.2))(@tiptap/pm@3.32.2))
+        version: 3.34.0(@tiptap/extensions@3.34.0(@tiptap/core@3.34.0(@tiptap/pm@3.34.0))(@tiptap/pm@3.34.0))
       '@tiptap/extension-horizontal-rule':
         specifier: catalog:tiptap
-        version: 3.32.2(@tiptap/core@3.32.2(@tiptap/pm@3.32.2))(@tiptap/pm@3.32.2)
+        version: 3.34.0(@tiptap/core@3.34.0(@tiptap/pm@3.34.0))(@tiptap/pm@3.34.0)
       '@tiptap/extension-image':
         specifier: catalog:tiptap
-        version: 3.32.2(@tiptap/core@3.32.2(@tiptap/pm@3.32.2))
+        version: 3.34.0(@tiptap/core@3.34.0(@tiptap/pm@3.34.0))
       '@tiptap/extension-italic':
         specifier: catalog:tiptap
-        version: 3.32.2(@tiptap/core@3.32.2(@tiptap/pm@3.32.2))
+        version: 3.34.0(@tiptap/core@3.34.0(@tiptap/pm@3.34.0))
       '@tiptap/extension-link':
         specifier: catalog:tiptap
-        version: 3.32.2(@tiptap/core@3.32.2(@tiptap/pm@3.32.2))(@tiptap/pm@3.32.2)
+        version: 3.34.0(@tiptap/core@3.34.0(@tiptap/pm@3.34.0))(@tiptap/pm@3.34.0)
       '@tiptap/extension-list-item':
         specifier: catalog:tiptap
-        version: 3.32.2(@tiptap/extension-list@3.32.2(@tiptap/core@3.32.2(@tiptap/pm@3.32.2))(@tiptap/pm@3.32.2))
+        version: 3.34.0(@tiptap/extension-list@3.34.0(@tiptap/core@3.34.0(@tiptap/pm@3.34.0))(@tiptap/pm@3.34.0))
       '@tiptap/extension-ordered-list':
         specifier: catalog:tiptap
-        version: 3.32.2(@tiptap/extension-list@3.32.2(@tiptap/core@3.32.2(@tiptap/pm@3.32.2))(@tiptap/pm@3.32.2))
+        version: 3.34.0(@tiptap/extension-list@3.34.0(@tiptap/core@3.34.0(@tiptap/pm@3.34.0))(@tiptap/pm@3.34.0))
       '@tiptap/extension-paragraph':
         specifier: catalog:tiptap
-        version: 3.32.2(@tiptap/core@3.32.2(@tiptap/pm@3.32.2))
+        version: 3.34.0(@tiptap/core@3.34.0(@tiptap/pm@3.34.0))
       '@tiptap/extension-strike':
         specifier: catalog:tiptap
-        version: 3.32.2(@tiptap/core@3.32.2(@tiptap/pm@3.32.2))
+        version: 3.34.0(@tiptap/core@3.34.0(@tiptap/pm@3.34.0))
       '@tiptap/extension-subscript':
         specifier: catalog:tiptap
-        version: 3.32.2(@tiptap/core@3.32.2(@tiptap/pm@3.32.2))(@tiptap/pm@3.32.2)
+        version: 3.34.0(@tiptap/core@3.34.0(@tiptap/pm@3.34.0))(@tiptap/pm@3.34.0)
       '@tiptap/extension-superscript':
         specifier: catalog:tiptap
-        version: 3.32.2(@tiptap/core@3.32.2(@tiptap/pm@3.32.2))(@tiptap/pm@3.32.2)
+        version: 3.34.0(@tiptap/core@3.34.0(@tiptap/pm@3.34.0))(@tiptap/pm@3.34.0)
       '@tiptap/extension-table':
         specifier: catalog:tiptap
-        version: 3.32.2(@tiptap/core@3.32.2(@tiptap/pm@3.32.2))(@tiptap/pm@3.32.2)
+        version: 3.34.0(@tiptap/core@3.34.0(@tiptap/pm@3.34.0))(@tiptap/pm@3.34.0)
       '@tiptap/extension-table-cell':
         specifier: catalog:tiptap
-        version: 3.32.2(@tiptap/extension-table@3.32.2(@tiptap/core@3.32.2(@tiptap/pm@3.32.2))(@tiptap/pm@3.32.2))
+        version: 3.34.0(@tiptap/extension-table@3.34.0(@tiptap/core@3.34.0(@tiptap/pm@3.34.0))(@tiptap/pm@3.34.0))
       '@tiptap/extension-table-header':
         specifier: catalog:tiptap
-        version: 3.32.2(@tiptap/extension-table@3.32.2(@tiptap/core@3.32.2(@tiptap/pm@3.32.2))(@tiptap/pm@3.32.2))
+        version: 3.34.0(@tiptap/extension-table@3.34.0(@tiptap/core@3.34.0(@tiptap/pm@3.34.0))(@tiptap/pm@3.34.0))
       '@tiptap/extension-table-row':
         specifier: catalog:tiptap
-        version: 3.32.2(@tiptap/extension-table@3.32.2(@tiptap/core@3.32.2(@tiptap/pm@3.32.2))(@tiptap/pm@3.32.2))
+        version: 3.34.0(@tiptap/extension-table@3.34.0(@tiptap/core@3.34.0(@tiptap/pm@3.34.0))(@tiptap/pm@3.34.0))
       '@tiptap/extension-text':
         specifier: catalog:tiptap
-        version: 3.32.2(@tiptap/core@3.32.2(@tiptap/pm@3.32.2))
+        version: 3.34.0(@tiptap/core@3.34.0(@tiptap/pm@3.34.0))
       '@tiptap/extension-underline':
         specifier: catalog:tiptap
-        version: 3.32.2(@tiptap/core@3.32.2(@tiptap/pm@3.32.2))
+        version: 3.34.0(@tiptap/core@3.34.0(@tiptap/pm@3.34.0))
       '@tiptap/html':
         specifier: catalog:tiptap
-        version: 3.32.2(@tiptap/core@3.32.2(@tiptap/pm@3.32.2))(@tiptap/pm@3.32.2)(happy-dom@21.0.4)
+        version: 3.34.0(@tiptap/core@3.34.0(@tiptap/pm@3.34.0))(@tiptap/pm@3.34.0)(happy-dom@21.0.4)
       cheerio:
         specifier: 'catalog:'
         version: 1.2.0
@@ -2130,7 +2130,7 @@ importers:
         version: 7.0.0-dev.20260707.2
       storybook:
         specifier: catalog:storybook
-        version: 10.6.6(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 10.6.7(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       typescript:
         specifier: 'catalog:'
         version: 6.0.3
@@ -6159,43 +6159,43 @@ packages:
   '@standard-schema/utils@0.3.0':
     resolution: {integrity: sha512-e7Mew686owMaPJVNNLs55PUvgz371nKgwsc4vxE49zsODpJEnxgxRo2y/OKrqueavXgZNMDVj3DdHFlaSAeU8g==}
 
-  '@storybook/addon-a11y@10.6.6':
-    resolution: {integrity: sha512-+LdCNVDELDqYWWbWkMX8LH9CXxDXnizfzvyJUVfkdF5CPZFRZu1xpv+jvLBFEumw/sQmizPZUXlw8zbdO1jvEQ==}
+  '@storybook/addon-a11y@10.6.7':
+    resolution: {integrity: sha512-ARd+bjfOYoICe00+svRgFsCVqV7RbN+wgi8yfRhk31kESR7NnTMBGiZD8vWv/r3xqul/Ddr1uR6mUK4lpH7sqw==}
     peerDependencies:
-      storybook: ^10.6.6
+      storybook: ^10.6.7
 
-  '@storybook/addon-docs@10.6.6':
-    resolution: {integrity: sha512-yflMNPrxk+QNuH0dPFgUk+AhVOa+Cz48bKz3/72eFDB8viWS9R0mQVBvKUxTIHOSUyDbaRyQiIeaL/pCvwW2jg==}
+  '@storybook/addon-docs@10.6.7':
+    resolution: {integrity: sha512-R0SxB+sv99/V1H51JFh5CjiN5Ufpuh8Bho7iT8hhl1NMGLk76BBqq9l63XgCp4d+1k9mXz7BVu7zFLWdf+j/Rg==}
     peerDependencies:
       '@types/react': ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
-      storybook: ^10.6.6
+      storybook: ^10.6.7
     peerDependenciesMeta:
       '@types/react':
         optional: true
 
-  '@storybook/addon-links@10.6.6':
-    resolution: {integrity: sha512-WyFPmi01exHGHgqyqbnU2WpSNaJOCLOr0kFR7zBM+DwyFcUmgr8b6CwNpu8Mv+WmYdKMGxX6rlOVF/tDhCpOaA==}
+  '@storybook/addon-links@10.6.7':
+    resolution: {integrity: sha512-0tnawKRBVHxroCHMk8wua/viNy2UJxSNwNIN7GMs6hAAFJzSjUs82rkUTMJjw8st7icjZuVQUoVWvK4Dr4L/eQ==}
     peerDependencies:
       '@types/react': ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
       react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
-      storybook: ^10.6.6
+      storybook: ^10.6.7
     peerDependenciesMeta:
       '@types/react':
         optional: true
       react:
         optional: true
 
-  '@storybook/addon-themes@10.6.6':
-    resolution: {integrity: sha512-R47S85vAHy52esRjPwn4YMqziVhwflMX+8B/DcxShUh1OexlC4DcZ3XRBbzmANz1DTOZAXzOAarjBA9ctmwlPw==}
+  '@storybook/addon-themes@10.6.7':
+    resolution: {integrity: sha512-1nwGqsIm5btynuccrS7ReRY04JwFjc3vV6mZYlT5c0Jdk4cS3qvbo+VoIaXvyVNC2u/HrJ802ytZi40eaq9MqA==}
     peerDependencies:
-      storybook: ^10.6.6
+      storybook: ^10.6.7
 
-  '@storybook/addon-vitest@10.6.6':
-    resolution: {integrity: sha512-wyCJ6922tD/xxcADk0lnKqZ5OiekD59oIyt7iUZM7X/nUOqfoY3AU4kwvvIM+6sd68YUT8QyTmGZAzyiLVduFA==}
+  '@storybook/addon-vitest@10.6.7':
+    resolution: {integrity: sha512-8Pc71Al635pMfYK9mBfzBd87ta1yD7tgyn0IGPtK6HGdRM0IBrMzVW716Z0i4dfedMPma5z77sIzlr+7z4gBMA==}
     peerDependencies:
       '@vitest/browser': ^4.0.0 || ^5.0.0
       '@vitest/browser-playwright': ^4.0.0 || ^5.0.0
-      storybook: ^10.6.6
+      storybook: ^10.6.7
       vitest: ^4.0.0 || ^5.0.0
     peerDependenciesMeta:
       '@vitest/browser':
@@ -6205,10 +6205,10 @@ packages:
       vitest:
         optional: true
 
-  '@storybook/builder-vite@10.6.6':
-    resolution: {integrity: sha512-DIA992qGuPZpTZqupWuhw3upWc6Qphm0tQFfSnCpgr5Nlvhe0C5Mth9eYz7CUpy49szJ6eOgQ2V8ktKtKaXyNA==}
+  '@storybook/builder-vite@10.6.7':
+    resolution: {integrity: sha512-6DI3XP4He/nMMK4vGLl9tkneygr5bJvYx5EwNZMzw15tCosvGuWRREBvWqTHjZdoRa8HJpqosoFm60splBoAew==}
     peerDependencies:
-      storybook: ^10.6.6
+      storybook: ^10.6.7
       vite: ^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0
 
   '@storybook/global@5.0.0':
@@ -6220,15 +6220,15 @@ packages:
       react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
       react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
 
-  '@storybook/nextjs-vite@10.6.6':
-    resolution: {integrity: sha512-3pwoGJO09Wzadw8LS7i7OfUz8HlTwk8ixy6Mk/efSfBFLEHztG/JuzmVB13u0NrMH54YP+4xLmvIkMLfMFmXmw==}
+  '@storybook/nextjs-vite@10.6.7':
+    resolution: {integrity: sha512-cGSLx6hcj8Y6tcVUyd6b8rUsJngrLGft26j11cCrH4xrLLIAtU/i//ps2/i/QKd+SlaK2nhKzwXAwaem0kGuBw==}
     peerDependencies:
       '@types/react': ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
       '@types/react-dom': ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
       next: ^14.1.0 || ^15.0.0 || ^16.0.0
       react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
       react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
-      storybook: ^10.6.6
+      storybook: ^10.6.7
       typescript: '*'
       vite: ^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0
     peerDependenciesMeta:
@@ -6239,40 +6239,40 @@ packages:
       typescript:
         optional: true
 
-  '@storybook/react-dom-shim@10.6.6':
-    resolution: {integrity: sha512-yZNOsGoBvn+ywgf7WR+nHddBpIh/k24IOfAeMte6JA1rMB9defuPyhuMMENEyLfofqNYFnj1D+CB4XppnO3nBA==}
+  '@storybook/react-dom-shim@10.6.7':
+    resolution: {integrity: sha512-h5VsEhWyLI4BsqcFwK/nOwvy5t8Hu3Tt7msUn4smHM0NbqtMlyZmA3LH58Q2plRy41T6lg0BLVjz5S/9s8cTZA==}
     peerDependencies:
       '@types/react': ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
       '@types/react-dom': ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
       react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
       react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
-      storybook: ^10.6.6
+      storybook: ^10.6.7
     peerDependenciesMeta:
       '@types/react':
         optional: true
       '@types/react-dom':
         optional: true
 
-  '@storybook/react-vite@10.6.6':
-    resolution: {integrity: sha512-Km+avRI1fBr4efNKVBQwgfy6xf1jL6ObAT9H1A2N2Lv7TTc+C9n0Il8xqxDc5CX8zJFGW15Wns5qwl/I2YhKjA==}
+  '@storybook/react-vite@10.6.7':
+    resolution: {integrity: sha512-7mpJApW6zy4riLPq7o0he80eQy1GofdqEPWWpCHQDMVuOJAvmuuX656hY5flboZwWC18g/6yWbxrRQx5uf7pDQ==}
     peerDependencies:
       react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
       react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
-      storybook: ^10.6.6
+      storybook: ^10.6.7
       typescript: '>= 4.9.x'
       vite: ^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0
     peerDependenciesMeta:
       typescript:
         optional: true
 
-  '@storybook/react@10.6.6':
-    resolution: {integrity: sha512-m1f2+xOdG3Qo7YD69QPPWvQ5sI0YPoDorLgNxAJFC6ZsR2BKvduS3fNb2g9nXqUcHBR/X6b9s3uRZVHPIAsnsg==}
+  '@storybook/react@10.6.7':
+    resolution: {integrity: sha512-PzQG9vNKRMjk81W1zli6mrsjUkp+05GzEmdpxxpmSvf5I2KrhUjO+FBN0s4wdJTrJRDZwjZzXcR0TkvkBxAB4g==}
     peerDependencies:
       '@types/react': ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
       '@types/react-dom': ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
       react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
       react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
-      storybook: ^10.6.6
+      storybook: ^10.6.7
       typescript: '>= 4.9.x'
     peerDependenciesMeta:
       '@types/react':
@@ -6396,199 +6396,199 @@ packages:
     peerDependencies:
       '@testing-library/dom': '>=7.21.4'
 
-  '@tiptap/core@3.32.2':
-    resolution: {integrity: sha512-EitM8KY3agYfnp/bqhfxcaReVq4CUqVzMqoSIl7xSfYABTGYoTDtVXUdYSGutcCBFjc86BbXjrOlDlqkgC8BsQ==}
+  '@tiptap/core@3.34.0':
+    resolution: {integrity: sha512-PwpE5MAXt586AxIO5bW2RyJ3OUXdPfG5M1M5v/LIMCkDwIgRKegx8uERlABoI6575mWqaH/P6Xm+tequJ5UUnw==}
     peerDependencies:
-      '@tiptap/pm': 3.32.2
+      '@tiptap/pm': 3.34.0
 
-  '@tiptap/extension-bold@3.32.2':
-    resolution: {integrity: sha512-5Q8bScZEZbIBB2tBgnc7Cr6XuH2Nt/6l1HP3FO0wWO7nqXPOcodEbjslePI3v1iag+LNWX16BZ8fDrJr/PbxXA==}
+  '@tiptap/extension-bold@3.34.0':
+    resolution: {integrity: sha512-QvqHpxDe1vEnaOk88O28zsKD+jXTRWOYTBuoosLJzU+fNedC0z3uEXVqUUO4ljwJxj604mLuQBB4aVb+/7ObSg==}
     peerDependencies:
-      '@tiptap/core': 3.32.2
+      '@tiptap/core': 3.34.0
 
-  '@tiptap/extension-bubble-menu@3.32.2':
-    resolution: {integrity: sha512-mwxWtLHiwhtzXpvdjoegH10eIA8CJr5INGAzUSfzRp4v13zH3rDbsoafljwEi+V5JfcSY/bbXf1akOtsny4yXw==}
+  '@tiptap/extension-bubble-menu@3.34.0':
+    resolution: {integrity: sha512-Q6+/RxlaYLsF+hm9MFY//wwVFA4Apfjn2EAnbjaBlaiIs1LtB/s5t5fSjRwCBzadTf9ysMvGh7parpN1hT0tug==}
     peerDependencies:
-      '@tiptap/core': 3.32.2
-      '@tiptap/pm': 3.32.2
+      '@tiptap/core': 3.34.0
+      '@tiptap/pm': 3.34.0
 
-  '@tiptap/extension-bullet-list@3.32.2':
-    resolution: {integrity: sha512-YP7IlC3swrNPlnFHIgVDsDl70geqqWtcAkbuncQEs5FJ9UQg432VwVfwCUW4NsG532p5AqlTTwOKcSLS7p/pqA==}
+  '@tiptap/extension-bullet-list@3.34.0':
+    resolution: {integrity: sha512-3xtzmtIMoqGa3fAcNmRiR1DHTBMiGr167mgt5ksK6a+m38tCl74W+kPf59HknGojbhI/pVM+Unf2htsOdijDNw==}
     peerDependencies:
-      '@tiptap/extension-list': 3.32.2
+      '@tiptap/extension-list': 3.34.0
 
-  '@tiptap/extension-character-count@3.32.2':
-    resolution: {integrity: sha512-00y1l1qeTUFfqRZhTnU4VO+c0Ge0PdiD6eWhNX8okE/zqRwvAg52vC4AZQyI8EYJuvUOotSxCpT1hZVWoMbyaw==}
+  '@tiptap/extension-character-count@3.34.0':
+    resolution: {integrity: sha512-bV0agK3QzB5nXFDEkuq4VNhaNCsPQh7YlBVaFbgxXAzRKo1oYOhBtVErXB8LKIg3vJmnl9pQc3xwTBqCT8JVcA==}
     peerDependencies:
-      '@tiptap/extensions': 3.32.2
+      '@tiptap/extensions': 3.34.0
 
-  '@tiptap/extension-document@3.32.2':
-    resolution: {integrity: sha512-zKWj8jh1kpckfSwle+kqFn0ZnYvkhb7nz89nrNvpnnsQMbbGU2/+bUAfYU3XSEKZr3VBvW176FtlMPD8ggC3Cg==}
+  '@tiptap/extension-document@3.34.0':
+    resolution: {integrity: sha512-Mvs7AUGJkUWI4HfsCNvWQF2f4YdVqR1UHKYnkFdxCifuGPwFBc8bT7rNMT6NBFjRZADbf4HrE/UIQqVQA5Gfyw==}
     peerDependencies:
-      '@tiptap/core': 3.32.2
+      '@tiptap/core': 3.34.0
 
-  '@tiptap/extension-dropcursor@3.32.2':
-    resolution: {integrity: sha512-mE9muf4KSY3s+LCaHG/G957pVHVF2q46i+YkZF3ZG70errQcyZ5YFKnce9PSL1fiL0VLL+2UhMAL2QDM5oDiNA==}
+  '@tiptap/extension-dropcursor@3.34.0':
+    resolution: {integrity: sha512-U7dpUo1pcxWbVi11iJqWqE29GMdQOewwbO7ChD3J0CWqJ3ZPWo0s777dLTQIGr3ImxpZo6lTrWyXqzkNf0rHfw==}
     peerDependencies:
-      '@tiptap/extensions': 3.32.2
+      '@tiptap/extensions': 3.34.0
 
-  '@tiptap/extension-floating-menu@3.32.2':
-    resolution: {integrity: sha512-JPyJQvJlGDxn2v7Mr8Yft2BmcXaHiapVsXBMYiOJh5BeWbnwUYFWNH9h5PU/xTOz2zVEV79Kh4HmpgXZS3FCbg==}
+  '@tiptap/extension-floating-menu@3.34.0':
+    resolution: {integrity: sha512-3D/cYVi4T5SzgMQR9A5cKSSDspVty92/o/+xnON5+buPSD/7+EVVa0XubCoRl/zNqo8jGapZX3JboslQO4Q7ng==}
     peerDependencies:
       '@floating-ui/dom': ^1.0.0
-      '@tiptap/core': 3.32.2
-      '@tiptap/pm': 3.32.2
+      '@tiptap/core': 3.34.0
+      '@tiptap/pm': 3.34.0
 
-  '@tiptap/extension-gapcursor@3.32.2':
-    resolution: {integrity: sha512-7W/iX8h6KQ2HK2SfvzCIgySOEJwTM4owqz1tXVOPiLPvKSvDDa9GQsp60+xNyqDNHuplE8bRsZ5dH1nilgAaAg==}
+  '@tiptap/extension-gapcursor@3.34.0':
+    resolution: {integrity: sha512-qA+1MLOun+q2njlh5Wjw2N6Wyuxaw8bIgU31abwPxhNwg2XNlfBr27O3zKO5GGxDyyc2waEymhSLjat6f97hUA==}
     peerDependencies:
-      '@tiptap/extensions': 3.32.2
+      '@tiptap/extensions': 3.34.0
 
-  '@tiptap/extension-hard-break@3.32.2':
-    resolution: {integrity: sha512-oIdXmya2XBzp3Cw9Nr36agPvr9ZXP3p2fQXaFflxYYBKOG3UUzw38CId7J6K1jYxBf8c1zodbiKFEL7rttJ6fQ==}
+  '@tiptap/extension-hard-break@3.34.0':
+    resolution: {integrity: sha512-um2QJimgSKRpaUBVvAfRWItmcJEJPnv4bVz78FyOrpxvQuVSgV18giF7t9pLCMJPBJ/H+jTSPQ87t+A4Xn4whA==}
     peerDependencies:
-      '@tiptap/core': 3.32.2
+      '@tiptap/core': 3.34.0
 
-  '@tiptap/extension-heading@3.32.2':
-    resolution: {integrity: sha512-AE2WNA3jVnPV/cVyTwTmtmGZqX8LiiGicDHXX4bdvfzv+Aez4sgzdkuFjOGWtnEy43NnXdoI1UX7y/984NM0iA==}
+  '@tiptap/extension-heading@3.34.0':
+    resolution: {integrity: sha512-bm43fyQThYPmpkxHYy8EaGhtRiAXUSfp4Sn0DI6Z/ClvLEKGngogl883wUcqwdWCeViJwz1rte7z3+AqAigrCg==}
     peerDependencies:
-      '@tiptap/core': 3.32.2
+      '@tiptap/core': 3.34.0
 
-  '@tiptap/extension-history@3.32.2':
-    resolution: {integrity: sha512-00fzFWeIipL4l9QbqXYTT02RirS1gpjw2ZDWNzh7bEa+zLItfgsdue/YcGhZ2lhE3A/eGxVNvx1KPSQ+Gto+bQ==}
+  '@tiptap/extension-history@3.34.0':
+    resolution: {integrity: sha512-s6Pnl+RmR1KhLrF8e3u/9CJI4rZXW0ofWrNzUchJrODh6pR8/vEDAiYjPkcX1DszOJF2QFmvkK9HhT/kSs+ZWw==}
     peerDependencies:
-      '@tiptap/extensions': 3.32.2
+      '@tiptap/extensions': 3.34.0
 
-  '@tiptap/extension-horizontal-rule@3.32.2':
-    resolution: {integrity: sha512-Pl0YRS60R339yHrAWGhPT9WHIlD72BO6SGVdj8lBs2OAaYw5RQL/1BGZi+7UvAyc2yJxaRC4XN9X4jdQHDUq9A==}
+  '@tiptap/extension-horizontal-rule@3.34.0':
+    resolution: {integrity: sha512-gtKVypnxEccuoaQqZp7WFmjdlT/pNMGB+MxkTKPLi598Zw6xQaN+zJiqBaIVOmqIqu6l+jF0h1FaRyB69Tw8tA==}
     peerDependencies:
-      '@tiptap/core': 3.32.2
-      '@tiptap/pm': 3.32.2
+      '@tiptap/core': 3.34.0
+      '@tiptap/pm': 3.34.0
 
-  '@tiptap/extension-image@3.32.2':
-    resolution: {integrity: sha512-TRjp//2r1MTE1emLXxEki6+D0bOPYaX41CnM1hrUnp1iw/cS0a4XBXAWXxK/EFEl94zrqWrafkarU9rXpnBHeg==}
+  '@tiptap/extension-image@3.34.0':
+    resolution: {integrity: sha512-IC8PfiTKWnRE9USYM/gI9aZkrGsgJ3IhduQX1JceE5wMp3ce2QKzEkDkFZrjk2EYgCPNCuvIIg5L0nbmogcKsg==}
     peerDependencies:
-      '@tiptap/core': 3.32.2
+      '@tiptap/core': 3.34.0
 
-  '@tiptap/extension-italic@3.32.2':
-    resolution: {integrity: sha512-aqk8OK4Xo59qZni7YSy42/ltQFb2IOmli3YERIq1XPQ4vl5sxoYhL+sFoOPmvbjHvaHZpK6n8vPh1SmAnB570A==}
+  '@tiptap/extension-italic@3.34.0':
+    resolution: {integrity: sha512-X6jRBt0bCwx2TJpNuAxPyfPw3KFyfAKdeW51iwHd44NVmYa5kK7R/RC/l+SUKMhyW8NyNh4Ia9TqeZjhZcgx7Q==}
     peerDependencies:
-      '@tiptap/core': 3.32.2
+      '@tiptap/core': 3.34.0
 
-  '@tiptap/extension-link@3.32.2':
-    resolution: {integrity: sha512-EwQtMXsU1Vc03n+yud7lfaR+RjHTPwFyI/hcEylvJba7iIXDSLA/ey4mnpwt2od8CEx/ZcOutIryORKVR9Py/Q==}
+  '@tiptap/extension-link@3.34.0':
+    resolution: {integrity: sha512-yd/pHa4T/J/3oY4BMB4qHJHkde1z5V6c/2fY7OsG86R8oMrCim3Vo19yCHc7xsZC8RwjgWoCth1lAIdwvHNnLQ==}
     peerDependencies:
-      '@tiptap/core': 3.32.2
-      '@tiptap/pm': 3.32.2
+      '@tiptap/core': 3.34.0
+      '@tiptap/pm': 3.34.0
 
-  '@tiptap/extension-list-item@3.32.2':
-    resolution: {integrity: sha512-vTdPfzZODLVXog/NMs6zcaTOhtlh6ptJidlMg8l1TLhO+YQyEyO/K45aV429D9xTo/BOVazreav/C+hgemSnYg==}
+  '@tiptap/extension-list-item@3.34.0':
+    resolution: {integrity: sha512-NM0e2LjYoyaKMURMR8btBAbQ2KcUNxR2KiC7kTe+0b3GcGvaGArRUbZwgoWVmgHbi/QFSR63GxrU6WCiA+s8kg==}
     peerDependencies:
-      '@tiptap/extension-list': 3.32.2
+      '@tiptap/extension-list': 3.34.0
 
-  '@tiptap/extension-list@3.32.2':
-    resolution: {integrity: sha512-rLYk3GXSswrCakyZwo8VW0+yjnYhLJSBRvzClneIrlPhqQ2r/oDUjeqkpm8lGvwREw1lDSh7wefGhkhTRcQkAw==}
+  '@tiptap/extension-list@3.34.0':
+    resolution: {integrity: sha512-PqYWtHzDQJMaJO0NdG7v2ngprY1YUE8bBKaG1shLBJrPGoo+8XiKrXCGI+mYrh5R/HHR9hkbK8n636txVd8dZw==}
     peerDependencies:
-      '@tiptap/core': 3.32.2
-      '@tiptap/pm': 3.32.2
+      '@tiptap/core': 3.34.0
+      '@tiptap/pm': 3.34.0
 
-  '@tiptap/extension-ordered-list@3.32.2':
-    resolution: {integrity: sha512-WQw2fLtJAxCYftKAk+YNlPDc+OxtXK4nNfXRBwr6oC67SoJtoLe0bo5jS6vF+cEqzHjDaboJi+O3MSNp2L2VQA==}
+  '@tiptap/extension-ordered-list@3.34.0':
+    resolution: {integrity: sha512-wFTfwBDKPowFwOH3VIXr1Oq3HbAa81OxslC9PW3ckEfAn9ckYXN/BWqGch87JLBPvLkW6NFYOwPD0OmwtnUBVA==}
     peerDependencies:
-      '@tiptap/extension-list': 3.32.2
+      '@tiptap/extension-list': 3.34.0
 
-  '@tiptap/extension-paragraph@3.32.2':
-    resolution: {integrity: sha512-3bqC//4GEhUiux3dhW/TJuveBp9ADv4nHlqBdVQa3A+USGbaBvE9YvXxA32wZL0leSRykxEnHbNHZ1J4KjIynQ==}
+  '@tiptap/extension-paragraph@3.34.0':
+    resolution: {integrity: sha512-hGoyXNl1xz7k+h5wNcSRY+UGe2uQE+YLf9iGuFPmzv2ub9XqRmuVc7MiTK6t+tDWdmPag4rH2c8waJ9GgmvzUQ==}
     peerDependencies:
-      '@tiptap/core': 3.32.2
+      '@tiptap/core': 3.34.0
 
-  '@tiptap/extension-strike@3.32.2':
-    resolution: {integrity: sha512-i3d4vCrZySS9g5nGa5W0LS6LPMKxcAnJO6uADTnGVlKK0ewklcWWZbZ9GB/Fpx/IjKAvXWeayjfsNpTae/yVZg==}
+  '@tiptap/extension-strike@3.34.0':
+    resolution: {integrity: sha512-rwzbX83SceQvdx/IcPqU5oF+7a7zB2SJFLAEkLUaXZkycCX//PC0abpaFC3KtUJ4EOCsGNxUNhXoddasgQRSKw==}
     peerDependencies:
-      '@tiptap/core': 3.32.2
+      '@tiptap/core': 3.34.0
 
-  '@tiptap/extension-subscript@3.32.2':
-    resolution: {integrity: sha512-oBShNlo2Xsd11Y9483WrttqQzimNg6f55I4xs0+fSeZoty6wGrJmnZsec4zooR4Smpx3egOruK3ZwAbNVuhL4g==}
+  '@tiptap/extension-subscript@3.34.0':
+    resolution: {integrity: sha512-W1bDZuVhdlN8Ntngx1bhNGB9lzwLfgTqpwmLwlMhEuHoAOltcyuOTJ4sDj5dSjGcCAFluSRVZ0wul5+avFSCkw==}
     peerDependencies:
-      '@tiptap/core': 3.32.2
-      '@tiptap/pm': 3.32.2
+      '@tiptap/core': 3.34.0
+      '@tiptap/pm': 3.34.0
 
-  '@tiptap/extension-superscript@3.32.2':
-    resolution: {integrity: sha512-NcMnoNPb+yJTj/W0BUvo1JUvOtxx4YoPLOi2SDZX2/kUCDbPf+geiaqdAZnZ8CuK1fQkooGXsYWfgRWS7e9SbQ==}
+  '@tiptap/extension-superscript@3.34.0':
+    resolution: {integrity: sha512-y4uMgJhyruAcsdOD81pUDhTqs7L05Y1lI1spH9NzQ9uUAY4KCidVdCUeU3rOfZ6aFt0Ev+7X9IlAGgcHA24OGg==}
     peerDependencies:
-      '@tiptap/core': 3.32.2
-      '@tiptap/pm': 3.32.2
+      '@tiptap/core': 3.34.0
+      '@tiptap/pm': 3.34.0
 
-  '@tiptap/extension-table-cell@3.32.2':
-    resolution: {integrity: sha512-Qu37Px9pkKXyPzjS6RKnXJw6FlR5AltC6d0F3nArAW8xVQLeYIciWwcovEkKaGTcvFNExrlWszMUUmfiuUO/fA==}
+  '@tiptap/extension-table-cell@3.34.0':
+    resolution: {integrity: sha512-Rx80M/BoQKP7zVBxUyCeqGfMqjVMupFk8BrxNx2MnfiC85TwPnEqE1nG+JFBoaaIeW3a7U/Bvm6optIgR6F14A==}
     peerDependencies:
-      '@tiptap/extension-table': 3.32.2
+      '@tiptap/extension-table': 3.34.0
 
-  '@tiptap/extension-table-header@3.32.2':
-    resolution: {integrity: sha512-hpOxkBBaIlXk99Q7MhwzOCUAuWPwDKWbas/iEpQeeBuLk9GhbrpNztF0HpKPEwtlOC5s/fgS4Z8hZGYaeIE6FA==}
+  '@tiptap/extension-table-header@3.34.0':
+    resolution: {integrity: sha512-cFvfqeQkMQxDPR/N0hteh8lPPL3vpwX74YeCW/hMMgFieRc8r5t5Wpu5jGccfqPVwS/ebOIUJSRJqQ3izzu1Mw==}
     peerDependencies:
-      '@tiptap/extension-table': 3.32.2
+      '@tiptap/extension-table': 3.34.0
 
-  '@tiptap/extension-table-row@3.32.2':
-    resolution: {integrity: sha512-rlylXglVNwDUvXgn0bKZW2HuceSu2xb00fGhAlvniUlGEFAn7/6buEjVrJJKKmbc2OXsmfh4+MnwMPpd7rCnIg==}
+  '@tiptap/extension-table-row@3.34.0':
+    resolution: {integrity: sha512-ymi2CB8y8mytSHryElNRoK982hkjiMH6WEdmrwOkAlVxAp1hEZdTZxdQFqR5QBYlH/3MvJtnxzBJ/pQszpZ9ow==}
     peerDependencies:
-      '@tiptap/extension-table': 3.32.2
+      '@tiptap/extension-table': 3.34.0
 
-  '@tiptap/extension-table@3.32.2':
-    resolution: {integrity: sha512-CIFQaKOwdNFPaApymZRNhAnpGpl3Y53V1sqTgQV9FtI4qi6H3mAR032GtasUzo7DpBaOHpNNbMgph0yyVCJF9g==}
+  '@tiptap/extension-table@3.34.0':
+    resolution: {integrity: sha512-pcBsmniI9Bk2lPgbPfi8YgA/K0PjxLbtAJho83Mu/KL3FIZBVP/POBETqXYTznTBCGuyaYZt/HGyIUWZTMOCEA==}
     peerDependencies:
-      '@tiptap/core': 3.32.2
-      '@tiptap/pm': 3.32.2
+      '@tiptap/core': 3.34.0
+      '@tiptap/pm': 3.34.0
 
-  '@tiptap/extension-text@3.32.2':
-    resolution: {integrity: sha512-W6G7UbQ71TyvZvORDdj6u8By8B/Dymy8KoaKGaNHqB82SpM42ZK2TmeFBHI0Lo4wTkZJL3LuI+QthaDvh0USsA==}
+  '@tiptap/extension-text@3.34.0':
+    resolution: {integrity: sha512-90gNJ24bsTrJVxfnnbXXFhsmPGUsk9ZGjwbbJ4OvqIoYX4BjmwuPBHL4NePL7kKwPtTKhcIHsm3C3ofZlVH/rg==}
     peerDependencies:
-      '@tiptap/core': 3.32.2
+      '@tiptap/core': 3.34.0
 
-  '@tiptap/extension-underline@3.32.2':
-    resolution: {integrity: sha512-kY7B5ocKx3JzqIl2kLXGvnLGZRxuYEFzMkpgJ6Vh6/VTTK+JCeOVItYEQGFrAxrodIMmhIrXpi1jF57s6iZswg==}
+  '@tiptap/extension-underline@3.34.0':
+    resolution: {integrity: sha512-4/Di2L96tCUo31SalwjeElOQC64bP2lIqXsruYNndo510fAkYEmzGHhfu4Eh0a4Z94lyA9BYI9zAgJS2yTdq8w==}
     peerDependencies:
-      '@tiptap/core': 3.32.2
+      '@tiptap/core': 3.34.0
 
-  '@tiptap/extensions@3.32.2':
-    resolution: {integrity: sha512-TUE1JedPjYQ/T527f2a4xz+4Xi1a5nIgW8KwC0DjmqbaHirlz0eCNI2nMEN70pu5WPpqgXmki3lCF3LScQxIGw==}
+  '@tiptap/extensions@3.34.0':
+    resolution: {integrity: sha512-VA5kMiyactt71jqyNrdVB8kyGeD35AvjhcL1bKf12+XTTXTtOJkhS2/IQhNYK4ooCW0bpmNiuBnrdFWaeXyUOg==}
     peerDependencies:
-      '@tiptap/core': 3.32.2
-      '@tiptap/pm': 3.32.2
+      '@tiptap/core': 3.34.0
+      '@tiptap/pm': 3.34.0
 
-  '@tiptap/html@3.32.2':
-    resolution: {integrity: sha512-B6IT3maYaTrFxVKagxvhnqmYiUksZklbLj26y2besgU9bWMljkDYs7pLB3ReHhldGHP4jxdnyMsKHcOQvu5AQg==}
+  '@tiptap/html@3.34.0':
+    resolution: {integrity: sha512-YyM4bwif8e++rBCg4YtLA+bMpf95qpkngl/BrhCqbQPcwqchs47nOVRXSwBU84FXMkV9heMa1yrsXW2cXu+AZw==}
     peerDependencies:
-      '@tiptap/core': 3.32.2
-      '@tiptap/pm': 3.32.2
+      '@tiptap/core': 3.34.0
+      '@tiptap/pm': 3.34.0
       happy-dom: ^20.8.9 || ^21.0.4
 
-  '@tiptap/pm@3.32.2':
-    resolution: {integrity: sha512-4cuUbYf55NnYBIvDBK/K1VFVQ4pocKwAZC5TAy4s9dptvazxVHkQVMbiQsyhwfIbM4rxmHWkM/6omaFfTB++/g==}
+  '@tiptap/pm@3.34.0':
+    resolution: {integrity: sha512-/r64RekPVaLw/YUjGes8tH5voz5PYWLW6gahMf+nDZKs6nK4RtoZ4O6YFI+nV8XD1hygseQZPeJkT5OOkI4AdA==}
 
-  '@tiptap/react@3.32.2':
-    resolution: {integrity: sha512-IrraXFTp6S9R+GlCzavMUQel0wK9wafXU3VnaujeC/REi6sYWNuyBe0jICimdbEk1dU32UvlkvPCuIDRPKlzaQ==}
+  '@tiptap/react@3.34.0':
+    resolution: {integrity: sha512-DDqcnPZ0pVeU9E3hvQcK4rA5AWRe7PHDeFAGL6lW/aniYkJ1W2kKimjny3Lz43TxplvbH67f03Wey5l0GrKk8A==}
     peerDependencies:
-      '@tiptap/core': 3.32.2
-      '@tiptap/pm': 3.32.2
+      '@tiptap/core': 3.34.0
+      '@tiptap/pm': 3.34.0
       '@types/react': ^17.0.0 || ^18.0.0 || ^19.0.0
       '@types/react-dom': ^17.0.0 || ^18.0.0 || ^19.0.0
       react: ^17.0.0 || ^18.0.0 || ^19.0.0
       react-dom: ^17.0.0 || ^18.0.0 || ^19.0.0
 
-  '@trpc/client@11.24.0':
-    resolution: {integrity: sha512-D9zoHnF/LGL5SpVnDaSO3b9ymF0jgfnawxtU7HkDjVbcmXeWiAGnJT6fD2UTfEmP63+i57VE49RQqRO0Ig7WJg==}
+  '@trpc/client@11.28.3':
+    resolution: {integrity: sha512-NnMXBOCVzPMELdQH/X26MhI4u9g83nxWy3apc7UX1beevUk6rEYqfOboqCb/rVoVPu3CBVaPb8PB7AG51oEKvQ==}
     peerDependencies:
-      '@trpc/server': 11.24.0
+      '@trpc/server': 11.28.3
       typescript: '>=5.7.2'
 
-  '@trpc/next@11.24.0':
-    resolution: {integrity: sha512-HI+uWkyUod9Wg2PhCxGqcVIO1nt54xkzn7fjpMljhdggD0ighuLe/bGwtIuvfIcqVKsNJ0xgll2kyuv9Yyg0Ew==}
+  '@trpc/next@11.28.3':
+    resolution: {integrity: sha512-cd9Sz5gf4KvZLOcN3a9gqjg0xLBRzs41OVKguwISxP5nzFl7S0+e7wqSdpU/73mrkp/Nc+hHNayVfLZlMRPDqw==}
     peerDependencies:
       '@tanstack/react-query': ^5.59.15
-      '@trpc/client': 11.24.0
-      '@trpc/react-query': 11.24.0
-      '@trpc/server': 11.24.0
+      '@trpc/client': 11.28.3
+      '@trpc/react-query': 11.28.3
+      '@trpc/server': 11.28.3
       next: '*'
       react: '>=16.8.0'
       react-dom: '>=16.8.0'
@@ -6599,17 +6599,17 @@ packages:
       '@trpc/react-query':
         optional: true
 
-  '@trpc/react-query@11.24.0':
-    resolution: {integrity: sha512-Fv0E18+X9t9dN8vs7LezSp+iRGdvHsTCQiUd2aj5XtitPfxuQGiWqb5ovM3fjFzItpIKfdYGZva8r2i1p2PTNA==}
+  '@trpc/react-query@11.28.3':
+    resolution: {integrity: sha512-mRzESszF19o5quvxW1mM+24jb1l0lyq4ZhzzhZKNqS95KZ78DBOeSkRGD5793Q2WyWwoNRtZDpn1FB5DS/cryA==}
     peerDependencies:
       '@tanstack/react-query': ^5.80.3
-      '@trpc/client': 11.24.0
-      '@trpc/server': 11.24.0
+      '@trpc/client': 11.28.3
+      '@trpc/server': 11.28.3
       react: '>=18.2.0'
       typescript: '>=5.7.2'
 
-  '@trpc/server@11.24.0':
-    resolution: {integrity: sha512-CxpaiIY58ItaLpGxwYTxHHYx5evRAJ4B2Eq94axvg28nwihDgjQIUiLG8T49DZ/t4R2tPHHdeLkF6t0kyjD5YQ==}
+  '@trpc/server@11.28.3':
+    resolution: {integrity: sha512-os9o1enNvbcSSyn9agxsYPkIE8kWK7IJbkD5/ySCCApsdM58cFZ5IF410G9Q0k3RwKfsM2Q/GbGp1rbgCWLp5Q==}
     peerDependencies:
       '@types/aws-lambda': '*'
       '@types/express': '*'
@@ -8340,8 +8340,8 @@ packages:
     resolution: {integrity: sha512-TtpcNJ3XAzx3Gq8sWRzJaVajRs0uVxA2YAkdb1jm2YkPz4G6egUFAyA3n5vtEIZefPk5Wa4UXbKuS5fKkJWdgA==}
     engines: {node: '>=10'}
 
-  eslint-plugin-storybook@10.6.6:
-    resolution: {integrity: sha512-3bQT92I/MU2yZeBjIm+v2pe6q55V764jCMccUg+OSLsGOdJ+nRZ80W8FpjbecpdBdkO80yR56jVcqLFamDwZUA==}
+  eslint-plugin-storybook@10.6.7:
+    resolution: {integrity: sha512-L+dSHmoFxgPEuaMxuEq3mYMBVeDZnWq/vL4QK3b7JdjAA4SRZsXrl/teYoB2x+5SKkMEtIBZZYb+OL0NALGv+w==}
     peerDependencies:
       eslint: '>=8'
 
@@ -11390,13 +11390,13 @@ packages:
     resolution: {integrity: sha512-eCPu1qRxPVkl5605OTWF8Wz40b4Mf45NY5LQmVPQ599knfs5QhASUm9GbJ5BDMDOXgrnh0wyEdvzmL//YMlw0A==}
     engines: {node: '>=18'}
 
-  storybook-addon-pseudo-states@10.6.6:
-    resolution: {integrity: sha512-herh5TJZPnrRiGrhzStWfUGEssuHsRUikH+pvufvFQYDoizG94MGnhc5iyFUY4og3lp8pmOeic25gcLDM5qNwA==}
+  storybook-addon-pseudo-states@10.6.7:
+    resolution: {integrity: sha512-rVTqodZ7bDT1krCbujJQVhYyQFZHbC8Gd6fEyTPJHLqeebB+zgEJ5x4R4yCObBlTSDupTRoKcSVm4nooN3ruNg==}
     peerDependencies:
-      storybook: ^10.6.6
+      storybook: ^10.6.7
 
-  storybook@10.6.6:
-    resolution: {integrity: sha512-lCROrR6Fj+WDBoJu4yp6o/cqcg376Sg85hiUnTh00I0EStk8xFRvTdzRuNWHlLA8itQrkz6Lo/IqFZ1FVXMiAA==}
+  storybook@10.6.7:
+    resolution: {integrity: sha512-/1h87XqC+8tZ5PQ/GVWOg78tCQuEAshYWwok5niBcnHEKzZy6Ls06uuT5/rhQ3iUB0y8iexEVHmUe3jaaxNguw==}
     hasBin: true
     peerDependencies:
       '@types/react': ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
@@ -11991,11 +11991,11 @@ packages:
   vfile@6.0.3:
     resolution: {integrity: sha512-KzIbH/9tXat2u30jf+smMwFCsno4wHVdNmzFyL+T/L3UGqqk6JKfVqOFOZEpZSHADH1k40ab6NUIXZq422ov3Q==}
 
-  vite-plugin-storybook-nextjs@10.6.6:
-    resolution: {integrity: sha512-HhnTHbHf02xsOTKHGH5eEfGAN42of8b29UgReQ6WgUyRkfolygeOh4MLAGltDkKdvRtuSPRxhgku4/GIjyi22g==}
+  vite-plugin-storybook-nextjs@10.6.7:
+    resolution: {integrity: sha512-qLQkYXlz+Yagm2a27l3FFvwtmnv4KABc81+szsNB1ZXDdYFqGLwHhikGVNSpQmtmy0Z7bBvBUJGFCVRBzoqLiQ==}
     peerDependencies:
       next: ^14.1.0 || ^15.0.0 || ^16.0.0
-      storybook: ^10.6.6
+      storybook: ^10.6.7
       vite: ^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0
 
   vite-tsconfig-paths@5.1.4:
@@ -12551,13 +12551,13 @@ snapshots:
       - '@types/node'
       - supports-color
 
-  '@argos-ci/storybook@6.4.4(@types/node@26.5.1)(@vitest/browser-playwright@5.1.0)(@vitest/browser@5.1.0(msw@3.0.3(@types/node@26.5.1)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3)))(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3))(vitest@5.1.0))(playwright@1.65.1)(storybook@10.6.6(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(supports-color@8.1.1)(vitest@5.1.0)':
+  '@argos-ci/storybook@6.4.4(@types/node@26.5.1)(@vitest/browser-playwright@5.1.0)(@vitest/browser@5.1.0(msw@3.0.3(@types/node@26.5.1)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3)))(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3))(vitest@5.1.0))(playwright@1.65.1)(storybook@10.6.7(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(supports-color@8.1.1)(vitest@5.1.0)':
     dependencies:
       '@argos-ci/core': 6.8.8(@types/node@26.5.1)(supports-color@8.1.1)
       '@argos-ci/playwright': 7.8.0(@types/node@26.5.1)(supports-color@8.1.1)
       '@argos-ci/util': 4.2.3
       '@argos-ci/vitest': 0.9.0(@types/node@26.5.1)(@vitest/browser-playwright@5.1.0)(@vitest/browser@5.1.0(msw@3.0.3(@types/node@26.5.1)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3)))(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3))(vitest@5.1.0))(playwright@1.65.1)(supports-color@8.1.1)(vitest@5.1.0)
-      storybook: 10.6.6(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      storybook: 10.6.7(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
     transitivePeerDependencies:
       - '@types/node'
       - '@vitest/browser'
@@ -12566,13 +12566,13 @@ snapshots:
       - supports-color
       - vitest
 
-  '@argos-ci/storybook@6.4.4(@types/node@26.6.6)(@vitest/browser-playwright@5.1.0)(@vitest/browser@5.1.0(msw@3.0.3(@types/node@26.6.6)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3)))(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3))(vitest@5.1.0))(playwright@1.65.1)(storybook@10.6.6(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(supports-color@8.1.1)(vitest@5.1.0)':
+  '@argos-ci/storybook@6.4.4(@types/node@26.6.6)(@vitest/browser-playwright@5.1.0)(@vitest/browser@5.1.0(msw@3.0.3(@types/node@26.6.6)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3)))(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3))(vitest@5.1.0))(playwright@1.65.1)(storybook@10.6.7(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(supports-color@8.1.1)(vitest@5.1.0)':
     dependencies:
       '@argos-ci/core': 6.8.8(@types/node@26.6.6)(supports-color@8.1.1)
       '@argos-ci/playwright': 7.8.0(@types/node@26.6.6)(supports-color@8.1.1)
       '@argos-ci/util': 4.2.3
       '@argos-ci/vitest': 0.9.0(@types/node@26.6.6)(@vitest/browser-playwright@5.1.0)(@vitest/browser@5.1.0(msw@3.0.3(@types/node@26.6.6)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3)))(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3))(vitest@5.1.0))(playwright@1.65.1)(supports-color@8.1.1)(vitest@5.1.0)
-      storybook: 10.6.6(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      storybook: 10.6.7(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
     transitivePeerDependencies:
       - '@types/node'
       - '@vitest/browser'
@@ -16392,20 +16392,20 @@ snapshots:
 
   '@standard-schema/utils@0.3.0': {}
 
-  '@storybook/addon-a11y@10.6.6(storybook@10.6.6(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))':
+  '@storybook/addon-a11y@10.6.7(storybook@10.6.7(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))':
     dependencies:
       '@storybook/global': 5.0.0
       axe-core: 4.11.1
-      storybook: 10.6.6(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      storybook: 10.6.7(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
 
-  '@storybook/addon-docs@10.6.6(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(storybook@10.6.6(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))':
+  '@storybook/addon-docs@10.6.7(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(storybook@10.6.7(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))':
     dependencies:
       '@mdx-js/react': 3.1.1(@types/react@18.3.31)(react@18.3.1)
       '@storybook/icons': 2.0.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      '@storybook/react-dom-shim': 10.6.6(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@10.6.6(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
+      '@storybook/react-dom-shim': 10.6.7(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@10.6.7(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
-      storybook: 10.6.6(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      storybook: 10.6.7(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       ts-dedent: 2.2.0
       unplugin: 2.3.11
     optionalDependencies:
@@ -16413,24 +16413,24 @@ snapshots:
     transitivePeerDependencies:
       - '@types/react-dom'
 
-  '@storybook/addon-links@10.6.6(@types/react@18.3.31)(react@18.3.1)(storybook@10.6.6(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))':
+  '@storybook/addon-links@10.6.7(@types/react@18.3.31)(react@18.3.1)(storybook@10.6.7(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))':
     dependencies:
       '@storybook/global': 5.0.0
-      storybook: 10.6.6(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      storybook: 10.6.7(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
     optionalDependencies:
       '@types/react': 18.3.31
       react: 18.3.1
 
-  '@storybook/addon-themes@10.6.6(storybook@10.6.6(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))':
+  '@storybook/addon-themes@10.6.7(storybook@10.6.7(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))':
     dependencies:
-      storybook: 10.6.6(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      storybook: 10.6.7(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       ts-dedent: 2.2.0
 
-  '@storybook/addon-vitest@10.6.6(@vitest/browser-playwright@5.1.0)(@vitest/browser@5.1.0(msw@3.0.3(@types/node@26.5.1)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3)))(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3))(vitest@5.1.0))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@10.6.6(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(vitest@5.1.0)':
+  '@storybook/addon-vitest@10.6.7(@vitest/browser-playwright@5.1.0)(@vitest/browser@5.1.0(msw@3.0.3(@types/node@26.5.1)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3)))(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3))(vitest@5.1.0))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@10.6.7(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(vitest@5.1.0)':
     dependencies:
       '@storybook/global': 5.0.0
       '@storybook/icons': 2.0.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      storybook: 10.6.6(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      storybook: 10.6.7(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
     optionalDependencies:
       '@vitest/browser': 5.1.0(msw@3.0.3(@types/node@26.5.1)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3)))(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3))(vitest@5.1.0)
       '@vitest/browser-playwright': 5.1.0(msw@3.0.3(@types/node@26.5.1)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3)))(playwright@1.65.1)(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3))(vitest@5.1.0)
@@ -16439,11 +16439,11 @@ snapshots:
       - react
       - react-dom
 
-  '@storybook/addon-vitest@10.6.6(@vitest/browser-playwright@5.1.0)(@vitest/browser@5.1.0(msw@3.0.3(@types/node@26.6.6)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3)))(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3))(vitest@5.1.0))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@10.6.6(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(vitest@5.1.0)':
+  '@storybook/addon-vitest@10.6.7(@vitest/browser-playwright@5.1.0)(@vitest/browser@5.1.0(msw@3.0.3(@types/node@26.6.6)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3)))(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3))(vitest@5.1.0))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@10.6.7(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(vitest@5.1.0)':
     dependencies:
       '@storybook/global': 5.0.0
       '@storybook/icons': 2.0.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      storybook: 10.6.6(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      storybook: 10.6.7(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
     optionalDependencies:
       '@vitest/browser': 5.1.0(msw@3.0.3(@types/node@26.6.6)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3)))(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3))(vitest@5.1.0)
       '@vitest/browser-playwright': 5.1.0(msw@3.0.3(@types/node@26.6.6)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3)))(playwright@1.65.1)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3))(vitest@5.1.0)
@@ -16452,15 +16452,15 @@ snapshots:
       - react
       - react-dom
 
-  '@storybook/builder-vite@10.6.6(storybook@10.6.6(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3))':
+  '@storybook/builder-vite@10.6.7(storybook@10.6.7(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3))':
     dependencies:
-      storybook: 10.6.6(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      storybook: 10.6.7(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       ts-dedent: 2.2.0
       vite: 8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3)
 
-  '@storybook/builder-vite@10.6.6(storybook@10.6.6(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3))':
+  '@storybook/builder-vite@10.6.7(storybook@10.6.7(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3))':
     dependencies:
-      storybook: 10.6.6(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      storybook: 10.6.7(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       ts-dedent: 2.2.0
       vite: 8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3)
 
@@ -16471,18 +16471,18 @@ snapshots:
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
 
-  '@storybook/nextjs-vite@10.6.6(@babel/core@8.0.1)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(babel-plugin-macros@3.1.0)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.65.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(rollup@4.60.1)(storybook@10.6.6(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3))':
+  '@storybook/nextjs-vite@10.6.7(@babel/core@8.0.1)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(babel-plugin-macros@3.1.0)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.65.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(rollup@4.60.1)(storybook@10.6.7(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3))':
     dependencies:
-      '@storybook/builder-vite': 10.6.6(storybook@10.6.6(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3))
-      '@storybook/react': 10.6.6(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@10.6.6(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(supports-color@8.1.1)(typescript@6.0.3)
-      '@storybook/react-vite': 10.6.6(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(rollup@4.60.1)(storybook@10.6.6(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3))
+      '@storybook/builder-vite': 10.6.7(storybook@10.6.7(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3))
+      '@storybook/react': 10.6.7(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@10.6.7(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(supports-color@8.1.1)(typescript@6.0.3)
+      '@storybook/react-vite': 10.6.7(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(rollup@4.60.1)(storybook@10.6.7(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3))
       next: 16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.65.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1)
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
-      storybook: 10.6.6(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      storybook: 10.6.7(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       styled-jsx: 5.1.6(@babel/core@8.0.1)(babel-plugin-macros@3.1.0)(react@18.3.1)
       vite: 8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3)
-      vite-plugin-storybook-nextjs: 10.6.6(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.65.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(rollup@4.60.1)(storybook@10.6.6(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3))
+      vite-plugin-storybook-nextjs: 10.6.7(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.65.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(rollup@4.60.1)(storybook@10.6.7(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3))
     optionalDependencies:
       '@types/react': 18.3.31
       '@types/react-dom': 18.3.7(@types/react@18.3.31)
@@ -16493,28 +16493,28 @@ snapshots:
       - rollup
       - supports-color
 
-  '@storybook/react-dom-shim@10.6.6(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@10.6.6(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))':
+  '@storybook/react-dom-shim@10.6.7(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@10.6.7(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))':
     dependencies:
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
-      storybook: 10.6.6(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      storybook: 10.6.7(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
     optionalDependencies:
       '@types/react': 18.3.31
       '@types/react-dom': 18.3.7(@types/react@18.3.31)
 
-  '@storybook/react-vite@10.6.6(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(rollup@4.60.1)(storybook@10.6.6(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3))':
+  '@storybook/react-vite@10.6.7(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(rollup@4.60.1)(storybook@10.6.7(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3))':
     dependencies:
       '@joshwooding/vite-plugin-react-docgen-typescript': 0.7.0(typescript@6.0.3)(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3))
       '@rollup/pluginutils': 5.3.0(rollup@4.60.1)
-      '@storybook/builder-vite': 10.6.6(storybook@10.6.6(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3))
-      '@storybook/react': 10.6.6(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@10.6.6(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(supports-color@8.1.1)(typescript@6.0.3)
+      '@storybook/builder-vite': 10.6.7(storybook@10.6.7(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3))
+      '@storybook/react': 10.6.7(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@10.6.7(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(supports-color@8.1.1)(typescript@6.0.3)
       empathic: 2.0.1
       magic-string: 1.4.3
       react: 18.3.1
       react-docgen: 8.0.3(supports-color@8.1.1)
       react-dom: 18.3.1(react@18.3.1)
       resolve: 1.22.11
-      storybook: 10.6.6(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      storybook: 10.6.7(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       tsconfig-paths: 4.2.0
       vite: 8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3)
     optionalDependencies:
@@ -16525,19 +16525,19 @@ snapshots:
       - rollup
       - supports-color
 
-  '@storybook/react-vite@10.6.6(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(rollup@4.60.1)(storybook@10.6.6(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3))':
+  '@storybook/react-vite@10.6.7(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(rollup@4.60.1)(storybook@10.6.7(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3))':
     dependencies:
       '@joshwooding/vite-plugin-react-docgen-typescript': 0.7.0(typescript@6.0.3)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3))
       '@rollup/pluginutils': 5.3.0(rollup@4.60.1)
-      '@storybook/builder-vite': 10.6.6(storybook@10.6.6(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3))
-      '@storybook/react': 10.6.6(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@10.6.6(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(supports-color@8.1.1)(typescript@6.0.3)
+      '@storybook/builder-vite': 10.6.7(storybook@10.6.7(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3))
+      '@storybook/react': 10.6.7(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@10.6.7(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(supports-color@8.1.1)(typescript@6.0.3)
       empathic: 2.0.1
       magic-string: 1.4.3
       react: 18.3.1
       react-docgen: 8.0.3(supports-color@8.1.1)
       react-dom: 18.3.1(react@18.3.1)
       resolve: 1.22.11
-      storybook: 10.6.6(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      storybook: 10.6.7(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       tsconfig-paths: 4.2.0
       vite: 8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3)
     optionalDependencies:
@@ -16548,15 +16548,15 @@ snapshots:
       - rollup
       - supports-color
 
-  '@storybook/react@10.6.6(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@10.6.6(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(supports-color@8.1.1)(typescript@6.0.3)':
+  '@storybook/react@10.6.7(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@10.6.7(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(supports-color@8.1.1)(typescript@6.0.3)':
     dependencies:
       '@storybook/global': 5.0.0
-      '@storybook/react-dom-shim': 10.6.6(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@10.6.6(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
+      '@storybook/react-dom-shim': 10.6.7(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@10.6.7(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
       react: 18.3.1
       react-docgen: 8.0.3(supports-color@8.1.1)
       react-docgen-typescript: 2.4.0(typescript@6.0.3)
       react-dom: 18.3.1(react@18.3.1)
-      storybook: 10.6.6(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      storybook: 10.6.7(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
     optionalDependencies:
       '@types/react': 18.3.31
       '@types/react-dom': 18.3.7(@types/react@18.3.31)
@@ -16691,147 +16691,147 @@ snapshots:
     dependencies:
       '@testing-library/dom': 10.4.1
 
-  '@tiptap/core@3.32.2(@tiptap/pm@3.32.2)':
+  '@tiptap/core@3.34.0(@tiptap/pm@3.34.0)':
     dependencies:
-      '@tiptap/pm': 3.32.2
+      '@tiptap/pm': 3.34.0
 
-  '@tiptap/extension-bold@3.32.2(@tiptap/core@3.32.2(@tiptap/pm@3.32.2))':
+  '@tiptap/extension-bold@3.34.0(@tiptap/core@3.34.0(@tiptap/pm@3.34.0))':
     dependencies:
-      '@tiptap/core': 3.32.2(@tiptap/pm@3.32.2)
+      '@tiptap/core': 3.34.0(@tiptap/pm@3.34.0)
 
-  '@tiptap/extension-bubble-menu@3.32.2(@tiptap/core@3.32.2(@tiptap/pm@3.32.2))(@tiptap/pm@3.32.2)':
+  '@tiptap/extension-bubble-menu@3.34.0(@tiptap/core@3.34.0(@tiptap/pm@3.34.0))(@tiptap/pm@3.34.0)':
     dependencies:
       '@floating-ui/dom': 1.8.0
-      '@tiptap/core': 3.32.2(@tiptap/pm@3.32.2)
-      '@tiptap/pm': 3.32.2
+      '@tiptap/core': 3.34.0(@tiptap/pm@3.34.0)
+      '@tiptap/pm': 3.34.0
     optional: true
 
-  '@tiptap/extension-bullet-list@3.32.2(@tiptap/extension-list@3.32.2(@tiptap/core@3.32.2(@tiptap/pm@3.32.2))(@tiptap/pm@3.32.2))':
+  '@tiptap/extension-bullet-list@3.34.0(@tiptap/extension-list@3.34.0(@tiptap/core@3.34.0(@tiptap/pm@3.34.0))(@tiptap/pm@3.34.0))':
     dependencies:
-      '@tiptap/extension-list': 3.32.2(@tiptap/core@3.32.2(@tiptap/pm@3.32.2))(@tiptap/pm@3.32.2)
+      '@tiptap/extension-list': 3.34.0(@tiptap/core@3.34.0(@tiptap/pm@3.34.0))(@tiptap/pm@3.34.0)
 
-  '@tiptap/extension-character-count@3.32.2(@tiptap/extensions@3.32.2(@tiptap/core@3.32.2(@tiptap/pm@3.32.2))(@tiptap/pm@3.32.2))':
+  '@tiptap/extension-character-count@3.34.0(@tiptap/extensions@3.34.0(@tiptap/core@3.34.0(@tiptap/pm@3.34.0))(@tiptap/pm@3.34.0))':
     dependencies:
-      '@tiptap/extensions': 3.32.2(@tiptap/core@3.32.2(@tiptap/pm@3.32.2))(@tiptap/pm@3.32.2)
+      '@tiptap/extensions': 3.34.0(@tiptap/core@3.34.0(@tiptap/pm@3.34.0))(@tiptap/pm@3.34.0)
 
-  '@tiptap/extension-document@3.32.2(@tiptap/core@3.32.2(@tiptap/pm@3.32.2))':
+  '@tiptap/extension-document@3.34.0(@tiptap/core@3.34.0(@tiptap/pm@3.34.0))':
     dependencies:
-      '@tiptap/core': 3.32.2(@tiptap/pm@3.32.2)
+      '@tiptap/core': 3.34.0(@tiptap/pm@3.34.0)
 
-  '@tiptap/extension-dropcursor@3.32.2(@tiptap/extensions@3.32.2(@tiptap/core@3.32.2(@tiptap/pm@3.32.2))(@tiptap/pm@3.32.2))':
+  '@tiptap/extension-dropcursor@3.34.0(@tiptap/extensions@3.34.0(@tiptap/core@3.34.0(@tiptap/pm@3.34.0))(@tiptap/pm@3.34.0))':
     dependencies:
-      '@tiptap/extensions': 3.32.2(@tiptap/core@3.32.2(@tiptap/pm@3.32.2))(@tiptap/pm@3.32.2)
+      '@tiptap/extensions': 3.34.0(@tiptap/core@3.34.0(@tiptap/pm@3.34.0))(@tiptap/pm@3.34.0)
 
-  '@tiptap/extension-floating-menu@3.32.2(@floating-ui/dom@1.8.0)(@tiptap/core@3.32.2(@tiptap/pm@3.32.2))(@tiptap/pm@3.32.2)':
+  '@tiptap/extension-floating-menu@3.34.0(@floating-ui/dom@1.8.0)(@tiptap/core@3.34.0(@tiptap/pm@3.34.0))(@tiptap/pm@3.34.0)':
     dependencies:
       '@floating-ui/dom': 1.8.0
-      '@tiptap/core': 3.32.2(@tiptap/pm@3.32.2)
-      '@tiptap/pm': 3.32.2
+      '@tiptap/core': 3.34.0(@tiptap/pm@3.34.0)
+      '@tiptap/pm': 3.34.0
     optional: true
 
-  '@tiptap/extension-gapcursor@3.32.2(@tiptap/extensions@3.32.2(@tiptap/core@3.32.2(@tiptap/pm@3.32.2))(@tiptap/pm@3.32.2))':
+  '@tiptap/extension-gapcursor@3.34.0(@tiptap/extensions@3.34.0(@tiptap/core@3.34.0(@tiptap/pm@3.34.0))(@tiptap/pm@3.34.0))':
     dependencies:
-      '@tiptap/extensions': 3.32.2(@tiptap/core@3.32.2(@tiptap/pm@3.32.2))(@tiptap/pm@3.32.2)
+      '@tiptap/extensions': 3.34.0(@tiptap/core@3.34.0(@tiptap/pm@3.34.0))(@tiptap/pm@3.34.0)
 
-  '@tiptap/extension-hard-break@3.32.2(@tiptap/core@3.32.2(@tiptap/pm@3.32.2))':
+  '@tiptap/extension-hard-break@3.34.0(@tiptap/core@3.34.0(@tiptap/pm@3.34.0))':
     dependencies:
-      '@tiptap/core': 3.32.2(@tiptap/pm@3.32.2)
+      '@tiptap/core': 3.34.0(@tiptap/pm@3.34.0)
 
-  '@tiptap/extension-heading@3.32.2(@tiptap/core@3.32.2(@tiptap/pm@3.32.2))':
+  '@tiptap/extension-heading@3.34.0(@tiptap/core@3.34.0(@tiptap/pm@3.34.0))':
     dependencies:
-      '@tiptap/core': 3.32.2(@tiptap/pm@3.32.2)
+      '@tiptap/core': 3.34.0(@tiptap/pm@3.34.0)
 
-  '@tiptap/extension-history@3.32.2(@tiptap/extensions@3.32.2(@tiptap/core@3.32.2(@tiptap/pm@3.32.2))(@tiptap/pm@3.32.2))':
+  '@tiptap/extension-history@3.34.0(@tiptap/extensions@3.34.0(@tiptap/core@3.34.0(@tiptap/pm@3.34.0))(@tiptap/pm@3.34.0))':
     dependencies:
-      '@tiptap/extensions': 3.32.2(@tiptap/core@3.32.2(@tiptap/pm@3.32.2))(@tiptap/pm@3.32.2)
+      '@tiptap/extensions': 3.34.0(@tiptap/core@3.34.0(@tiptap/pm@3.34.0))(@tiptap/pm@3.34.0)
 
-  '@tiptap/extension-horizontal-rule@3.32.2(@tiptap/core@3.32.2(@tiptap/pm@3.32.2))(@tiptap/pm@3.32.2)':
+  '@tiptap/extension-horizontal-rule@3.34.0(@tiptap/core@3.34.0(@tiptap/pm@3.34.0))(@tiptap/pm@3.34.0)':
     dependencies:
-      '@tiptap/core': 3.32.2(@tiptap/pm@3.32.2)
-      '@tiptap/pm': 3.32.2
+      '@tiptap/core': 3.34.0(@tiptap/pm@3.34.0)
+      '@tiptap/pm': 3.34.0
 
-  '@tiptap/extension-image@3.32.2(@tiptap/core@3.32.2(@tiptap/pm@3.32.2))':
+  '@tiptap/extension-image@3.34.0(@tiptap/core@3.34.0(@tiptap/pm@3.34.0))':
     dependencies:
-      '@tiptap/core': 3.32.2(@tiptap/pm@3.32.2)
+      '@tiptap/core': 3.34.0(@tiptap/pm@3.34.0)
 
-  '@tiptap/extension-italic@3.32.2(@tiptap/core@3.32.2(@tiptap/pm@3.32.2))':
+  '@tiptap/extension-italic@3.34.0(@tiptap/core@3.34.0(@tiptap/pm@3.34.0))':
     dependencies:
-      '@tiptap/core': 3.32.2(@tiptap/pm@3.32.2)
+      '@tiptap/core': 3.34.0(@tiptap/pm@3.34.0)
 
-  '@tiptap/extension-link@3.32.2(@tiptap/core@3.32.2(@tiptap/pm@3.32.2))(@tiptap/pm@3.32.2)':
+  '@tiptap/extension-link@3.34.0(@tiptap/core@3.34.0(@tiptap/pm@3.34.0))(@tiptap/pm@3.34.0)':
     dependencies:
-      '@tiptap/core': 3.32.2(@tiptap/pm@3.32.2)
-      '@tiptap/pm': 3.32.2
+      '@tiptap/core': 3.34.0(@tiptap/pm@3.34.0)
+      '@tiptap/pm': 3.34.0
       linkifyjs: 4.3.3
 
-  '@tiptap/extension-list-item@3.32.2(@tiptap/extension-list@3.32.2(@tiptap/core@3.32.2(@tiptap/pm@3.32.2))(@tiptap/pm@3.32.2))':
+  '@tiptap/extension-list-item@3.34.0(@tiptap/extension-list@3.34.0(@tiptap/core@3.34.0(@tiptap/pm@3.34.0))(@tiptap/pm@3.34.0))':
     dependencies:
-      '@tiptap/extension-list': 3.32.2(@tiptap/core@3.32.2(@tiptap/pm@3.32.2))(@tiptap/pm@3.32.2)
+      '@tiptap/extension-list': 3.34.0(@tiptap/core@3.34.0(@tiptap/pm@3.34.0))(@tiptap/pm@3.34.0)
 
-  '@tiptap/extension-list@3.32.2(@tiptap/core@3.32.2(@tiptap/pm@3.32.2))(@tiptap/pm@3.32.2)':
+  '@tiptap/extension-list@3.34.0(@tiptap/core@3.34.0(@tiptap/pm@3.34.0))(@tiptap/pm@3.34.0)':
     dependencies:
-      '@tiptap/core': 3.32.2(@tiptap/pm@3.32.2)
-      '@tiptap/pm': 3.32.2
+      '@tiptap/core': 3.34.0(@tiptap/pm@3.34.0)
+      '@tiptap/pm': 3.34.0
 
-  '@tiptap/extension-ordered-list@3.32.2(@tiptap/extension-list@3.32.2(@tiptap/core@3.32.2(@tiptap/pm@3.32.2))(@tiptap/pm@3.32.2))':
+  '@tiptap/extension-ordered-list@3.34.0(@tiptap/extension-list@3.34.0(@tiptap/core@3.34.0(@tiptap/pm@3.34.0))(@tiptap/pm@3.34.0))':
     dependencies:
-      '@tiptap/extension-list': 3.32.2(@tiptap/core@3.32.2(@tiptap/pm@3.32.2))(@tiptap/pm@3.32.2)
+      '@tiptap/extension-list': 3.34.0(@tiptap/core@3.34.0(@tiptap/pm@3.34.0))(@tiptap/pm@3.34.0)
 
-  '@tiptap/extension-paragraph@3.32.2(@tiptap/core@3.32.2(@tiptap/pm@3.32.2))':
+  '@tiptap/extension-paragraph@3.34.0(@tiptap/core@3.34.0(@tiptap/pm@3.34.0))':
     dependencies:
-      '@tiptap/core': 3.32.2(@tiptap/pm@3.32.2)
+      '@tiptap/core': 3.34.0(@tiptap/pm@3.34.0)
 
-  '@tiptap/extension-strike@3.32.2(@tiptap/core@3.32.2(@tiptap/pm@3.32.2))':
+  '@tiptap/extension-strike@3.34.0(@tiptap/core@3.34.0(@tiptap/pm@3.34.0))':
     dependencies:
-      '@tiptap/core': 3.32.2(@tiptap/pm@3.32.2)
+      '@tiptap/core': 3.34.0(@tiptap/pm@3.34.0)
 
-  '@tiptap/extension-subscript@3.32.2(@tiptap/core@3.32.2(@tiptap/pm@3.32.2))(@tiptap/pm@3.32.2)':
+  '@tiptap/extension-subscript@3.34.0(@tiptap/core@3.34.0(@tiptap/pm@3.34.0))(@tiptap/pm@3.34.0)':
     dependencies:
-      '@tiptap/core': 3.32.2(@tiptap/pm@3.32.2)
-      '@tiptap/pm': 3.32.2
+      '@tiptap/core': 3.34.0(@tiptap/pm@3.34.0)
+      '@tiptap/pm': 3.34.0
 
-  '@tiptap/extension-superscript@3.32.2(@tiptap/core@3.32.2(@tiptap/pm@3.32.2))(@tiptap/pm@3.32.2)':
+  '@tiptap/extension-superscript@3.34.0(@tiptap/core@3.34.0(@tiptap/pm@3.34.0))(@tiptap/pm@3.34.0)':
     dependencies:
-      '@tiptap/core': 3.32.2(@tiptap/pm@3.32.2)
-      '@tiptap/pm': 3.32.2
+      '@tiptap/core': 3.34.0(@tiptap/pm@3.34.0)
+      '@tiptap/pm': 3.34.0
 
-  '@tiptap/extension-table-cell@3.32.2(@tiptap/extension-table@3.32.2(@tiptap/core@3.32.2(@tiptap/pm@3.32.2))(@tiptap/pm@3.32.2))':
+  '@tiptap/extension-table-cell@3.34.0(@tiptap/extension-table@3.34.0(@tiptap/core@3.34.0(@tiptap/pm@3.34.0))(@tiptap/pm@3.34.0))':
     dependencies:
-      '@tiptap/extension-table': 3.32.2(@tiptap/core@3.32.2(@tiptap/pm@3.32.2))(@tiptap/pm@3.32.2)
+      '@tiptap/extension-table': 3.34.0(@tiptap/core@3.34.0(@tiptap/pm@3.34.0))(@tiptap/pm@3.34.0)
 
-  '@tiptap/extension-table-header@3.32.2(@tiptap/extension-table@3.32.2(@tiptap/core@3.32.2(@tiptap/pm@3.32.2))(@tiptap/pm@3.32.2))':
+  '@tiptap/extension-table-header@3.34.0(@tiptap/extension-table@3.34.0(@tiptap/core@3.34.0(@tiptap/pm@3.34.0))(@tiptap/pm@3.34.0))':
     dependencies:
-      '@tiptap/extension-table': 3.32.2(@tiptap/core@3.32.2(@tiptap/pm@3.32.2))(@tiptap/pm@3.32.2)
+      '@tiptap/extension-table': 3.34.0(@tiptap/core@3.34.0(@tiptap/pm@3.34.0))(@tiptap/pm@3.34.0)
 
-  '@tiptap/extension-table-row@3.32.2(@tiptap/extension-table@3.32.2(@tiptap/core@3.32.2(@tiptap/pm@3.32.2))(@tiptap/pm@3.32.2))':
+  '@tiptap/extension-table-row@3.34.0(@tiptap/extension-table@3.34.0(@tiptap/core@3.34.0(@tiptap/pm@3.34.0))(@tiptap/pm@3.34.0))':
     dependencies:
-      '@tiptap/extension-table': 3.32.2(@tiptap/core@3.32.2(@tiptap/pm@3.32.2))(@tiptap/pm@3.32.2)
+      '@tiptap/extension-table': 3.34.0(@tiptap/core@3.34.0(@tiptap/pm@3.34.0))(@tiptap/pm@3.34.0)
 
-  '@tiptap/extension-table@3.32.2(@tiptap/core@3.32.2(@tiptap/pm@3.32.2))(@tiptap/pm@3.32.2)':
+  '@tiptap/extension-table@3.34.0(@tiptap/core@3.34.0(@tiptap/pm@3.34.0))(@tiptap/pm@3.34.0)':
     dependencies:
-      '@tiptap/core': 3.32.2(@tiptap/pm@3.32.2)
-      '@tiptap/pm': 3.32.2
+      '@tiptap/core': 3.34.0(@tiptap/pm@3.34.0)
+      '@tiptap/pm': 3.34.0
 
-  '@tiptap/extension-text@3.32.2(@tiptap/core@3.32.2(@tiptap/pm@3.32.2))':
+  '@tiptap/extension-text@3.34.0(@tiptap/core@3.34.0(@tiptap/pm@3.34.0))':
     dependencies:
-      '@tiptap/core': 3.32.2(@tiptap/pm@3.32.2)
+      '@tiptap/core': 3.34.0(@tiptap/pm@3.34.0)
 
-  '@tiptap/extension-underline@3.32.2(@tiptap/core@3.32.2(@tiptap/pm@3.32.2))':
+  '@tiptap/extension-underline@3.34.0(@tiptap/core@3.34.0(@tiptap/pm@3.34.0))':
     dependencies:
-      '@tiptap/core': 3.32.2(@tiptap/pm@3.32.2)
+      '@tiptap/core': 3.34.0(@tiptap/pm@3.34.0)
 
-  '@tiptap/extensions@3.32.2(@tiptap/core@3.32.2(@tiptap/pm@3.32.2))(@tiptap/pm@3.32.2)':
+  '@tiptap/extensions@3.34.0(@tiptap/core@3.34.0(@tiptap/pm@3.34.0))(@tiptap/pm@3.34.0)':
     dependencies:
-      '@tiptap/core': 3.32.2(@tiptap/pm@3.32.2)
-      '@tiptap/pm': 3.32.2
+      '@tiptap/core': 3.34.0(@tiptap/pm@3.34.0)
+      '@tiptap/pm': 3.34.0
 
-  '@tiptap/html@3.32.2(@tiptap/core@3.32.2(@tiptap/pm@3.32.2))(@tiptap/pm@3.32.2)(happy-dom@21.0.4)':
+  '@tiptap/html@3.34.0(@tiptap/core@3.34.0(@tiptap/pm@3.34.0))(@tiptap/pm@3.34.0)(happy-dom@21.0.4)':
     dependencies:
-      '@tiptap/core': 3.32.2(@tiptap/pm@3.32.2)
-      '@tiptap/pm': 3.32.2
+      '@tiptap/core': 3.34.0(@tiptap/pm@3.34.0)
+      '@tiptap/pm': 3.34.0
       happy-dom: 21.0.4
 
-  '@tiptap/pm@3.32.2':
+  '@tiptap/pm@3.34.0':
     dependencies:
       prosemirror-changeset: 2.4.4
       prosemirror-commands: 1.7.2
@@ -16847,10 +16847,10 @@ snapshots:
       prosemirror-transform: 1.12.2
       prosemirror-view: 1.42.6
 
-  '@tiptap/react@3.32.2(@floating-ui/dom@1.8.0)(@tiptap/core@3.32.2(@tiptap/pm@3.32.2))(@tiptap/pm@3.32.2)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
+  '@tiptap/react@3.34.0(@floating-ui/dom@1.8.0)(@tiptap/core@3.34.0(@tiptap/pm@3.34.0))(@tiptap/pm@3.34.0)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
-      '@tiptap/core': 3.32.2(@tiptap/pm@3.32.2)
-      '@tiptap/pm': 3.32.2
+      '@tiptap/core': 3.34.0(@tiptap/pm@3.34.0)
+      '@tiptap/pm': 3.34.0
       '@types/react': 18.3.31
       '@types/react-dom': 18.3.7(@types/react@18.3.31)
       '@types/use-sync-external-store': 0.0.6
@@ -16859,37 +16859,37 @@ snapshots:
       react-dom: 18.3.1(react@18.3.1)
       use-sync-external-store: 1.6.0(react@18.3.1)
     optionalDependencies:
-      '@tiptap/extension-bubble-menu': 3.32.2(@tiptap/core@3.32.2(@tiptap/pm@3.32.2))(@tiptap/pm@3.32.2)
-      '@tiptap/extension-floating-menu': 3.32.2(@floating-ui/dom@1.8.0)(@tiptap/core@3.32.2(@tiptap/pm@3.32.2))(@tiptap/pm@3.32.2)
+      '@tiptap/extension-bubble-menu': 3.34.0(@tiptap/core@3.34.0(@tiptap/pm@3.34.0))(@tiptap/pm@3.34.0)
+      '@tiptap/extension-floating-menu': 3.34.0(@floating-ui/dom@1.8.0)(@tiptap/core@3.34.0(@tiptap/pm@3.34.0))(@tiptap/pm@3.34.0)
     transitivePeerDependencies:
       - '@floating-ui/dom'
 
-  '@trpc/client@11.24.0(@trpc/server@11.24.0(@types/ws@8.18.1)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.65.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(typescript@6.0.3))(typescript@6.0.3)':
+  '@trpc/client@11.28.3(@trpc/server@11.28.3(@types/ws@8.18.1)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.65.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(typescript@6.0.3))(typescript@6.0.3)':
     dependencies:
-      '@trpc/server': 11.24.0(@types/ws@8.18.1)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.65.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(typescript@6.0.3)
+      '@trpc/server': 11.28.3(@types/ws@8.18.1)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.65.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(typescript@6.0.3)
       typescript: 6.0.3
 
-  '@trpc/next@11.24.0(493479e641b6773febfca71a6c151688)':
+  '@trpc/next@11.28.3(0c6764dc59e88497c2e5f82a8f65aef0)':
     dependencies:
-      '@trpc/client': 11.24.0(@trpc/server@11.24.0(@types/ws@8.18.1)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.65.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(typescript@6.0.3))(typescript@6.0.3)
-      '@trpc/server': 11.24.0(@types/ws@8.18.1)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.65.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(typescript@6.0.3)
+      '@trpc/client': 11.28.3(@trpc/server@11.28.3(@types/ws@8.18.1)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.65.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(typescript@6.0.3))(typescript@6.0.3)
+      '@trpc/server': 11.28.3(@types/ws@8.18.1)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.65.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(typescript@6.0.3)
       next: 16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.65.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1)
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
       typescript: 6.0.3
     optionalDependencies:
       '@tanstack/react-query': 5.107.1(@types/react@18.3.31)(react@18.3.1)
-      '@trpc/react-query': 11.24.0(@tanstack/react-query@5.107.1(@types/react@18.3.31)(react@18.3.1))(@trpc/client@11.24.0(@trpc/server@11.24.0(@types/ws@8.18.1)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.65.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(typescript@6.0.3))(typescript@6.0.3))(@trpc/server@11.24.0(@types/ws@8.18.1)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.65.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(typescript@6.0.3))(react@18.3.1)(typescript@6.0.3)
+      '@trpc/react-query': 11.28.3(@tanstack/react-query@5.107.1(@types/react@18.3.31)(react@18.3.1))(@trpc/client@11.28.3(@trpc/server@11.28.3(@types/ws@8.18.1)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.65.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(typescript@6.0.3))(typescript@6.0.3))(@trpc/server@11.28.3(@types/ws@8.18.1)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.65.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(typescript@6.0.3))(react@18.3.1)(typescript@6.0.3)
 
-  '@trpc/react-query@11.24.0(@tanstack/react-query@5.107.1(@types/react@18.3.31)(react@18.3.1))(@trpc/client@11.24.0(@trpc/server@11.24.0(@types/ws@8.18.1)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.65.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(typescript@6.0.3))(typescript@6.0.3))(@trpc/server@11.24.0(@types/ws@8.18.1)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.65.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(typescript@6.0.3))(react@18.3.1)(typescript@6.0.3)':
+  '@trpc/react-query@11.28.3(@tanstack/react-query@5.107.1(@types/react@18.3.31)(react@18.3.1))(@trpc/client@11.28.3(@trpc/server@11.28.3(@types/ws@8.18.1)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.65.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(typescript@6.0.3))(typescript@6.0.3))(@trpc/server@11.28.3(@types/ws@8.18.1)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.65.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(typescript@6.0.3))(react@18.3.1)(typescript@6.0.3)':
     dependencies:
       '@tanstack/react-query': 5.107.1(@types/react@18.3.31)(react@18.3.1)
-      '@trpc/client': 11.24.0(@trpc/server@11.24.0(@types/ws@8.18.1)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.65.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(typescript@6.0.3))(typescript@6.0.3)
-      '@trpc/server': 11.24.0(@types/ws@8.18.1)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.65.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(typescript@6.0.3)
+      '@trpc/client': 11.28.3(@trpc/server@11.28.3(@types/ws@8.18.1)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.65.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(typescript@6.0.3))(typescript@6.0.3)
+      '@trpc/server': 11.28.3(@types/ws@8.18.1)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.65.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(typescript@6.0.3)
       react: 18.3.1
       typescript: 6.0.3
 
-  '@trpc/server@11.24.0(@types/ws@8.18.1)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.65.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(typescript@6.0.3)':
+  '@trpc/server@11.28.3(@types/ws@8.18.1)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.65.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(typescript@6.0.3)':
     dependencies:
       typescript: 6.0.3
     optionalDependencies:
@@ -18985,7 +18985,7 @@ snapshots:
 
   escape-string-regexp@4.0.0: {}
 
-  eslint-plugin-storybook@10.6.6(eslint@9.39.4(jiti@1.21.7)(supports-color@8.1.1))(supports-color@8.1.1)(typescript@6.0.3):
+  eslint-plugin-storybook@10.6.7(eslint@9.39.4(jiti@1.21.7)(supports-color@8.1.1))(supports-color@8.1.1)(typescript@6.0.3):
     dependencies:
       '@typescript-eslint/types': 8.71.2
       '@typescript-eslint/utils': 8.71.2(eslint@9.39.4(jiti@1.21.7)(supports-color@8.1.1))(supports-color@8.1.1)(typescript@6.0.3)
@@ -20405,20 +20405,20 @@ snapshots:
 
   ms@2.1.3: {}
 
-  msw-storybook-addon@3.0.3(msw@3.0.3(@types/node@26.5.1)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3)))(storybook@10.6.6(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)):
+  msw-storybook-addon@3.0.3(msw@3.0.3(@types/node@26.5.1)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3)))(storybook@10.6.7(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)):
     dependencies:
       msw: 3.0.3(@types/node@26.5.1)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3))
-      storybook: 10.6.6(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      storybook: 10.6.7(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
 
-  msw-storybook-addon@3.0.3(msw@3.0.3(@types/node@26.6.6)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3)))(storybook@10.6.6(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)):
+  msw-storybook-addon@3.0.3(msw@3.0.3(@types/node@26.6.6)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3)))(storybook@10.6.7(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)):
     dependencies:
       msw: 3.0.3(@types/node@26.6.6)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3))
-      storybook: 10.6.6(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      storybook: 10.6.7(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
 
-  msw-trpc@2.0.1(@trpc/server@11.24.0(@types/ws@8.18.1)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.65.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(typescript@6.0.3))(msw@3.0.3(@types/node@26.6.6)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3)))(typescript@6.0.3):
+  msw-trpc@2.0.1(@trpc/server@11.28.3(@types/ws@8.18.1)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.65.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(typescript@6.0.3))(msw@3.0.3(@types/node@26.6.6)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3)))(typescript@6.0.3):
     dependencies:
-      '@trpc/client': 11.24.0(@trpc/server@11.24.0(@types/ws@8.18.1)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.65.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(typescript@6.0.3))(typescript@6.0.3)
-      '@trpc/server': 11.24.0(@types/ws@8.18.1)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.65.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(typescript@6.0.3)
+      '@trpc/client': 11.28.3(@trpc/server@11.28.3(@types/ws@8.18.1)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.65.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(typescript@6.0.3))(typescript@6.0.3)
+      '@trpc/server': 11.28.3(@types/ws@8.18.1)(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.65.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(typescript@6.0.3)
       msw: 3.0.3(@types/node@26.6.6)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3))
     transitivePeerDependencies:
       - typescript
@@ -22552,11 +22552,11 @@ snapshots:
 
   stdin-discarder@0.3.2: {}
 
-  storybook-addon-pseudo-states@10.6.6(storybook@10.6.6(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)):
+  storybook-addon-pseudo-states@10.6.7(storybook@10.6.7(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)):
     dependencies:
-      storybook: 10.6.6(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      storybook: 10.6.7(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
 
-  storybook@10.6.6(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
+  storybook@10.6.7(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
     dependencies:
       '@storybook/global': 5.0.0
       '@storybook/icons': 2.0.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -22923,10 +22923,10 @@ snapshots:
 
   tinyspy@4.0.4: {}
 
-  tiptap-text-direction@0.5.0(@tiptap/core@3.32.2(@tiptap/pm@3.32.2))(@tiptap/pm@3.32.2):
+  tiptap-text-direction@0.5.0(@tiptap/core@3.34.0(@tiptap/pm@3.34.0))(@tiptap/pm@3.34.0):
     dependencies:
-      '@tiptap/core': 3.32.2(@tiptap/pm@3.32.2)
-      '@tiptap/pm': 3.32.2
+      '@tiptap/core': 3.34.0(@tiptap/pm@3.34.0)
+      '@tiptap/pm': 3.34.0
 
   tldts-core@7.0.27: {}
 
@@ -23217,7 +23217,7 @@ snapshots:
       '@types/unist': 3.0.3
       vfile-message: 4.0.3
 
-  vite-plugin-storybook-nextjs@10.6.6(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.65.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(rollup@4.60.1)(storybook@10.6.6(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3)):
+  vite-plugin-storybook-nextjs@10.6.7(next@16.4.2(patch_hash=4e857ce3fbb20acc23e9d97cc5315e1127fbc612999ea4cacb0da9716748513f)(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.65.1)(@types/node@26.6.6)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.106.1))(rollup@4.60.1)(storybook@10.6.7(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3)):
     dependencies:
       '@next/env': 16.4.2
       '@rollup/pluginutils': 5.3.0(rollup@4.60.1)
@@ -23227,7 +23227,7 @@ snapshots:
       pathe: 2.0.3
       probe-image-size: 7.4.0(supports-color@8.1.1)
       semver: 7.8.5
-      storybook: 10.6.6(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      storybook: 10.6.7(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       ts-dedent: 2.2.0
       vite: 8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3)
       vite-tsconfig-paths: 5.1.4(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3))
