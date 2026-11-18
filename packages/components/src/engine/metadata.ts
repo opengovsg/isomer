@@ -371,7 +371,21 @@ export const getRobotsTxt = (props: IsomerPageSchemaType) => {
   }
 }
 
-export const getSitemapXml = (sitemap: IsomerSitemap, siteUrl?: string) => {
+const permalinkKey = (permalink: string) =>
+  permalink.replace(/^\//, "").replace(/\/$/, "")
+
+interface SitemapXmlEntry {
+  url: string
+  lastModified: string
+}
+
+const sitemapXmlCache = new WeakMap<
+  IsomerSitemap,
+  Map<string, SitemapXmlEntry[]>
+>()
+const lastModifiedCache = new WeakMap<IsomerSitemap, Map<string, string>>()
+
+const buildSitemapXml = (sitemap: IsomerSitemap, siteUrl?: string) => {
   return getSitemapAsArray(sitemap)
     .filter((item) => item.layout !== ISOMER_PAGE_LAYOUTS.Link)
     .map(({ permalink, lastModified }) => {
@@ -387,4 +401,38 @@ export const getSitemapXml = (sitemap: IsomerSitemap, siteUrl?: string) => {
         lastModified,
       }
     })
+}
+
+export const getSitemapXml = (sitemap: IsomerSitemap, siteUrl?: string) => {
+  const siteUrlKey = siteUrl ?? ""
+  let bySiteUrl = sitemapXmlCache.get(sitemap)
+  if (!bySiteUrl) {
+    bySiteUrl = new Map()
+    sitemapXmlCache.set(sitemap, bySiteUrl)
+  }
+
+  const cached = bySiteUrl.get(siteUrlKey)
+  if (cached) {
+    return cached
+  }
+
+  const result = buildSitemapXml(sitemap, siteUrl)
+  bySiteUrl.set(siteUrlKey, result)
+  return result
+}
+
+export const getLastModifiedFromSitemap = (
+  sitemap: IsomerSitemap,
+  permalink: string,
+) => {
+  let byPermalink = lastModifiedCache.get(sitemap)
+  if (!byPermalink) {
+    byPermalink = new Map()
+    for (const { url, lastModified } of getSitemapXml(sitemap)) {
+      byPermalink.set(permalinkKey(url), lastModified)
+    }
+    lastModifiedCache.set(sitemap, byPermalink)
+  }
+
+  return byPermalink.get(permalinkKey(permalink))
 }

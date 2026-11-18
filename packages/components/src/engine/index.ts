@@ -14,4 +14,5 @@ export {
   shouldBlockIndexing,
   getRobotsTxt,
   getSitemapXml,
+  getLastModifiedFromSitemap,
 } from "./metadata"

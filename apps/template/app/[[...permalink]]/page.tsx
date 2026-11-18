@@ -5,6 +5,7 @@ import footer from "@/data/footer.json"
 import navbar from "@/data/navbar.json"
 import sitemap from "@/sitemap.json"
 import {
+  getLastModifiedFromSitemap,
   getMetadata,
   getPageJsonLd,
   getSitemapXml,
@@ -84,10 +85,8 @@ const getSchema = async ({ permalink }: Pick<ParamsContent, "permalink">) => {
   const lastModified =
     // TODO: fixup all the typing errors
     // @ts-expect-error to fix when types are proper
-    getSitemapXml(sitemap).find(
-      ({ url }) =>
-        joinedPermalink === url.replace(/^\//, "").replace(/\/$/, ""),
-    ).lastModified || new Date().toISOString()
+    getLastModifiedFromSitemap(sitemap, joinedPermalink) ||
+    new Date().toISOString()
 
   schema.page.permalink = "/" + joinedPermalink
   schema.page.lastModified = lastModified
