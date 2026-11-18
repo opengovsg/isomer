@@ -1,7 +1,7 @@
 import type { IsomerSitemap } from "~/types"
 import DOMPurify from "isomorphic-dompurify"
 
-import { memoizeStringInput } from "./stringInputCache"
+const sanitizedHrefs = new Map<string, string | undefined>()
 
 const sanitizeHrefString = (url: string) => {
   // We use DOMPurify to create the document fragment as Node.js has no browser 'document' object.
@@ -24,15 +24,19 @@ const sanitizeHrefString = (url: string) => {
   return sanitizedUrl
 }
 
-const sanitizeHrefMemo = memoizeStringInput(sanitizeHrefString)
-
 // This function returns a sanitized version of the provided URL string
 export const getSanitizedLinkHref = (url?: string) => {
   if (url === undefined) {
     return undefined
   }
 
-  return sanitizeHrefMemo(url)
+  if (sanitizedHrefs.has(url)) {
+    return sanitizedHrefs.get(url)
+  }
+
+  const sanitizedUrl = sanitizeHrefString(url)
+  sanitizedHrefs.set(url, sanitizedUrl)
+  return sanitizedUrl
 }
 
 // Convert the given reference link to the actual permalink
