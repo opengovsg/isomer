@@ -20,8 +20,8 @@ import {
   FaXTwitter,
 } from "react-icons/fa6"
 import { IoLogoGithub } from "react-icons/io"
-import { IsomerLogo } from "~/assets/IsomerLogo"
-import { OgpLogo } from "~/assets/OgpLogo"
+import { IsomerLogo, IsomerLogoSymbol } from "~/assets/IsomerLogo"
+import { OgpLogo, OgpLogoSymbol } from "~/assets/OgpLogo"
 import { tv } from "~/lib/tv"
 import { twMerge } from "~/lib/twMerge"
 import { getFormattedDate } from "~/utils/getFormattedDate"
@@ -424,6 +424,16 @@ const FooterDesktop = ({
 export const Footer = (props: FooterProps) => {
   return (
     <footer className="bg-base-canvas-inverse text-base-content-inverse">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="0"
+        height="0"
+        aria-hidden
+        className="absolute h-0 w-0 overflow-hidden"
+      >
+        <IsomerLogoSymbol />
+        <OgpLogoSymbol />
+      </svg>
       <FooterMobile {...props} />
       <FooterDesktop {...props} />
     </footer>

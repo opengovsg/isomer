@@ -1,15 +1,6 @@
-export const IsomerLogo = (
-  props: React.SVGProps<SVGSVGElement>,
-): JSX.Element => {
+export const IsomerLogoSymbol = () => {
   return (
-    <svg
-      width="114"
-      height="32"
-      viewBox="0 0 114 32"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      {...props}
-    >
+    <symbol id="isomer-credit-logo" viewBox="0 0 114 32">
       <g clipPath="url(#clip0_1716_5583)">
         <path
           fillRule="evenodd"
@@ -69,6 +60,23 @@ export const IsomerLogo = (
           <rect width="114" height="32" fill="white" />
         </clipPath>
       </defs>
+    </symbol>
+  )
+}
+
+export const IsomerLogo = (
+  props: React.SVGProps<SVGSVGElement>,
+): JSX.Element => {
+  return (
+    <svg
+      width="114"
+      height="32"
+      viewBox="0 0 114 32"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      {...props}
+    >
+      <use href="#isomer-credit-logo" />
     </svg>
   )
 }

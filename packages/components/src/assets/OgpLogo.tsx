@@ -1,13 +1,6 @@
-export const OgpLogo = (props: React.SVGProps<SVGSVGElement>): JSX.Element => {
+export const OgpLogoSymbol = () => {
   return (
-    <svg
-      width="126"
-      height="32"
-      viewBox="0 0 126 32"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      {...props}
-    >
+    <symbol id="ogp-credit-logo" viewBox="0 0 126 32">
       <g clipPath="url(#clip0_1716_5598)">
         <mask
           id="mask0_1716_5598"
@@ -90,6 +83,21 @@ export const OgpLogo = (props: React.SVGProps<SVGSVGElement>): JSX.Element => {
           <rect width="125.296" height="32" fill="currentColor" />
         </clipPath>
       </defs>
+    </symbol>
+  )
+}
+
+export const OgpLogo = (props: React.SVGProps<SVGSVGElement>): JSX.Element => {
+  return (
+    <svg
+      width="126"
+      height="32"
+      viewBox="0 0 126 32"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      {...props}
+    >
+      <use href="#ogp-credit-logo" />
     </svg>
   )
 }
