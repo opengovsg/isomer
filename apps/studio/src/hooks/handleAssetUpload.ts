@@ -3,6 +3,7 @@ interface HandleUploadParams {
   presignedPutUrl: string
   contentType: string
   contentDisposition: string
+  tagging?: string
 }
 
 // Use server-signed Content-Type and Content-Disposition so upload metadata
@@ -12,11 +13,14 @@ export const handleAssetUpload = async ({
   presignedPutUrl,
   contentType,
   contentDisposition,
+  tagging,
 }: HandleUploadParams) => {
   const response = await fetch(presignedPutUrl, {
     headers: {
       "Content-Type": contentType,
       "Content-Disposition": contentDisposition,
+      // S3 only applies tags sent as this header, never from the query string
+      ...(tagging !== undefined && { "x-amz-tagging": tagging }),
     },
     method: "PUT",
     body: file,
