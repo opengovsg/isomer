@@ -153,8 +153,8 @@ const BACKGROUND_IMAGE_OPTS = {
   allowedMimeTypeMappings: BACKGROUND_IMAGE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING,
 }
 
-// Only searchbar (a hidden beta variant), carousel slides and floating use the
-// bare src, with no adjustment sibling. Every other adjustable variant spreads
+// Only searchbar (a hidden beta variant) and carousel slides use the bare src,
+// with no adjustment sibling. Every other adjustable variant spreads
 // generateAdjustableImageFields instead.
 const BackgroundUrlSchema = generateImageSrcSchema(BACKGROUND_IMAGE_OPTS)
 
@@ -350,13 +350,13 @@ const HeroLargeImageSchema = Type.Composite(
   },
 )
 
-export const HeroFloatingSchema = Type.Composite(
+const HeroFloatingSchema = Type.Composite(
   [
     Type.Object({
       variant: Type.Literal(HERO_STYLE.floating.key, {
         default: HERO_STYLE.floating.key,
       }),
-      backgroundUrl: BackgroundUrlSchema,
+      ...generateAdjustableImageFields("backgroundUrl", BACKGROUND_IMAGE_OPTS),
     }),
     HeroBaseSchema,
     CallToActionsSchema,

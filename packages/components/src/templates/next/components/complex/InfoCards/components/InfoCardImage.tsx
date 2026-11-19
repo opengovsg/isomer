@@ -1,15 +1,17 @@
 import type { SingleCardWithImageProps } from "~/interfaces/complex/InfoCards"
 import { INFOCARD_VARIANT } from "~/interfaces/complex/InfoCards"
+import { isFocalApplicable } from "~/interfaces/constants"
 import { getTailwindVariantLayout } from "~/utils/getTailwindVariantLayout"
 
 import type { With4Cols } from "./types"
-import { ImageClient } from "../../../internal/ImageClient"
+import { ImageClientWithAdjustment } from "../../../internal/ImageClient"
 import { compoundStyles } from "../common"
 
 export const InfoCardImage = ({
   imageUrl,
   imageAlt,
   imageFit,
+  imageUrlImageAdjustment: imageAdjustment,
   maxColumns,
   url,
   layout,
@@ -25,11 +27,20 @@ export const InfoCardImage = ({
   | "maxColumns"
   | "url"
   | "imageFit"
+  | "imageUrlImageAdjustment"
   | "layout"
   | "site"
   | "shouldLazyLoad"
   | "variant"
 >): JSX.Element => {
+  // Focal point for a "cover"-fit card: anchors the subject as the card's
+  // aspect ratio swings across breakpoints. Ignored under "contain": the whole
+  // (already-cropped) image is letterboxed, so an object-position would only
+  // shove it off-center within the letterbox — a focal set earlier under cover
+  // must not leak through. "contain" cards always keep the object-center default.
+  const effectiveImageAdjustment = isFocalApplicable(imageFit)
+    ? imageAdjustment
+    : undefined
   return (
     <div
       className={compoundStyles.cardImageContainer({
@@ -40,7 +51,7 @@ export const InfoCardImage = ({
         isFallback,
       })}
     >
-      <ImageClient
+      <ImageClientWithAdjustment
         src={imageUrl}
         alt={imageAlt}
         width="100%"
@@ -48,6 +59,7 @@ export const InfoCardImage = ({
           imageFit,
           isFallback,
         })}
+        imageAdjustment={effectiveImageAdjustment}
         assetsBaseUrl={site.assetsBaseUrl}
         lazyLoading={shouldLazyLoad}
       />
