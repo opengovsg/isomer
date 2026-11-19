@@ -19,31 +19,31 @@ next /
    0.2 KB  initial  main-app-494bd9a01025f8d0.js
 
 astro /
-  13.3 KB  initial  Page.astro_astro_type_script_index_0_lang.B0yd5JB1.js
+  13.2 KB  initial  Page.astro_astro_type_script_index_0_lang.D5tvxXpb.js
   12.3 KB  initial  tv.CwX-rLW0.js
   10.7 KB  initial  IsomerString.D5XYTzG1.js
-   9.4 KB  initial  rac.DVCTbh65.js
-   7.2 KB  initial  NavbarClient.CNwn_ype.js
+   9.4 KB  initial  rac.BVgrUdhX.js
+   7.2 KB  initial  NavbarClient.BH01y1Qm.js
    6.8 KB  initial  twMerge.BhSkgcO-.js
-   4.9 KB  initial  useRotation.PNj2VzYN.js
-   3.8 KB  initial  tailwind.DwQesqbt.js
+   4.9 KB  initial  useRotation.D5WjKE67.js
+   3.8 KB  initial  tailwind.7_Tv1Eu9.js
    3.3 KB  initial  omit.C3V6bErZ.js
-   3.1 KB  initial  dist.LH1QQMB9.js
+   3.1 KB  initial  dist.BeCj5f0Q.js
    3.0 KB  initial  _Uint8Array.BW2c5OfL.js
-   1.4 KB  initial  UnsupportedBrowserBanner.CrH8O7Tx.js
-   1.2 KB  initial  HeroCarouselBlockClient.DmrhsOJb.js
+   1.4 KB  initial  UnsupportedBrowserBanner.C-4Gmmue.js
+   1.2 KB  initial  HeroCarouselBlockClient.1h033RRG.js
    0.8 KB  initial  Image.gSABOda1.js
-   0.6 KB  initial  common.3tOYY4cL.js
-   0.6 KB  initial  IconButton.BWeXTajt.js
-   0.5 KB  initial  Link.KJis8grA.js
+   0.6 KB  initial  common.CJPrCCdF.js
+   0.6 KB  initial  IconButton.CrQukzKr.js
+   0.5 KB  initial  Link.NkxnPS9U.js
    0.5 KB  initial  rolldown-runtime.BWaJ3C7D.js
-   0.4 KB  initial  ImageClient.r6pEqhbk.js
-   0.4 KB  initial  SearchSGInputBox.70LWuH0Y.js
-   0.3 KB  initial  useSearchSGScript.Cy26TcCm.js
-   0.3 KB  initial  LinkButton.D6pRziXg.js
+   0.4 KB  initial  ImageClient.BN_2knCE.js
+   0.4 KB  initial  SearchSGInputBox.BLTaGOP_.js
+   0.4 KB  initial  useSearchSGScript.CVI2BkUA.js
+   0.3 KB  initial  LinkButton.DA7hE6N5.js
    0.3 KB  initial  toString.BZ3Vure_.js
    0.3 KB  initial  constants.P0dBrFcF.js
-   0.2 KB  initial  client.BjIqLJDO.js
+   0.2 KB  initial  client.CqmLoFzX.js
    0.1 KB  initial  isExternalUrl.DjBkUdWv.js
 
 next /content/
@@ -59,27 +59,27 @@ next /content/
    0.2 KB  initial  main-app-494bd9a01025f8d0.js
 
 astro /content/
-  13.3 KB  initial  Page.astro_astro_type_script_index_0_lang.B0yd5JB1.js
+  13.2 KB  initial  Page.astro_astro_type_script_index_0_lang.D5tvxXpb.js
   12.3 KB  initial  tv.CwX-rLW0.js
-   9.4 KB  initial  rac.DVCTbh65.js
-   7.2 KB  initial  NavbarClient.CNwn_ype.js
+   9.4 KB  initial  rac.BVgrUdhX.js
+   7.2 KB  initial  NavbarClient.BH01y1Qm.js
    6.8 KB  initial  twMerge.BhSkgcO-.js
-   3.8 KB  initial  tailwind.DwQesqbt.js
-   3.1 KB  initial  dist.LH1QQMB9.js
-   1.9 KB  lazy     ImageGalleryClient.B7zbLA11.js
-   1.4 KB  initial  UnsupportedBrowserBanner.CrH8O7Tx.js
-   1.3 KB  lazy     LiteYouTubeEmbed.Bgxh48D1.js
-   0.6 KB  initial  common.3tOYY4cL.js
-   0.6 KB  initial  IconButton.BWeXTajt.js
-   0.5 KB  initial  Link.KJis8grA.js
+   3.8 KB  initial  tailwind.7_Tv1Eu9.js
+   3.1 KB  initial  dist.BeCj5f0Q.js
+   1.9 KB  lazy     ImageGalleryClient.C6PMqvQ7.js
+   1.4 KB  initial  UnsupportedBrowserBanner.C-4Gmmue.js
+   1.3 KB  lazy     LiteYouTubeEmbed.9kRd_PbP.js
+   0.6 KB  initial  common.CJPrCCdF.js
+   0.6 KB  initial  IconButton.CrQukzKr.js
+   0.5 KB  initial  Link.NkxnPS9U.js
    0.5 KB  initial  rolldown-runtime.BWaJ3C7D.js
-   0.4 KB  initial  ImageClient.r6pEqhbk.js
-   0.4 KB  initial  BackToTopLink.CHdW1Tkb.js
-   0.4 KB  initial  SearchSGInputBox.70LWuH0Y.js
-   0.3 KB  initial  useSearchSGScript.Cy26TcCm.js
-   0.3 KB  initial  LinkButton.D6pRziXg.js
-   0.2 KB  initial  client.BjIqLJDO.js
-   0.2 KB  lazy     useBreakpoint.Bbl5tNvt.js
+   0.4 KB  initial  ImageClient.BN_2knCE.js
+   0.4 KB  initial  BackToTopLink.BfJ83OKm.js
+   0.4 KB  initial  SearchSGInputBox.BLTaGOP_.js
+   0.4 KB  initial  useSearchSGScript.CVI2BkUA.js
+   0.3 KB  initial  LinkButton.DA7hE6N5.js
+   0.2 KB  initial  client.CqmLoFzX.js
+   0.2 KB  lazy     useBreakpoint.BD_u2cLz.js
    0.1 KB  lazy     shared.9XRgrHDo.js
    0.1 KB  initial  isExternalUrl.DjBkUdWv.js
 
@@ -96,39 +96,39 @@ next /collection-1/
    0.2 KB  initial  main-app-494bd9a01025f8d0.js
 
 astro /collection-1/
-  24.5 KB  initial  CollectionClient.CeAKC03l.js
-  13.3 KB  initial  Page.astro_astro_type_script_index_0_lang.B0yd5JB1.js
+  24.5 KB  initial  CollectionClient.D9aLmkn-.js
+  13.2 KB  initial  Page.astro_astro_type_script_index_0_lang.D5tvxXpb.js
   12.3 KB  initial  tv.CwX-rLW0.js
   10.7 KB  initial  IsomerString.D5XYTzG1.js
-   9.4 KB  initial  rac.DVCTbh65.js
-   7.2 KB  initial  NavbarClient.CNwn_ype.js
-   7.0 KB  initial  Checkbox.DlYWZVE1.js
+   9.4 KB  initial  rac.BVgrUdhX.js
+   7.2 KB  initial  NavbarClient.BH01y1Qm.js
+   7.0 KB  initial  Checkbox.CoecTxR0.js
    6.8 KB  initial  twMerge.BhSkgcO-.js
    5.4 KB  initial  format.B0T9Qc1y.js
-   3.8 KB  initial  tailwind.DwQesqbt.js
-   3.4 KB  initial  useFormValidationState.BHOw-4ST.js
-   3.1 KB  initial  dist.LH1QQMB9.js
+   3.8 KB  initial  tailwind.7_Tv1Eu9.js
+   3.4 KB  initial  useFormValidationState.Cu07lT1j.js
+   3.1 KB  initial  dist.BeCj5f0Q.js
    3.0 KB  initial  _Uint8Array.BW2c5OfL.js
-   1.6 KB  initial  Search.DhbLUXbF.js
+   1.6 KB  initial  Search.sLJCojHf.js
    1.5 KB  initial  isEqual.DCSSjEi-.js
-   1.4 KB  initial  UnsupportedBrowserBanner.CrH8O7Tx.js
+   1.4 KB  initial  UnsupportedBrowserBanner.C-4Gmmue.js
    0.8 KB  initial  Image.gSABOda1.js
-   0.7 KB  initial  DateFilterStatusClient.CBoUmqQc.js
-   0.6 KB  initial  common.3tOYY4cL.js
-   0.6 KB  initial  IconButton.BWeXTajt.js
-   0.6 KB  initial  ExternalLinkTitle.BOOzkhuz.js
-   0.5 KB  initial  Link.KJis8grA.js
+   0.7 KB  initial  DateFilterStatusClient.avzparzK.js
+   0.6 KB  initial  common.CJPrCCdF.js
+   0.6 KB  initial  IconButton.CrQukzKr.js
+   0.6 KB  initial  ExternalLinkTitle.DMs1sYpU.js
+   0.5 KB  initial  Link.NkxnPS9U.js
    0.5 KB  initial  rolldown-runtime.BWaJ3C7D.js
-   0.4 KB  initial  ImageClient.r6pEqhbk.js
-   0.4 KB  initial  useQueryParams.Cmo_uA3Q.js
-   0.4 KB  initial  BackToTopLink.CHdW1Tkb.js
-   0.4 KB  initial  SearchSGInputBox.70LWuH0Y.js
-   0.3 KB  initial  useSearchSGScript.Cy26TcCm.js
-   0.3 KB  initial  LinkButton.D6pRziXg.js
+   0.4 KB  initial  ImageClient.BN_2knCE.js
+   0.4 KB  initial  useQueryParams.DJ8e2ijB.js
+   0.4 KB  initial  BackToTopLink.BfJ83OKm.js
+   0.4 KB  initial  SearchSGInputBox.BLTaGOP_.js
+   0.4 KB  initial  useSearchSGScript.CVI2BkUA.js
+   0.3 KB  initial  LinkButton.DA7hE6N5.js
    0.3 KB  initial  constants.P0dBrFcF.js
    0.2 KB  initial  getSingaporeDate.4siBArG0.js
-   0.2 KB  initial  client.BjIqLJDO.js
-   0.2 KB  initial  useBreakpoint.Bbl5tNvt.js
+   0.2 KB  initial  client.CqmLoFzX.js
+   0.2 KB  initial  useBreakpoint.BD_u2cLz.js
    0.1 KB  initial  isExternalUrl.DjBkUdWv.js
    0.1 KB  initial  getHeadingTag.CGMUzUll.js
 
@@ -145,24 +145,24 @@ next /collection-1/article-1/
    0.2 KB  initial  main-app-494bd9a01025f8d0.js
 
 astro /collection-1/article-1/
-  13.3 KB  initial  Page.astro_astro_type_script_index_0_lang.B0yd5JB1.js
+  13.2 KB  initial  Page.astro_astro_type_script_index_0_lang.D5tvxXpb.js
   12.3 KB  initial  tv.CwX-rLW0.js
-   9.4 KB  initial  rac.DVCTbh65.js
-   7.2 KB  initial  NavbarClient.CNwn_ype.js
+   9.4 KB  initial  rac.BVgrUdhX.js
+   7.2 KB  initial  NavbarClient.BH01y1Qm.js
    6.8 KB  initial  twMerge.BhSkgcO-.js
-   3.8 KB  initial  tailwind.DwQesqbt.js
-   3.1 KB  initial  dist.LH1QQMB9.js
-   1.4 KB  initial  UnsupportedBrowserBanner.CrH8O7Tx.js
-   0.6 KB  initial  IconButton.BWeXTajt.js
-   0.6 KB  initial  common.3tOYY4cL.js
-   0.5 KB  initial  Link.KJis8grA.js
+   3.8 KB  initial  tailwind.7_Tv1Eu9.js
+   3.1 KB  initial  dist.BeCj5f0Q.js
+   1.4 KB  initial  UnsupportedBrowserBanner.C-4Gmmue.js
+   0.6 KB  initial  common.CJPrCCdF.js
+   0.6 KB  initial  IconButton.CrQukzKr.js
+   0.5 KB  initial  Link.NkxnPS9U.js
    0.5 KB  initial  rolldown-runtime.BWaJ3C7D.js
-   0.4 KB  initial  ImageClient.r6pEqhbk.js
-   0.4 KB  initial  BackToTopLink.CHdW1Tkb.js
-   0.4 KB  initial  SearchSGInputBox.70LWuH0Y.js
-   0.3 KB  initial  useSearchSGScript.Cy26TcCm.js
-   0.3 KB  initial  LinkButton.D6pRziXg.js
-   0.2 KB  initial  client.BjIqLJDO.js
+   0.4 KB  initial  ImageClient.BN_2knCE.js
+   0.4 KB  initial  BackToTopLink.BfJ83OKm.js
+   0.4 KB  initial  SearchSGInputBox.BLTaGOP_.js
+   0.4 KB  initial  useSearchSGScript.CVI2BkUA.js
+   0.3 KB  initial  LinkButton.DA7hE6N5.js
+   0.2 KB  initial  client.CqmLoFzX.js
    0.1 KB  initial  isExternalUrl.DjBkUdWv.js
 
 next /database/
@@ -178,28 +178,28 @@ next /database/
    0.2 KB  initial  main-app-494bd9a01025f8d0.js
 
 astro /database/
-  15.7 KB  initial  BaseParagraph.CwXmliSx.js
-  13.3 KB  initial  Page.astro_astro_type_script_index_0_lang.B0yd5JB1.js
+  15.7 KB  initial  BaseParagraph.B9RY5s2w.js
+  13.2 KB  initial  Page.astro_astro_type_script_index_0_lang.D5tvxXpb.js
   12.3 KB  initial  tv.CwX-rLW0.js
-   9.4 KB  initial  rac.DVCTbh65.js
-   7.2 KB  initial  NavbarClient.CNwn_ype.js
+   9.4 KB  initial  rac.BVgrUdhX.js
+   7.2 KB  initial  NavbarClient.BH01y1Qm.js
    6.8 KB  initial  twMerge.BhSkgcO-.js
-   3.8 KB  initial  tailwind.DwQesqbt.js
-   3.4 KB  initial  useFormValidationState.BHOw-4ST.js
-   3.1 KB  initial  dist.LH1QQMB9.js
-   1.9 KB  initial  SearchableTableClient.B4CWRpUc.js
-   1.6 KB  initial  Search.DhbLUXbF.js
-   1.4 KB  initial  UnsupportedBrowserBanner.CrH8O7Tx.js
-   0.6 KB  initial  common.3tOYY4cL.js
-   0.6 KB  initial  IconButton.BWeXTajt.js
-   0.5 KB  initial  Link.KJis8grA.js
+   3.8 KB  initial  tailwind.7_Tv1Eu9.js
+   3.4 KB  initial  useFormValidationState.Cu07lT1j.js
+   3.1 KB  initial  dist.BeCj5f0Q.js
+   1.9 KB  initial  SearchableTableClient.C3knzjE4.js
+   1.6 KB  initial  Search.sLJCojHf.js
+   1.4 KB  initial  UnsupportedBrowserBanner.C-4Gmmue.js
+   0.6 KB  initial  common.CJPrCCdF.js
+   0.6 KB  initial  IconButton.CrQukzKr.js
+   0.5 KB  initial  Link.NkxnPS9U.js
    0.5 KB  initial  rolldown-runtime.BWaJ3C7D.js
-   0.4 KB  initial  ImageClient.r6pEqhbk.js
-   0.4 KB  initial  SearchSGInputBox.70LWuH0Y.js
-   0.3 KB  initial  useSearchSGScript.Cy26TcCm.js
-   0.3 KB  initial  LinkButton.D6pRziXg.js
-   0.2 KB  initial  client.BjIqLJDO.js
-   0.2 KB  initial  useBreakpoint.Bbl5tNvt.js
+   0.4 KB  initial  ImageClient.BN_2knCE.js
+   0.4 KB  initial  SearchSGInputBox.BLTaGOP_.js
+   0.4 KB  initial  useSearchSGScript.CVI2BkUA.js
+   0.3 KB  initial  LinkButton.DA7hE6N5.js
+   0.2 KB  initial  client.CqmLoFzX.js
+   0.2 KB  initial  useBreakpoint.BD_u2cLz.js
    0.1 KB  initial  isExternalUrl.DjBkUdWv.js
 | Page | Metric | Next (KB) | Astro (KB) | Δ |
 |---|---|---:|---:|---:|
@@ -221,10 +221,10 @@ astro /database/
 | `/content/` | Fonts | 47.3 | 47.1 | -0% |
 | `/content/` | JS (lazy, after load) | 0.0 | 3.5 | — |
 | `/content/` | RSC fetches | 0.0 | 0.0 | — |
-| `/content/` | Third-party (excluded) | 16845.7 | 16857.7 | 0% |
+| `/content/` | Third-party (excluded) | 16856.5 | 16856.2 | -0% |
 | `/content/` | JS files fetched | 10 | 23 | |
 | `/collection-1/` | **Total first load** | 421.7 | 225.9 | -46% |
-| `/collection-1/` | HTML | 76.1 | 37.6 | -51% |
+| `/collection-1/` | HTML | 76.1 | 37.5 | -51% |
 | `/collection-1/` | ↳ embedded payload (RSC / island props) | 42.0 | 0.0 | -100% |
 | `/collection-1/` | **JS (initial)** | 278.9 | 122.3 | -56% |
 | `/collection-1/` | CSS | 19.3 | 18.9 | -2% |

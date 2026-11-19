@@ -7,13 +7,9 @@ import { createRoot } from "react-dom/client"
 
 import { whileHydrating } from "./react"
 
-// react-dom/server separates adjacent text with comments; compare text as one node.
+// A client render can split text the server wrote as one node; compare it as one.
 const childNodes = (node: Node) => {
   const copy = node.cloneNode(true)
-  const walker = document.createTreeWalker(copy, NodeFilter.SHOW_COMMENT)
-  const comments: Node[] = []
-  while (walker.nextNode()) comments.push(walker.currentNode)
-  comments.forEach((comment) => comment.parentNode?.removeChild(comment))
   copy.normalize()
   return [...copy.childNodes]
 }

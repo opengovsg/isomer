@@ -1,11 +1,12 @@
 --- a/apps/template-astro/astro.config.ts
 +++ b/apps/template-astro/astro.config.ts
-@@ -13,6 +13,18 @@
+@@ -14,6 +14,17 @@
    "react/jsx-dev-runtime": "preact/jsx-dev-runtime",
    react: "preact/compat",
  }
 +// EXPERIMENT switches for the measured alternatives:
-+// ISLANDS_RUNTIME=react (no swap) | redact (TanStack Redact, needs @tanstack/redact)
++// ISLANDS_RUNTIME=react (React everywhere) | redact (TanStack Redact in the browser, React on the
++// server; needs @tanstack/redact)
 +const REDACT_ALIASES: Record<string, string> = {
 +  "react-dom/client": "@tanstack/redact/dom-client",
 +  "react-dom": "@tanstack/redact/dom",
@@ -13,13 +14,11 @@
 +  "react/jsx-dev-runtime": "@tanstack/redact/jsx-dev-runtime",
 +  react: "@tanstack/redact",
 +}
-+const CLIENT_ALIASES =
-+  process.env.ISLANDS_RUNTIME === "redact" ? REDACT_ALIASES : PREACT_ALIASES
-+const SWAP_CLIENT_RUNTIME = process.env.ISLANDS_RUNTIME !== "react"
++const RUNTIME = process.env.ISLANDS_RUNTIME ?? "preact"
  
  export default defineConfig({
    output: "static",
-@@ -22,7 +34,8 @@
+@@ -23,7 +34,8 @@
    prefetch: false,
    devToolbar: { enabled: false },
    experimental: {
@@ -29,17 +28,21 @@
    },
    vite: {
      // isomer-components is a linked workspace package: without this, dev loads React twice.
-@@ -38,8 +51,8 @@
+@@ -51,7 +63,13 @@
+         enforce: "pre",
          resolveId(source, importer, options) {
            if (source === "react" && importer !== REACT) return REACT
-           const target =
--            this.environment.name === "client"
--              ? PREACT_ALIASES[source]
-+            this.environment.name === "client" && SWAP_CLIENT_RUNTIME
-+              ? CLIENT_ALIASES[source]
-               : undefined
+-          const target = PREACT_ALIASES[source]
++          const aliases =
++            RUNTIME === "preact"
++              ? PREACT_ALIASES
++              : RUNTIME === "redact" && this.environment.name === "client"
++                ? REDACT_ALIASES
++                : {}
++          const target = aliases[source]
            return target
              ? this.resolve(target, import.meta.dirname + "/package.json", {
+                 ...options,
 --- a/apps/template-astro/src/islands/client.ts
 +++ b/apps/template-astro/src/islands/client.ts
 @@ -33,6 +33,11 @@
@@ -79,7 +82,7 @@
  import { renderToString } from "react-dom/server"
  
  import { serializeForInlineScript } from "@isomer/validators"
-@@ -54,6 +56,12 @@
+@@ -58,6 +60,12 @@
    "h",
  )
  
@@ -92,7 +95,7 @@
  export const renderPage = (
    schema: IsomerPageSchemaType,
    { withPageJsonLd = true } = {},
-@@ -62,7 +70,7 @@
+@@ -66,7 +74,7 @@
    return {
      head: toHtml(<RenderPageHead {...renderSchema} />, "m"),
      headScripts,

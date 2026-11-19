@@ -19,7 +19,7 @@ import {
 import { createElement, isValidElement, useId } from "react"
 import { renderToString } from "react-dom/server"
 
-import { withIslandIds, withoutIslandIds } from "./react"
+import { withIslandIds } from "./react"
 
 const isServerRendered = (value: unknown) =>
   isValidElement(value) || (Array.isArray(value) && value.some(isValidElement))
@@ -46,12 +46,13 @@ const serializeProps = (props: Record<string, unknown>, name: string) =>
   })
 
 // Slot contents are ordinary server-rendered markup, so islands inside them are islands again.
-const Slot = ({ children }: { children?: ReactNode }) =>
+// The browser reuses it as-is, so its ids are counted separately from the island's own.
+const Slot = ({ id, children }: { id: string; children?: ReactNode }) =>
   createElement(
     SLOT_TAG,
     slotAttributes,
     <InsideIsland.Provider value={false}>
-      {withoutIslandIds(children)}
+      {withIslandIds(`${id}-slot`, children)}
     </InsideIsland.Provider>,
   )
 
@@ -61,7 +62,7 @@ const ServerIsland = ({ name, hydrate, Component, props }: HostIslandProps) => {
   const hasSlot = isServerRendered(children)
 
   // Rendered as a separate root, exactly like the browser hydrates it, with ids counted from the
-  // island's id (see ./react). identifierPrefix keeps the ids of islands in its slot unique.
+  // island's id (see ./react).
   const html = renderToString(
     withIslandIds(
       id,
@@ -69,12 +70,14 @@ const ServerIsland = ({ name, hydrate, Component, props }: HostIslandProps) => {
         Component={Component}
         props={
           hasSlot
-            ? { ...rest, children: <Slot>{children as ReactNode}</Slot> }
+            ? {
+                ...rest,
+                children: <Slot id={id}>{children as ReactNode}</Slot>,
+              }
             : props
         }
       />,
     ),
-    { identifierPrefix: id },
   )
 
   return createElement(ISLAND_TAG, {

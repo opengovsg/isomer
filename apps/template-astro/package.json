@@ -25,6 +25,7 @@
     "postcss": "catalog:",
     "postcss-preset-env": "catalog:",
     "preact": "catalog:",
+    "preact-render-to-string": "catalog:",
     "react": "catalog:react",
     "react-dom": "catalog:react",
     "tailwindcss": "catalog:",
