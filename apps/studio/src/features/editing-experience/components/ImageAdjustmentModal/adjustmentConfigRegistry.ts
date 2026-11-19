@@ -1,4 +1,5 @@
 import type { IsomerComponent } from "@opengovsg/isomer-components"
+import { HeroCarouselPreviewProvider } from "@opengovsg/isomer-components"
 import { createElement } from "react"
 
 import type {
@@ -61,6 +62,30 @@ const buildBlockquotePreview: BuildAdjustmentPreview = (ctx) => {
       imageAlt:
         typeof alt === "string" && alt.length > 0 ? alt : "Preview image",
     } as unknown as IsomerComponent,
+  }
+}
+
+// Builds the carousel preview. It keeps every slide because the tallest slide
+// sets the carousel's height, and holds the carousel on the edited slide.
+const buildCarouselSlidePreview: BuildAdjustmentPreview = (ctx) => {
+  const { block, itemIndex } = ctx
+  if (block.type !== "hero" || block.variant !== "carousel") return undefined
+  if (itemIndex === undefined) return undefined
+  const editedSlide = withAdjustedImage(ctx) as (typeof block.slides)[number]
+  const slides = block.slides.map((slide, i) =>
+    i === itemIndex ? editedSlide : slide,
+  )
+  return {
+    component: { ...block, slides },
+    wrapPreview: (children) =>
+      createElement(HeroCarouselPreviewProvider, {
+        value: {
+          activeIndex: itemIndex,
+          setActiveIndex: () => undefined,
+          autoplay: false,
+        },
+        children,
+      }),
   }
 }
 
@@ -160,6 +185,31 @@ const HERO_BLOCK_CONFIG: AdjustmentConfig = {
     templateUrl:
       "https://isomer-user-content.by.gov.sg/Studio/Isomer%20-%20Hero%20banner%20Block%20%C2%B7%201280%C3%97860.png?original=true",
   },
+}
+
+// Hero carousel. Preview shapes, upload guidance and the low-res warning size
+// follow the carousel's layout, block or gradient.
+const heroCarouselConfig = (block: IsomerComponent): AdjustmentConfig => {
+  const isBlockLayout =
+    block.type === "hero" &&
+    block.variant === "carousel" &&
+    block.carousel?.layout === "block"
+  const layoutConfig = isBlockLayout ? HERO_BLOCK_CONFIG : HERO_GRADIENT_CONFIG
+  const isCentred =
+    block.type === "hero" &&
+    block.variant === "carousel" &&
+    block.carousel?.layout === "gradient" &&
+    block.carousel.contentAlignment === "center"
+  // Centred gradient slides link to the guide only, with no template.
+  const links = layoutConfig.preUploadLinks
+  const centredLinks = links && (({ templateUrl: _, ...rest }) => rest)(links)
+  // Everything else matches the single hero of that layout.
+  return {
+    ...layoutConfig,
+    componentType: "hero:carousel",
+    buildPreview: buildCarouselSlidePreview,
+    preUploadLinks: isCentred ? centredLinks : links,
+  }
 }
 
 // Tier A — fixed 5:6 crop (aspect-[5/6]), no focal. The crop is baked into the
@@ -532,7 +582,8 @@ const buildCollectionThumbnailConfig = (
 }
 
 // Static configs. resolveAdjustmentConfig matches on `type:variant` or bare
-// `type`, plus the image field name. The first match wins, so list a
+// `type`, plus the image field name. It resolves the collection thumbnail and
+// the hero carousel before this lookup. The first match wins, so list a
 // `type:variant` entry before the bare `type` one.
 export const CONFIGS: AdjustmentConfig[] = [
   IMAGE_CONFIG,
@@ -570,6 +621,12 @@ export function resolveAdjustmentConfig(args: {
     "variant" in block && typeof block.variant === "string"
       ? block.variant
       : undefined
+  if (
+    block.type === "hero" &&
+    variant === "carousel" &&
+    fieldName === "backgroundUrl"
+  )
+    return heroCarouselConfig(block)
   // No match means not wired yet. The registry test asserts the deliberate
   // opt-outs.
   return CONFIGS.find(
