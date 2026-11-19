@@ -1,5 +1,3 @@
-"use client"
-
 import type { SearchableTableClientProps } from "~/interfaces"
 import { useId, useRef } from "react"
 import { tv } from "~/lib/tv"

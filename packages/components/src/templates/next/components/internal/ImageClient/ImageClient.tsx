@@ -1,10 +1,9 @@
-"use client"
-
 import type { ImageClientProps } from "~/interfaces"
 import { forwardRef } from "react"
+import { island } from "~/islands/island"
 import { isExternalUrl } from "~/utils/isExternalUrl"
 
-export const ImageClient = forwardRef<
+const ImageClientComponent = forwardRef<
   HTMLImageElement,
   Omit<ImageClientProps, "ref">
 >(
@@ -45,3 +44,7 @@ export const ImageClient = forwardRef<
     )
   },
 )
+
+export const ImageClient = island("ImageClient", ImageClientComponent, {
+  hydrate: "load",
+})

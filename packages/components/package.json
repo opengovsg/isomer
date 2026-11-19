@@ -28,6 +28,10 @@
     "./build-utils": {
       "import": "./dist/esm/build-utils/index.js",
       "default": "./dist/esm/build-utils/index.js"
+    },
+    "./islands": {
+      "import": "./dist/esm/islands/index.js",
+      "default": "./dist/esm/islands/index.js"
     }
   },
   "publishConfig": {

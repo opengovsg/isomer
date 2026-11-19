@@ -1,9 +1,8 @@
-"use client"
-
 import type { DynamicDataBannerProps } from "~/interfaces"
 import { useEffect, useState } from "react"
 import { BiError } from "react-icons/bi"
 import { DYNAMIC_DATA_BANNER_NUMBER_OF_DATA } from "~/interfaces/complex/DynamicDataBanner/constants"
+import { island } from "~/islands/island"
 import { tv } from "~/lib/tv"
 import { twMerge } from "~/lib/twMerge"
 import {
@@ -126,7 +125,7 @@ const DynamicDataBannerUI = ({
   )
 }
 
-export const DynamicDataBannerClient = ({
+const DynamicDataBannerClientComponent = ({
   apiEndpoint,
   title,
   data,
@@ -187,3 +186,9 @@ export const DynamicDataBannerClient = ({
     />
   )
 }
+
+export const DynamicDataBannerClient = island(
+  "DynamicDataBannerClient",
+  DynamicDataBannerClientComponent,
+  { hydrate: "load" },
+)

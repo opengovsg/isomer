@@ -1,0 +1,14 @@
+---
+import Page from "../layouts/Page.astro"
+import { renderPage } from "../lib/render"
+import { getPermalinks, getSchema } from "../lib/site"
+
+export const getStaticPaths = () =>
+  getPermalinks().map((permalink) => ({
+    params: { permalink: permalink || undefined },
+  }))
+
+const page = renderPage(getSchema(Astro.params.permalink ?? ""))
+---
+
+<Page {...page} />

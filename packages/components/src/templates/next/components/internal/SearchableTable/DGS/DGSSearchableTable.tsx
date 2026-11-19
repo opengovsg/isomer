@@ -1,14 +1,13 @@
-"use client"
-
 import type { DGSSearchableTableProps } from "~/interfaces"
 import { useMemo } from "react"
 import { useDgsMetadata } from "~/hooks/useDgsMetadata"
+import { island } from "~/islands/island"
 import { DGS_REQUEST_MAX_BYTES } from "~/utils/dgs"
 
 import { DynamicDGSSearchableTable } from "./DynamicDGSSearchableTable"
 import { StaticDGSSearchableTable } from "./StaticDGSSearchableTable"
 
-export const DGSSearchableTable = ({
+const DGSSearchableTableComponent = ({
   dataSource,
   title,
   headers,
@@ -70,3 +69,9 @@ export const DGSSearchableTable = ({
     )
   }
 }
+
+export const DGSSearchableTable = island(
+  "DGSSearchableTable",
+  DGSSearchableTableComponent,
+  { hydrate: "load" },
+)

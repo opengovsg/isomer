@@ -1,8 +1,7 @@
-"use client"
-
 import type { ImageGalleryClientProps } from "~/interfaces/complex/ImageGallery"
 import { useCallback, useMemo, useRef, useState, useTransition } from "react"
 import { useBreakpoint } from "~/hooks/useBreakpoint"
+import { island } from "~/islands/island"
 import { tv } from "~/lib/tv"
 
 import { ImageClient } from "../../internal/ImageClient"
@@ -56,7 +55,7 @@ const slideStyles = tv({
 
 const compoundStyles = createImagePreviewStyles()
 
-export const ImageGalleryClient = ({
+const ImageGalleryClientComponent = ({
   images,
   assetsBaseUrl,
   shouldLazyLoad,
@@ -182,11 +181,7 @@ export const ImageGalleryClient = ({
   }
 
   return (
-    <section
-      className="mt-6 w-full first:mt-0"
-      role="region"
-      aria-label="Image gallery"
-    >
+    <section className="w-full" role="region" aria-label="Image gallery">
       {/* Main Slideshow */}
       <div className="relative h-[17rem] w-full overflow-hidden border bg-white sm:h-[28.5rem]">
         <div className="relative h-full w-full">
@@ -315,3 +310,9 @@ export const ImageGalleryClient = ({
     </section>
   )
 }
+
+export const ImageGalleryClient = island(
+  "ImageGalleryClient",
+  ImageGalleryClientComponent,
+  { hydrate: "visible" },
+)

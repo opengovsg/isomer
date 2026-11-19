@@ -1,7 +1,6 @@
-"use client"
-
 import type { ImageClientProps } from "~/interfaces"
 import { useEffect, useRef, useState } from "react"
+import { island } from "~/islands/island"
 
 import { ImageClient } from "../../../internal/ImageClient"
 import { ScrollForMoreButton } from "./ScrollForMoreButton"
@@ -15,7 +14,7 @@ interface ImageContainerProps {
 // Arbitrary threshold to prevent the button from showing too early
 const SCROLL_THRESHOLD = 120
 
-export const ImageContainer = ({
+const ImageContainerComponent = ({
   imageSrc,
   imageAlt,
   assetsBaseUrl,
@@ -70,3 +69,9 @@ export const ImageContainer = ({
     </div>
   )
 }
+
+export const ImageContainer = island(
+  "ImageContainer",
+  ImageContainerComponent,
+  { hydrate: "load" },
+)

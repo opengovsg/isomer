@@ -1,7 +1,6 @@
-"use client"
-
 import type { SVGProps, SyntheticEvent } from "react"
 import { useEffect, useState } from "react"
+import { island } from "~/islands/island"
 import { twMerge } from "~/lib/twMerge"
 
 import { ImageClient } from "../../internal/ImageClient"
@@ -15,7 +14,7 @@ export interface LiteYouTubeEmbedProps {
 }
 
 // Referenced from https://github.com/ibrahimcesar/react-lite-youtube-embed
-export const LiteYouTubeEmbed = ({
+const LiteYouTubeEmbedComponent = ({
   src,
   videoId,
   title,
@@ -143,4 +142,10 @@ const YouTubePlayButton = (props: SVGProps<SVGSVGElement>) => (
     />
     <path fill="#fff" d="M45 24 27 14v20" />
   </svg>
+)
+
+export const LiteYouTubeEmbed = island(
+  "LiteYouTubeEmbed",
+  LiteYouTubeEmbedComponent,
+  { hydrate: "visible" },
 )

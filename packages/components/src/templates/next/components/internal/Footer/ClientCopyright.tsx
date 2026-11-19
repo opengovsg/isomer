@@ -1,5 +1,3 @@
-"use client"
-
 import type { IsomerSiteProps } from "~/types"
 
 interface ClientCopyrightProps extends Pick<

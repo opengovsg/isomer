@@ -3,17 +3,16 @@ import type {
   IsomerPageSchemaType,
   IsomerSchema,
 } from "@opengovsg/isomer-components"
-import type { PropsWithChildren } from "react"
+import type { MouseEvent } from "react"
 import type { PartialDeep } from "type-fest"
 import { Skeleton } from "@chakra-ui/react"
 import {
   HeroCarouselPreviewProvider,
-  LinkComponentProvider,
   RenderEngine,
 } from "@opengovsg/isomer-components"
 import { merge } from "lodash-es"
 import Script from "next/script"
-import { forwardRef, useEffect } from "react"
+import { useEffect } from "react"
 import { withSuspense } from "~/hocs/withSuspense"
 import { ASSETS_BASE_URL } from "~/utils/generateAssetUrl"
 import { trpc } from "~/utils/trpc"
@@ -31,14 +30,13 @@ export type PreviewProps = IsomerSchema & {
   onRendered?: () => void
 }
 
-// Add a fake link component to prevent the preview from navigating away
-const FakeLink = forwardRef<HTMLAnchorElement, PropsWithChildren<unknown>>(
-  ({ children, ...rest }, ref) => (
-    <a {...rest} ref={ref} onClick={(e) => e.preventDefault()}>
-      {children}
-    </a>
-  ),
-)
+// Keep the preview from navigating away when a link inside it is clicked. Capture phase, so it
+// covers every anchor (components' links and links inside rendered prose) and still lets the
+// components' own click handlers run.
+const preventLinkNavigation = (event: MouseEvent) => {
+  if (event.target instanceof Element && event.target.closest("a"))
+    event.preventDefault()
+}
 
 const defaultLastModified = new Date().toISOString()
 
@@ -99,7 +97,7 @@ function SuspendablePreviewWithCustomSitemap({
   )
 
   return (
-    <LinkComponentProvider value={FakeLink}>
+    <div style={{ display: "contents" }} onClickCapture={preventLinkNavigation}>
       {heroCarousel ? (
         <HeroCarouselPreviewProvider value={heroCarousel}>
           {page}
@@ -107,7 +105,7 @@ function SuspendablePreviewWithCustomSitemap({
       ) : (
         page
       )}
-    </LinkComponentProvider>
+    </div>
   )
 }
 

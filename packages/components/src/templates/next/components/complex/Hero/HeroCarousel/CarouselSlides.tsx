@@ -149,7 +149,9 @@ export const CarouselSlideContent = ({
           role="group"
           aria-roledescription="slide"
           aria-label={`${index + 1} of ${slides.length}`}
-          {...(isCurrent ? {} : { inert: "" })}
+          // "true", not "": React 18 only writes it as an attribute, and Preact sets the
+          // `inert` property, where "" would mean false.
+          {...(isCurrent ? {} : { inert: "true" })}
         >
           <div className="flex flex-col gap-6">
             <SlideTag className={titleClassName}>{slide.title}</SlideTag>

@@ -1,11 +1,10 @@
-"use client"
-
 import { useEffect, useState } from "react"
+import { island } from "~/islands/island"
 import { getWordsFromPermalink } from "~/utils/getWordsFromPermalink"
 
 import { LinkButton } from "../../components/internal/LinkButton"
 
-export const NotFoundSearchButton = () => {
+const NotFoundSearchButtonComponent = () => {
   const [permalink, setPermalink] = useState("")
 
   useEffect(() => {
@@ -30,3 +29,9 @@ export const NotFoundSearchButton = () => {
     </LinkButton>
   )
 }
+
+export const NotFoundSearchButton = island(
+  "NotFoundSearchButton",
+  NotFoundSearchButtonComponent,
+  { hydrate: "load" },
+)

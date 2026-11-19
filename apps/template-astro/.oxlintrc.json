@@ -1,0 +1,16 @@
+{
+  "$schema": "../../node_modules/oxlint/configuration_schema.json",
+  "extends": ["./node_modules/@isomer/oxlint-config/base.json"],
+  "ignorePatterns": [".astro/**", "out/**"],
+  "overrides": [
+    {
+      "files": ["**/*.ts", "**/*.tsx"],
+      "rules": {
+        "react/react-in-jsx-scope": "off",
+        "react-hooks/rules-of-hooks": "error",
+        "react-hooks/exhaustive-deps": "warn"
+      },
+      "plugins": ["react", "typescript"]
+    }
+  ]
+}

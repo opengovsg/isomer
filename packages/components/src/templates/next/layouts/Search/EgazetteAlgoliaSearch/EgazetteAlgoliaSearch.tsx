@@ -1,9 +1,8 @@
-"use client"
-
 import type { EgazetteAlgoliaSearchProps } from "~/interfaces/internal/EgazetteAlgoliaSearchInputBox"
 import algoliasearch from "algoliasearch/lite"
 import { useMemo } from "react"
 import { InstantSearch } from "react-instantsearch"
+import { island } from "~/islands/island"
 
 import { createEgazetteRouting } from "./routing"
 import { CategoryRefinementList } from "./widgets/CategoryRefinementList"
@@ -27,7 +26,7 @@ const SectionHeading = ({ children }: { children: React.ReactNode }) => (
 
 const Divider = () => <hr className="border-t border-base-divider-medium" />
 
-export const EgazetteAlgoliaSearch = ({
+const EgazetteAlgoliaSearchComponent = ({
   config,
 }: EgazetteAlgoliaSearchClientProps) => {
   const searchClient = useMemo(
@@ -105,3 +104,9 @@ export const EgazetteAlgoliaSearch = ({
     </InstantSearch>
   )
 }
+
+export const EgazetteAlgoliaSearch = island(
+  "EgazetteAlgoliaSearch",
+  EgazetteAlgoliaSearchComponent,
+  { hydrate: "load" },
+)

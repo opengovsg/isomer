@@ -1,0 +1,42 @@
+{
+  "name": "isomer-astro-template",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Astro build of the Isomer site template: React SSR with islands hydration (see tooling/astro-migration-experiment/RFC.md)",
+  "type": "module",
+  "scripts": {
+    "build:template": "astro build",
+    "clean": "git clean -xdf .astro .turbo node_modules out",
+    "dev": "astro dev --port 3001",
+    "format": "oxfmt --check . --ignore-path ../../.gitignore",
+    "format:fix": "oxfmt --write . --ignore-path ../../.gitignore",
+    "lint": "oxlint --type-aware .",
+    "lint:fix": "oxlint --type-aware --fix .",
+    "start": "astro preview --port 3001",
+    "typecheck": "tsgo --noEmit"
+  },
+  "dependencies": {
+    "@fontsource-variable/inter": "catalog:",
+    "@isomer/validators": "workspace:*",
+    "@opengovsg/isomer-components": "workspace:*",
+    "astro": "catalog:",
+    "isomorphic-dompurify": "catalog:",
+    "jsdom": "catalog:",
+    "postcss": "catalog:",
+    "postcss-preset-env": "catalog:",
+    "preact": "catalog:",
+    "react": "catalog:react",
+    "react-dom": "catalog:react",
+    "tailwindcss": "catalog:",
+    "typescript": "catalog:"
+  },
+  "devDependencies": {
+    "@isomer/oxlint-config": "workspace:*",
+    "@isomer/tsconfig": "workspace:*",
+    "@types/node": "catalog:",
+    "@types/react": "catalog:react",
+    "@types/react-dom": "catalog:react",
+    "@typescript/native-preview": "catalog:",
+    "vite": "catalog:vitest"
+  }
+}

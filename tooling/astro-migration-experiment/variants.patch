@@ -1,0 +1,103 @@
+--- a/apps/template-astro/astro.config.ts
++++ b/apps/template-astro/astro.config.ts
+@@ -13,6 +13,18 @@
+   "react/jsx-dev-runtime": "preact/jsx-dev-runtime",
+   react: "preact/compat",
+ }
++// EXPERIMENT switches for the measured alternatives:
++// ISLANDS_RUNTIME=react (no swap) | redact (TanStack Redact, needs @tanstack/redact)
++const REDACT_ALIASES: Record<string, string> = {
++  "react-dom/client": "@tanstack/redact/dom-client",
++  "react-dom": "@tanstack/redact/dom",
++  "react/jsx-runtime": "@tanstack/redact/jsx-runtime",
++  "react/jsx-dev-runtime": "@tanstack/redact/jsx-dev-runtime",
++  react: "@tanstack/redact",
++}
++const CLIENT_ALIASES =
++  process.env.ISLANDS_RUNTIME === "redact" ? REDACT_ALIASES : PREACT_ALIASES
++const SWAP_CLIENT_RUNTIME = process.env.ISLANDS_RUNTIME !== "react"
+ 
+ export default defineConfig({
+   output: "static",
+@@ -22,7 +34,8 @@
+   prefetch: false,
+   devToolbar: { enabled: false },
+   experimental: {
+-    parallelPrerender: true,
++    // EXPERIMENT: ASTRO_PARALLEL_PRERENDER=0 renders in a single process
++    parallelPrerender: process.env.ASTRO_PARALLEL_PRERENDER !== "0",
+   },
+   vite: {
+     // isomer-components is a linked workspace package: without this, dev loads React twice.
+@@ -38,8 +51,8 @@
+         resolveId(source, importer, options) {
+           if (source === "react" && importer !== REACT) return REACT
+           const target =
+-            this.environment.name === "client"
+-              ? PREACT_ALIASES[source]
++            this.environment.name === "client" && SWAP_CLIENT_RUNTIME
++              ? CLIENT_ALIASES[source]
+               : undefined
+           return target
+             ? this.resolve(target, import.meta.dirname + "/package.json", {
+--- a/apps/template-astro/src/islands/client.ts
++++ b/apps/template-astro/src/islands/client.ts
+@@ -33,6 +33,11 @@
+     ? requestIdleCallback(callback)
+     : setTimeout(callback, 200)
+ 
++// EXPERIMENT: loader for ISLANDS_MODE=whole-tree (see render.tsx).
++const EXPERIMENT_ISLANDS: Record<string, () => Promise<object>> = {
++  RenderEngine: () => import("@opengovsg/isomer-components"),
++}
++
+ const importReact = () =>
+   Promise.all([import("./react"), import("react-dom/client")])
+ 
+@@ -44,7 +49,7 @@
+ 
+   for (const element of elements) {
+     const { name, hydrate: when, id, props } = readIslandAttributes(element)
+-    const load = islands[name as IslandName]
++    const load = islands[name as IslandName] ?? EXPERIMENT_ISLANDS[name]
+     // Read the slot's HTML now, before any island's hydration can change the DOM.
+     const slotHtml = element.querySelector(SLOT_TAG)?.innerHTML
+ 
+--- a/apps/template-astro/src/lib/render.tsx
++++ b/apps/template-astro/src/lib/render.tsx
+@@ -1,4 +1,5 @@
+ import type { IsomerPageSchemaType } from "@opengovsg/isomer-components"
++import type { IslandName } from "@opengovsg/isomer-components/islands"
+ import type { ReactNode } from "react"
+ import {
+   getPageJsonLd,
+@@ -8,6 +9,7 @@
+   RenderEngine,
+   RenderPageHead,
+ } from "@opengovsg/isomer-components"
++import { island } from "@opengovsg/isomer-components/islands"
+ import { renderToString } from "react-dom/server"
+ 
+ import { serializeForInlineScript } from "@isomer/validators"
+@@ -54,6 +56,12 @@
+   "h",
+ )
+ 
++// EXPERIMENT: ISLANDS_MODE=whole-tree hydrates the entire page as one island.
++const Engine =
++  process.env.ISLANDS_MODE === "whole-tree"
++    ? island("RenderEngine" as IslandName, RenderEngine, { hydrate: "load" })
++    : RenderEngine
++
+ export const renderPage = (
+   schema: IsomerPageSchemaType,
+   { withPageJsonLd = true } = {},
+@@ -62,7 +70,7 @@
+   return {
+     head: toHtml(<RenderPageHead {...renderSchema} />, "m"),
+     headScripts,
+-    body: toHtml(<RenderEngine {...renderSchema} />, "b"),
++    body: toHtml(<Engine {...renderSchema} />, "b"),
+     appScripts,
+     siteJsonLd,
+     pageJsonLd: withPageJsonLd

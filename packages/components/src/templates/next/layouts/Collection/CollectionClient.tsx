@@ -1,11 +1,10 @@
-"use client"
-
 import type {
   BreadcrumbProps,
   ProcessedCollectionCardProps,
 } from "~/interfaces"
 import type { CollectionPagePageProps } from "~/types"
 import { useRef } from "react"
+import { island } from "~/islands/island"
 import { tv } from "~/lib/tv"
 
 import type { Filter as FilterType } from "../../types/Filter"
@@ -45,7 +44,7 @@ const createCollectionLayoutStyles = tv({
 
 const compoundStyles = createCollectionLayoutStyles()
 
-export const CollectionClient = ({
+const CollectionClientComponent = ({
   page,
   items,
   filters,
@@ -129,7 +128,7 @@ export const CollectionClient = ({
             />
           </div>
           <div className="flex w-full flex-col-reverse items-center justify-between gap-4 lg:flex-row">
-            <BackToTopLink className="hidden lg:inline-flex" />
+            <BackToTopLink className="mt-0 hidden lg:inline-flex" />
             {paginatedItems.length > 0 && (
               <PaginationControls
                 totalItems={filteredCount}
@@ -145,3 +144,9 @@ export const CollectionClient = ({
     </>
   )
 }
+
+export const CollectionClient = island(
+  "CollectionClient",
+  CollectionClientComponent,
+  { hydrate: "load" },
+)

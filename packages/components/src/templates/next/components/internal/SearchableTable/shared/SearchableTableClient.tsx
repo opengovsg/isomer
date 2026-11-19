@@ -1,14 +1,13 @@
-"use client"
-
 import type { SearchableTableClientProps } from "~/interfaces"
 import { useDeferredValue, useMemo, useState } from "react"
+import { island } from "~/islands/island"
 
 import { MAX_NUMBER_OF_COLUMNS, PAGINATION_MAX_ITEMS } from "./constants"
 import { getFilteredItems } from "./getFilteredItems"
 import { getPaginatedItems } from "./getPaginatedItems"
 import { SearchableTableClientUI } from "./SearchableTableClientUI"
 
-export const SearchableTableClient = ({
+const SearchableTableClientComponent = ({
   title,
   headers,
   items,
@@ -61,3 +60,9 @@ export const SearchableTableClient = ({
     />
   )
 }
+
+export const SearchableTableClient = island(
+  "SearchableTableClient",
+  SearchableTableClientComponent,
+  { hydrate: "load" },
+)

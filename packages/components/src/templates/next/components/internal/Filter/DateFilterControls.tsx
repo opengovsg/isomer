@@ -1,5 +1,3 @@
-"use client"
-
 import type { AppliedFilter, FilterItem } from "../../../types/Filter"
 import { Checkbox, CheckboxGroup } from "../Checkbox"
 import { DateRangeFilterInput } from "./DateRangeFilterInput"

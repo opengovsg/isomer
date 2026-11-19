@@ -85,7 +85,7 @@ Bump the package version only when preparing an npm release for consumers outsid
 
 ### Pure rendering
 
-- Components in templates are **server-renderable**: no `useState`, no `useEffect`, no browser-only APIs at the top level. Push interactivity into nested client components when unavoidable.
+- Components in templates are **server-renderable**: no `useState`, no `useEffect`, no browser-only APIs at the top level. Push interactivity into nested islands (`island()`, see `src/islands/README.md`) when unavoidable.
 - No network calls. All data is passed in via props.
 
 ### Styling

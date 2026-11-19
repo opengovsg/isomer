@@ -1,11 +1,10 @@
-"use client"
-
 import type { NotificationClientProps } from "~/interfaces"
 import { useIsNotificationDismissed } from "~/hooks/useIsNotificationDismissed"
+import { island } from "~/islands/island"
 
 import { NotificationBanner } from "./NotificationBanner"
 
-export const NotificationClient = ({
+const NotificationClientComponent = ({
   title,
   children,
 }: NotificationClientProps) => {
@@ -23,3 +22,9 @@ export const NotificationClient = ({
     )
   )
 }
+
+export const NotificationClient = island(
+  "NotificationClient",
+  NotificationClientComponent,
+  { hydrate: "load" },
+)

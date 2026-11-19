@@ -1,0 +1,8 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Tailwind's preset reads the font family from --font-inter. */
+:root {
+  --font-inter: "Inter Variable";
+}

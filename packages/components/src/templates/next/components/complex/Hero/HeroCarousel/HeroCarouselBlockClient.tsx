@@ -1,10 +1,9 @@
-"use client"
-
 import type { HeadingTag } from "~/utils/getHeadingTag"
 import {
   HERO_BLOCK_IMAGE_POSITION,
   type HeroCarouselImagePosition,
 } from "~/interfaces/complex/Hero"
+import { island } from "~/islands/island"
 import { tv } from "~/lib/tv"
 
 import type { HeroCarouselSlideView } from "./CarouselSlides"
@@ -72,7 +71,7 @@ const blockCarouselStyles = tv({
   },
 })
 
-export const HeroCarouselBlockClient = ({
+const HeroCarouselBlockClientComponent = ({
   imagePosition,
   headingTag,
   inactiveHeadingTag,
@@ -160,3 +159,9 @@ export const HeroCarouselBlockClient = ({
     </section>
   )
 }
+
+export const HeroCarouselBlockClient = island(
+  "HeroCarouselBlockClient",
+  HeroCarouselBlockClientComponent,
+  { hydrate: "visible" },
+)
