@@ -11,6 +11,12 @@ const SENSITIVE_KEYS = new Set([
   "refreshtoken",
 ])
 
+// OAuth callbacks carry the authorization code and state; keep them out of logs.
+const UNLOGGED_INPUT_PATHS = new Set([
+  "auth.oneGovSg.callback",
+  "auth.singpass.callback",
+])
+
 const isSensitiveKey = (key: string) => SENSITIVE_KEYS.has(key.toLowerCase())
 
 const REPEATED = "[REPEATED]"
@@ -40,3 +46,6 @@ export const redactLogInput = (
     ]),
   )
 }
+
+export const getLoggableInput = (path: string, input: unknown): unknown =>
+  UNLOGGED_INPUT_PATHS.has(path) ? REDACTED : redactLogInput(input)
