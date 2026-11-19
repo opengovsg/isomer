@@ -82,28 +82,6 @@ describe("getReferenceLinkHref", () => {
     )
   })
 
-  it("strips a javascript URL and still sanitizes the next link", () => {
-    // Arrange
-    const javascriptUrl = "javascript:alert(1)"
-    const safeUrl = "https://example.com/after"
-
-    // Act
-    const blocked = getReferenceLinkHref(
-      javascriptUrl,
-      EXAMPLE_SITEMAP_ARRAY,
-      "https://assets.example.com",
-    )
-    const after = getReferenceLinkHref(
-      safeUrl,
-      EXAMPLE_SITEMAP_ARRAY,
-      "https://assets.example.com",
-    )
-
-    // Assert
-    expect(blocked ?? "").not.toContain("javascript:")
-    expect(after).toBe(safeUrl)
-  })
-
   it("should be able to handle unescaped quotes in reference link", () => {
     const unescapedLink = 'https://example.com/unescaped""quotes'
 

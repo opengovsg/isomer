@@ -1,21 +1,12 @@
 import type { IsomerSitemap } from "~/types"
 import DOMPurify from "isomorphic-dompurify"
 
-// DOMPurify has no document in Node, so it sanitizes a real anchor. A new
-// fragment per href dominates static export, so one anchor is reused. Each
-// URL is still sanitized; results are not cached.
-let anchor: Element | null = null
+const anchor = DOMPurify.sanitize("<a></a>", {
+  RETURN_DOM_FRAGMENT: true,
+}).firstElementChild
 
 export const getSanitizedLinkHref = (url?: string) => {
-  if (url === undefined) {
-    return undefined
-  }
-
-  anchor ??= DOMPurify.sanitize("<a></a>", {
-    RETURN_DOM_FRAGMENT: true,
-  }).firstElementChild
-
-  if (!anchor) {
+  if (url === undefined || !anchor) {
     return undefined
   }
 
@@ -31,7 +22,6 @@ export const getSanitizedLinkHref = (url?: string) => {
   return sanitizedUrl
 }
 
-// Convert the given reference link to the actual permalink
 const convertReferenceLinks = (
   originalLink: string,
   sitemapArray: IsomerSitemap[],
@@ -57,8 +47,9 @@ const convertReferenceLinks = (
   return refPage.permalink
 }
 
-// Prepend the assets base URL for asset links
-// Asset links are assumed to start with /{site_id}/
+const assetLinkPrefix =
+  /^\/(\d+)\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\//
+
 const convertAssetLinks = (
   originalLink: string,
   assetsBaseUrl: string | undefined,
@@ -67,10 +58,7 @@ const convertAssetLinks = (
     return originalLink
   }
 
-  const match =
-    /^\/(\d+)\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\//.exec(
-      originalLink,
-    )
+  const match = assetLinkPrefix.exec(originalLink)
 
   if (!match) {
     return originalLink
