@@ -51,10 +51,15 @@ jobs:
         if: steps.download.outcome == 'success'
         id: metadata
         run: |
-          echo "pr-number=$(cat /tmp/e2e-metadata/pr-number.txt)" >> $GITHUB_OUTPUT
+          # A pattern download "succeeds" even when it matches zero artifacts,
+          # so an empty pr-number (not the download outcome) is what gates the
+          # steps below.
+          if [ -f /tmp/e2e-metadata/pr-number.txt ]; then
+            echo "pr-number=$(cat /tmp/e2e-metadata/pr-number.txt)" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Find existing video-link comment
-        if: steps.download.outcome == 'success'
+        if: steps.metadata.outputs.pr-number != ''
         id: find-video-comment
         uses: peter-evans/find-comment@b30e6a3c0ed37e7c023ccd3f1db5c6c0b0c23aad # v4.0.0
         with:
@@ -64,7 +69,7 @@ jobs:
           body-includes: "<!-- e2e-video-link -->"
 
       - name: Build comment body
-        if: steps.download.outcome == 'success'
+        if: steps.metadata.outputs.pr-number != ''
         id: body
         run: |
           {
@@ -84,7 +89,7 @@ jobs:
           } >> "$GITHUB_OUTPUT"
 
       - name: Upsert PR comment with e2e video artifact link
-        if: steps.download.outcome == 'success'
+        if: steps.metadata.outputs.pr-number != ''
         uses: peter-evans/create-or-update-comment@e8674b075228eee787fea43ef493e45ece1004c9 # v5.0.0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
