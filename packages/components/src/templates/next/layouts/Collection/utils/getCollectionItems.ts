@@ -1,4 +1,5 @@
 import type { AllCardProps } from "~/interfaces"
+import type { ImageAdjustment } from "~/interfaces/complex/Image"
 import type { IsomerSitemap, IsomerSiteProps } from "~/types"
 import type { CollectionPagePageProps } from "~/types/page"
 import { getParsedDate } from "~/utils/getParsedDate"
@@ -21,6 +22,7 @@ type GetItemImageResult =
       src: string
       alt: string
       isContainNeeded?: boolean
+      imageAdjustment?: ImageAdjustment
     }
   | undefined
 
@@ -35,9 +37,15 @@ const getItemImage = ({
     return undefined
   }
 
-  // If the item has an image, we will show the item's image
+  // Show the item's own image. isContainNeeded follows the editor's imageFit
+  // choice. The fallbacks below set it directly.
   if (item.image?.src) {
-    return item.image
+    return {
+      src: item.image.src,
+      alt: item.image.alt,
+      isContainNeeded: item.image.imageFit === "contain",
+      imageAdjustment: item.image.imageAdjustment,
+    }
   }
 
   switch (showThumbnail.fallback) {

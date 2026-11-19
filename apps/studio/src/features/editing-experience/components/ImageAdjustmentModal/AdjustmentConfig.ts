@@ -33,6 +33,14 @@ export interface AdjustmentPreviewState {
 // Context the registry can use to resolve a config, e.g. the page layout.
 export interface AdjustmentRenderContext {
   pageLayout?: IsomerPageLayoutType
+  // True for a collection item's page thumbnail (`page.image`). It has no
+  // block to key the registry off, so the hook sets this from the resource type.
+  isCollectionThumbnail?: boolean
+  // The parent collection's "Layout" setting: "collection" is the 1-column
+  // CollectionCard, "blog" the 2-column BlogCard. "pending" while loading or
+  // on failure — the registry then shows "Preview unavailable" rather than
+  // guessing a frame that might not match the real card.
+  collectionVariant?: "collection" | "blog" | "pending"
 }
 
 // What a preview builder gets. The modal fills this in.

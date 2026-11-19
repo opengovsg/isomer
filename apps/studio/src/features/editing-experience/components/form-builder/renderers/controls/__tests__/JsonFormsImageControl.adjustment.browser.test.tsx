@@ -35,6 +35,16 @@ vi.mock("../../../hooks/useAdjustmentConfigForField", () => ({
 vi.mock("~/components/PageEditor/FileAttachment", () => ({
   FileAttachment: () => <div data-testid="file-attachment" />,
 }))
+// useCollectionIndexVariant's queries never fire here. Stub the tRPC client
+// so its useQuery calls don't need a provider.
+vi.mock("~/utils/trpc", () => ({
+  trpc: {
+    resource: { getParentOf: { useQuery: () => ({ data: undefined }) } },
+    folder: { getIndexpage: { useQuery: () => ({ data: undefined }) } },
+    page: { readPageAndBlob: { useQuery: () => ({ data: undefined }) } },
+  },
+}))
+
 const renderers: JsonFormsRendererRegistryEntry[] = [
   { tester: jsonFormsImageControlTester, renderer: JsonFormsImageControl },
   {
