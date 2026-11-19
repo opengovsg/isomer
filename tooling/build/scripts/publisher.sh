@@ -13,7 +13,9 @@ calculate_duration() {
 
 # Downloads $2 from S3 path $1 and extracts it into $3 (default: cwd), removing the
 # local tarball afterwards. Returns 1 - without tripping `set -e` - if the object
-# isn't in S3; callers decide whether that's a fallback or a fatal error.
+# isn't in S3 or can't be extracted; callers decide whether that's a fallback or a
+# fatal error. The tar check is explicit because callers invoke this in conditions,
+# where `set -e` doesn't apply.
 fetch_cached() {
   local cache_path=$1 tarball=$2 extract_dir=${3:-.} start_time
   echo "Fetching $tarball from cache..."
@@ -25,21 +27,29 @@ fetch_cached() {
   echo "$tarball found in cache ($cache_path)"
   start_time=$(date +%s)
   mkdir -p "$extract_dir"
-  tar --use-compress-program=zstd -xf "$tarball" -C "$extract_dir"
+  if ! tar --use-compress-program=zstd -xf "$tarball" -C "$extract_dir"; then
+    echo "Failed to extract $tarball; treating as a cache miss"
+    rm -f "$tarball"
+    return 1
+  fi
   rm "$tarball"
   calculate_duration "$start_time"
 }
 
 # Archives $3+ (passed straight through to `tar -c`) into $2 and uploads it to S3 path $1.
+# Best-effort: a failed cache write must not fail the publish.
 cache_upload() {
   local cache_path=$1 tarball=$2 start_time
   shift 2
   echo "Caching $tarball to S3..."
   start_time=$(date +%s)
-  tar --use-compress-program="zstd -6" -cf "$tarball" "$@"
-  aws s3 cp --only-show-errors "$tarball" "$cache_path"
-  rm "$tarball"
-  calculate_duration "$start_time"
+  if tar --use-compress-program="zstd -6" -cf "$tarball" "$@" &&
+    aws s3 cp --only-show-errors "$tarball" "$cache_path"; then
+    calculate_duration "$start_time"
+  else
+    echo "Warning: failed to cache $tarball to $cache_path; continuing"
+  fi
+  rm -f "$tarball"
 }
 
 REPO_TGZ="isomer.tar.zst"
@@ -92,7 +102,22 @@ calculate_duration "$start_time"
 pwd
 
 corepack enable
-corepack install -g pnpm@12.0.0
+
+# pnpm 12's npm package is only a wrapper: on first run it downloads the native
+# @pnpm/exe.<platform> binary from the npm registry into corepack's cache. Cache that
+# directory in S3 so builds don't depend on registry.npmjs.org being reachable.
+PNPM_VERSION="12.0.0"
+PNPM_TGZ="pnpm-$PNPM_VERSION-$(uname -m).tar.zst"
+PNPM_CACHE_PATH="s3://$S3_CACHE_BUCKET_NAME/tools/$PNPM_TGZ"
+COREPACK_DIR="${COREPACK_HOME:-$HOME/.cache/node/corepack}"
+if ! fetch_cached "$PNPM_CACHE_PATH" "$PNPM_TGZ" "$COREPACK_DIR"; then
+  # A failed extraction can leave a partial install that corepack would reuse.
+  rm -rf "$COREPACK_DIR"
+  corepack install -g "pnpm@$PNPM_VERSION"
+  # Forces the native binary download so it's included in the archive.
+  pnpm --version
+  cache_upload "$PNPM_CACHE_PATH" "$PNPM_TGZ" -C "$COREPACK_DIR" .
+fi
 
 # Use a project-local store only in this CodeBuild job so the S3 tarball is self-contained.
 # Do not set storeDir in pnpm-workspace.yaml: local dev keeps the default global store.
