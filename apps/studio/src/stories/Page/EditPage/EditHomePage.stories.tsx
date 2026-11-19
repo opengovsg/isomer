@@ -181,7 +181,7 @@ export const AddAntiScamDisclaimerSaveBlockEnabled: Story = {
     })
     await userEvent.click(antiScamBlockType)
     const saveBlockButton = await canvas.findByRole("button", {
-      name: /save block/i,
+      name: /save changes/i,
     })
     await expect(saveBlockButton).not.toBeDisabled()
   },
@@ -195,7 +195,7 @@ export const ReopenAntiScamDisclaimerSaveBlockDisabled: Story = {
     })
     const canvas = within(canvasElement)
     const saveAfterAdd = await canvas.findByRole("button", {
-      name: /save block/i,
+      name: /save changes/i,
     })
     await userEvent.click(saveAfterAdd)
     const antiScamBlockRow = await canvas.findByRole("button", {
@@ -203,7 +203,7 @@ export const ReopenAntiScamDisclaimerSaveBlockDisabled: Story = {
     })
     await userEvent.click(antiScamBlockRow)
     const saveAfterReopen = await canvas.findByRole("button", {
-      name: /save block/i,
+      name: /save changes/i,
     })
     await expect(saveAfterReopen).toBeDisabled()
   },
