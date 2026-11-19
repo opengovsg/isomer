@@ -1,6 +1,6 @@
 import type { CollectionPagePageProps } from "~/types"
 import { DEFAULT_DATE_FILTER_SIDEBAR_VISIBILITY } from "~/types/constants"
-import { isDateFilter } from "~/types/page"
+import { isDateFilter } from "~/types/tagCategory"
 
 import type { AppliedFilter } from "../../../types/Filter"
 

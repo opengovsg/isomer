@@ -3,7 +3,7 @@ import type {
   CollectionPagePageProps,
   TagGroup,
 } from "~/types"
-import { isTextFilter } from "~/types/page"
+import { isTextFilter } from "~/types/tagCategory"
 
 export const getTagsFromTagged = (
   tagged: NonNullable<ArticlePagePageProps["tagged"]>,

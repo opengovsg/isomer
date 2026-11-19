@@ -1,7 +1,7 @@
 import type { ProcessedCollectionCardProps } from "~/interfaces"
 import type { CollectionPageSchemaType } from "~/types"
 import { resolveTagCategoryDisplay } from "~/types/constants"
-import { isTextFilter } from "~/types/page"
+import { isTextFilter } from "~/types/tagCategory"
 
 import type { Filter, FilterItem } from "../../../types/Filter"
 

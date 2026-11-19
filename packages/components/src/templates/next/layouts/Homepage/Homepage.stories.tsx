@@ -1,12 +1,12 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
-import type { HeroProps } from "~/interfaces/complex/Hero"
+import type { HeroProps } from "~/interfaces/complex/Hero/Hero"
 import type { HomePageSchemaType } from "~/types"
 import { http, HttpResponse } from "msw"
 import {
   HERO_BLOCK_IMAGE_POSITION,
   HERO_CAROUSEL_CONTENT_ALIGNMENT,
   HERO_CAROUSEL_LAYOUT,
-} from "~/interfaces/complex/Hero"
+} from "~/interfaces/complex/Hero/constants"
 import {
   SEARCHSG_TEST_CLIENT_ID,
   withSearchSgSetup,

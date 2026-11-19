@@ -1,4 +1,4 @@
-import { InfopicVariants } from "~/interfaces/complex/Infopic"
+import { InfopicVariants } from "~/interfaces/complex/Infopic/constants"
 import { isExternalUrl } from "~/utils/isExternalUrl"
 
 import type { InfopicProps } from "./types"

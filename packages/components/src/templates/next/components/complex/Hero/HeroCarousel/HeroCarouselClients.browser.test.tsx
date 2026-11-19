@@ -5,7 +5,7 @@ import { userEvent } from "vitest/browser"
 import {
   HERO_BLOCK_IMAGE_POSITION,
   HERO_CAROUSEL_CONTENT_ALIGNMENT,
-} from "~/interfaces/complex/Hero"
+} from "~/interfaces/complex/Hero/constants"
 
 import { HERO_CAROUSEL_ROTATION_INTERVAL_MS } from "./constants"
 import { HeroCarouselBlockClient } from "./HeroCarouselBlockClient"

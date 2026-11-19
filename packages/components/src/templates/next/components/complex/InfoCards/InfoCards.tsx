@@ -4,7 +4,7 @@ import {
   CARDS_WITH_IMAGES,
   CARDS_WITHOUT_IMAGES,
   INFOCARD_VARIANT,
-} from "~/interfaces/complex/InfoCards"
+} from "~/interfaces/complex/InfoCards/constants"
 import { getHeadingTag } from "~/utils/getHeadingTag"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 import { getTailwindVariantLayout } from "~/utils/getTailwindVariantLayout"
