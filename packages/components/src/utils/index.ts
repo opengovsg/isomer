@@ -16,6 +16,7 @@ export { isEmail } from "./isEmail"
 export { isPhoneNumber, sanitizePhoneNumber } from "./isPhoneNumber"
 export { isUrl } from "./isUrl"
 export { isExternalUrl } from "./isExternalUrl"
+export { resolveManagedAssetUrl } from "./resolveManagedAssetUrl"
 export { safeJsonParse } from "./safeJsonParse"
 export {
   fetchDgsFileDownloadUrl,

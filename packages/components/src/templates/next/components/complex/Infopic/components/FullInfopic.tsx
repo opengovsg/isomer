@@ -1,6 +1,7 @@
 import { InfopicVariants } from "~/interfaces/complex/Infopic"
 import { getHeadingTag } from "~/utils/getHeadingTag"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
+import { resolveManagedAssetUrl } from "~/utils/resolveManagedAssetUrl"
 
 import type { InfopicProps } from "../types"
 import { LinkButton } from "../../../internal/LinkButton"
@@ -28,10 +29,14 @@ export const FullInfopic = ({
   })
   const hasLinkButton = !!buttonLabel && !!buttonUrl
 
+  // Resolve the managed-asset URL here (a CSS background can't go through
+  // ImageClient).
+  const backgroundUrl = resolveManagedAssetUrl(imageSrc, site.assetsBaseUrl)
+
   return (
     <section
       style={{
-        backgroundImage: `url('${imageSrc}')`,
+        backgroundImage: `url('${backgroundUrl}')`,
         backgroundSize: "cover",
         backgroundPosition: "center",
       }}
