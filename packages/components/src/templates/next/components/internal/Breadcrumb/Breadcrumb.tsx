@@ -1,6 +1,6 @@
 import type { ComponentPropsWithoutRef, ReactNode } from "react"
 import type { BreadcrumbProps, LinkProps } from "~/interfaces"
-import { BiChevronRight } from "react-icons/bi"
+import { BiChevronRight } from "~/common/clientBoxicons"
 import { tv } from "~/lib/tv"
 import { twMerge } from "~/lib/twMerge"
 import { focusVisibleHighlight } from "~/utils/tailwind"

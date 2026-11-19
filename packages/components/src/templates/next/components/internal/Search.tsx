@@ -6,7 +6,7 @@ import { useFocusRing } from "@react-aria/focus"
 import { useTextField } from "@react-aria/textfield"
 import { mergeProps } from "@react-aria/utils"
 import { useRef, useState } from "react"
-import { BiSearch, BiX } from "react-icons/bi"
+import { BiSearch, BiX } from "~/common/clientBoxicons"
 import { tv } from "~/lib/tv"
 import { twMerge } from "~/lib/twMerge"
 

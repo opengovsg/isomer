@@ -1,5 +1,5 @@
-import { BiFile } from "react-icons/bi"
 import { Highlight, Snippet, useHits } from "react-instantsearch"
+import { BiFile } from "~/common/clientBoxicons"
 import { Link } from "~/templates/next/components/internal/Link"
 import { getFormattedDate } from "~/utils/getFormattedDate"
 

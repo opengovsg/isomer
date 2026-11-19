@@ -1,7 +1,7 @@
 "use client"
 
 import type { LinkProps } from "~/interfaces/internal/Link"
-import { BiRightArrowAlt } from "react-icons/bi"
+import { BiRightArrowAlt } from "~/common/clientBoxicons"
 import { tv } from "~/lib/tv"
 import { twMerge } from "~/lib/twMerge"
 import { useLinkComponent } from "~/templates/next/context/LinkComponentContext"

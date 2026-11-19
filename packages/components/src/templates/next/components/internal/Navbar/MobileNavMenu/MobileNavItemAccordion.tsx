@@ -1,5 +1,5 @@
 import type { NavbarProps } from "~/interfaces/internal/Navbar"
-import { BiChevronDown, BiRightArrowAlt } from "react-icons/bi"
+import { BiChevronDown, BiRightArrowAlt } from "~/common/clientBoxicons"
 import { tv } from "~/lib/tv"
 import { isExternalUrl } from "~/utils/isExternalUrl"
 import { focusVisibleHighlight } from "~/utils/tailwind"

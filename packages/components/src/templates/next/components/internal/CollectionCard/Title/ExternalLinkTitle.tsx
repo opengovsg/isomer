@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import { BiLinkExternal } from "react-icons/bi"
+import { BiLinkExternal } from "~/common/clientBoxicons"
 import { getHeadingTag } from "~/utils/getHeadingTag"
 
 import { collectionCardLinkStyle } from "./collectionCardLinkStyle"

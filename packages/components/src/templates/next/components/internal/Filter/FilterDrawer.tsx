@@ -10,7 +10,7 @@ import { useButton } from "@react-aria/button"
 import { useFocusRing } from "@react-aria/focus"
 import { mergeProps } from "@react-aria/utils"
 import { useEffect, useRef, useState } from "react"
-import { BiChevronDown, BiX } from "react-icons/bi"
+import { BiChevronDown, BiX } from "~/common/clientBoxicons"
 import { tv } from "~/lib/tv"
 import { twMerge } from "~/lib/twMerge"
 import {

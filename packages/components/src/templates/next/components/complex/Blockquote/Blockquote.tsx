@@ -1,5 +1,5 @@
 import type { BlockquoteProps } from "~/interfaces"
-import { BiSolidQuoteAltLeft } from "react-icons/bi"
+import { BiSolidQuoteAltLeft } from "~/common/clientBoxicons"
 import { tv } from "~/lib/tv"
 import { getTailwindVariantLayout } from "~/utils/getTailwindVariantLayout"
 
