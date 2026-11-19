@@ -82,7 +82,7 @@ export {
   type ZendeskWidgetProps,
   type ZendeskProps,
 } from "./Zendesk"
-export type { ImageClientProps } from "./Image"
+export type { ImageClientProps, ImageClientWithAdjustmentProps } from "./Image"
 export type { PolyglotProps, PolyglotClientProps } from "./Polyglot"
 export {
   SearchableTableSchema,
