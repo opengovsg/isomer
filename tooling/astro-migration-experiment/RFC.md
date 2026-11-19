@@ -10,18 +10,26 @@
 
 ## TL;DR
 
-Replace the Next.js static export in `apps/template` with an **Astro build that server-renders the existing `@opengovsg/isomer-components` React tree and hydrates only its interactive components as islands, using Preact in the browser**.
+Replace the Next.js static export in `apps/template` with a build that **server-renders the existing `@opengovsg/isomer-components` React tree and hydrates only its interactive components as islands, using Preact in the browser**. Astro runs the build.
+
+Three things deliver the results below, and none of them is Astro itself:
+
+1. **Islands**: only interactive components ship JS, instead of Next's runtime, router and whole-page hydration. This is our own code (about 550 lines), because Astro's islands only work in `.astro` files and our whole tree is React.
+2. **Preact in the browser** instead of React: 62 KB instead of about 97 KB on content pages. It's also the main risk (see [What got harder](#what-got-harder)).
+3. **Parallel prerendering** (`experimental.parallelPrerender`): it takes 10k-page builds from 83 s to 34.5 s.
+
+Astro is the build runner: routing from `sitemap.json`, bundling and hashing the browser JS, parallel prerendering and the dev server. We don't use Astro components, its islands, content collections or its image pipeline.
 
 On a synthetic 60-page coverage site, compared with today's Next build:
 
 - **Initial JS on content/article pages drops 78%**, from 279 KB to 62 KB (gzip).
 - **Total first-load bytes drop 46–62%** across page types.
 - **The HTML document halves**, because Next's ~40 KB RSC payload is no longer inlined in every page.
-- **Builds are faster and lighter at every site size.** At 10k pages: 156 s / 6.0 GB → 34.5 s / 3.8 GB with parallel prerendering, which the build uses (83 s / 1.5 GB single-process). It also ran on a real ~5k-page site on CodeBuild (8 vCPUs, 16 GiB).
-- **Visual and interaction parity holds.** All 19 Playwright checks pass: pixel comparison of 6 page types × 2 viewports against the Next build, plus interaction tests for every interactive island.
+- **Builds are faster and lighter at every site size.** At 10k pages Next takes 156 s / 6.0 GB. Astro takes **83 s / 1.5 GB in a single process, the result we can count on**, and 34.5 s / 3.8 GB with parallel prerendering, which the build uses. Parallel prerendering is an experimental Astro flag, so 34.5 s is the expected result, not a guaranteed one. It also ran on a real ~5k-page site on CodeBuild (8 vCPUs, 16 GiB).
+- **Visual and interaction parity holds.** All 20 Playwright checks pass: pixel comparison of 6 page types × 2 viewports against the Next build, plus interaction tests for every interactive island.
 - **Studio renders the same DOM as published sites.** Island boundaries are declared in `packages/components` with `island()`, so Studio's preview renders the same `<isomer-island>` markup. There's no build-time rewriting that only the published site sees.
 
-The costs are about 380 lines of islands code that we'd own (205 in components, of which ~60 is the island registry; 175 in the Astro app), a few rules for component authors, and porting work still to do for CodeBuild, Studio's local publish and the e2e test.
+The costs are about 550 lines of islands code that we'd own (205 in components, of which ~60 is the island registry; about 330 in the Astro app, including `react.ts` and the dev-only hydration check), the risk of rendering with React on the server but Preact in the browser, a few rules for component authors, and porting work still to do for CodeBuild, Studio's local publish and the e2e test.
 
 ## Problem
 
@@ -46,7 +54,7 @@ markup protocol constants                     browser: hydrateIslands() lazy-loa
                                                        islands on the page, hydrates each with Preact
 ```
 
-1. **Astro is the static-site shell only.** It provides routing via `getStaticPaths` from `sitemap.json`, Vite, CSS handling and static output. Pages call `react-dom/server`'s `renderToString` on `RenderEngine` directly. We don't use `@astrojs/react` or `@astrojs/preact`; see below for why. No custom Vite plugins are involved in islands.
+1. **Astro is the static-site shell only.** It provides routing via `getStaticPaths` from `sitemap.json`, Vite, CSS handling and static output. Pages call `react-dom/server`'s `renderToString` on `RenderEngine` directly. We don't use `@astrojs/react` or `@astrojs/preact`; see below for why. One small Vite plugin points every `"react"` import at `src/islands/react.ts` (and at `preact/compat` in the browser).
 2. **Islands are declared in `packages/components`** (`src/islands/`, with a README):
    - **`island(name, Component, { hydrate })`** (`hydrate` is required) wraps each of the 29 boundary components (the interactive components that server-rendered code renders). It always renders `<isomer-island data-component="…">` (`display: contents`) around the component, in every host. Studio's preview and the published site therefore have the same DOM.
    - **The `islands` registry** maps each island name to a lazy `import()` of its module. `island()` only accepts registered names (a missing entry doesn't typecheck), and a unit test checks each module exports the island under its name.
@@ -55,7 +63,7 @@ markup protocol constants                     browser: hydrateIslands() lazy-loa
    - **`server.tsx`**: `IslandServerProvider` plugs into `IslandHost`, so every island additionally carries its props as JSON, its hydration timing and an id. Server-rendered `children` (e.g. `NotificationClient`'s body) become static `<isomer-slot>` HTML that the browser reuses as-is, like Astro's default slot.
    - **`client.ts`**: `hydrateIslands()` lazy-loads only the islands on the page and hydrates each at its timing (`load`, `visible` or `idle`).
 4. **Each island is SSR'd as its own root, and ids are counted from the island's id on both sides.** Every `"react"` import goes through `src/islands/react.ts` (React on the server, `preact/compat` in the browser), which overrides `useId` with a per-island counter and makes `useSyncExternalStore` return the server snapshot while hydrating, as React does. Preact keeps server attributes as they are on hydration and never re-applies them. Without this, ids (react-aria's included) differ between the server HTML and later client renders, and `aria-*` references break. To make react-aria's ids go through it on the server too, `@react-aria/*` is bundled into the server build: about +1 s at 1k pages (9.9 → 11.0 s), unchanged at 10k (34.7 → 34.8 s), and +0.3 KB of JS per page.
-5. **Preact in the browser.** The build aliases `react`/`react-dom` to `preact/compat` **for the client bundle only**. Server rendering stays on React, so the HTML is identical either way.
+5. **Preact in the browser.** The build aliases `react`/`react-dom` to `preact/compat` **for the client bundle only**. Server rendering stays on React. Preact keeps the server's attributes when it hydrates, so any difference between React and Preact is a silent bug on the published site; development builds compare each island's first browser render with the server HTML to catch them (see [What got harder](#what-got-harder)).
 
 ### Component changes (`packages/components`)
 
