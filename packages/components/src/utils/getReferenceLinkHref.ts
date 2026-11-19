@@ -22,6 +22,7 @@ export const getSanitizedLinkHref = (url?: string) => {
   return sanitizedUrl
 }
 
+// Convert the given reference link to the actual permalink
 const convertReferenceLinks = (
   originalLink: string,
   sitemapArray: IsomerSitemap[],
@@ -47,9 +48,8 @@ const convertReferenceLinks = (
   return refPage.permalink
 }
 
-const assetLinkPrefix =
-  /^\/(\d+)\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\//
-
+// Prepend the assets base URL for asset links
+// Asset links are assumed to start with /{site_id}/
 const convertAssetLinks = (
   originalLink: string,
   assetsBaseUrl: string | undefined,
@@ -58,7 +58,10 @@ const convertAssetLinks = (
     return originalLink
   }
 
-  const match = assetLinkPrefix.exec(originalLink)
+  const match =
+    /^\/(\d+)\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\//.exec(
+      originalLink,
+    )
 
   if (!match) {
     return originalLink
