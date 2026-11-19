@@ -405,10 +405,77 @@ const INFOCARDS_WITH_FULL_IMAGE_CONFIG: AdjustmentConfig = {
   },
 }
 
+// Native Image block (P2a) — free-form crop. Unlike every framed component, the
+// native image renders at its own (now cropped) aspect ratio with no fixed
+// frame, so the crop is unconstrained (custom) and there's no focal point to
+// set — nothing cover-fits, so an anchor would have nothing to anchor against.
+// The crop is baked into src; the real-component preview renders the actual
+// Image block, so no skipRealComponentPreview. The image is the same shape at
+// every breakpoint (it just scales), so the three breakpoints show the same crop
+// at different widths — kept for a consistent Desktop/Tablet/Mobile set.
+const IMAGE_CONFIG: AdjustmentConfig = {
+  componentType: "image",
+  imageField: "src",
+  cropMode: "custom",
+  focalEnabled: false,
+  // Blur warning follows the recommended upload width shown in the banner.
+  maxRenderedWidthPx: 1280,
+  // Free-form crop: no fixed ratio, so previews carry no aspectRatio — the
+  // caption shows width only and the real render is measured.
+  previewStates: [
+    { id: "mobile", label: "Mobile", viewportWidth: 375 },
+    { id: "tablet", label: "Tablet", viewportWidth: 768 },
+    { id: "desktop", label: "Desktop", viewportWidth: 1280 },
+  ],
+  preUploadCopy: "Recommended at least 1280 px wide, any height.",
+  preUploadLinks: {
+    guideLabel: "image",
+    guideUrl: "https://support.isomer.gov.sg/en/articles/10425935-images",
+  },
+}
+
+// ImageGallery (P2b) — array-nested, always letterboxed. Every gallery image
+// renders object-contain in a fixed-height frame (main slideshow + square
+// thumbnails), so nothing cover-fits: the crop only defines the region that is
+// baked in and then letterboxed, and a focal anchor has nothing to anchor
+// against (same as InfoCards under "Resize image to fit"). Array-nested, so the
+// real component renders the WHOLE gallery, not the single image being edited —
+// use the framed approximation with a contain preview fit. This enables cropping
+// only; it does not add a cover/"Fill" display option (the frame still
+// letterboxes), which would be a separate renderer + schema change.
+const IMAGE_GALLERY_CONFIG: AdjustmentConfig = {
+  componentType: "imagegallery",
+  imageField: "src",
+  cropMode: "custom",
+  focalEnabled: false,
+  // Blur warning follows the recommended upload size shown in the banner.
+  maxRenderedWidthPx: 960,
+  maxRenderedHeightPx: 640,
+  previewObjectFitFor: () => "contain",
+  skipRealComponentPreview: true,
+  // object-contain shows the whole image regardless of frame shape. The frame is
+  // a fixed height (17rem mobile → 28.5rem from sm) over the content column, so it
+  // grows wider as the viewport grows — the three states approximate that frame
+  // shape per breakpoint (the image is letterboxed to fit either way).
+  previewStates: responsivePreviewStates({
+    mobile: { width: 5, height: 4 },
+    tablet: { width: 3, height: 2 },
+    desktop: { width: 2, height: 1 },
+  }),
+  preUploadCopy: "Recommended 960 × 640 px.",
+  preUploadLinks: {
+    guideLabel: "image gallery",
+    guideUrl:
+      "https://support.isomer.gov.sg/en/articles/12129003-image-gallery",
+  },
+}
+
 // resolveAdjustmentConfig matches these on `type:variant` or bare `type`,
 // plus the image field name. The first match wins, so a `type:variant` entry
 // must come before a bare `type` entry for the same type.
 export const CONFIGS: AdjustmentConfig[] = [
+  IMAGE_CONFIG,
+  IMAGE_GALLERY_CONFIG,
   HERO_GRADIENT_CONFIG,
   HERO_LARGE_IMAGE_CONFIG,
   HERO_BLOCK_CONFIG,
