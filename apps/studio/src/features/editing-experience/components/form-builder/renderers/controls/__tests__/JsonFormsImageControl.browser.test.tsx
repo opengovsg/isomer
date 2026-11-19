@@ -17,6 +17,17 @@ import JsonFormsImageControl, {
 
 const UPLOADED_PATH = "/1/uuid/hero.png"
 
+// The control builds asset URLs from env, which reads `process` (absent in the browser)
+vi.mock("~/env.mjs", () => ({
+  env: {
+    NEXT_PUBLIC_APP_URL: "http://localhost:3000",
+    NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME: "user-content.example.com",
+  },
+}))
+// No GrowthBookProvider here; these tests cover upload only, so keep Adjust off
+vi.mock("~/hooks/useIsImageAdjustmentEnabled", () => ({
+  useIsImageAdjustmentEnabled: () => false,
+}))
 vi.mock("~/hooks/useQueryParse", () => ({
   useQueryParse: () => ({ siteId: 1, pageId: 1 }),
 }))
@@ -52,6 +63,13 @@ vi.mock(
       },
     }
   },
+)
+
+// The save path imports other exports of the mocked useAssetUpload module;
+// these tests never open the editor, so stub it out.
+vi.mock(
+  "~/features/editing-experience/components/ImageAdjustmentModal/useSaveImageAdjustment",
+  () => ({ fetchImageBlob: vi.fn() }),
 )
 
 const renderers: JsonFormsRendererRegistryEntry[] = [
