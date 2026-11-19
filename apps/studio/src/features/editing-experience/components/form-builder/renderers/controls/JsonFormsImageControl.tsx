@@ -307,9 +307,27 @@ function JsonFormsImageControl({
         >
           <Text textStyle="body-2">
             {config.preUploadCopy}{" "}
-            <Link href="https://sample.isomer.gov.sg" isExternal>
-              Learn more about image guidelines
-            </Link>
+            {config.preUploadLinks && (
+              <>
+                Read the{" "}
+                <Link href={config.preUploadLinks.guideUrl} isExternal>
+                  {config.preUploadLinks.guideLabel} guide
+                </Link>
+                {config.preUploadLinks.templateUrl ? (
+                  <>
+                    {" "}
+                    or{" "}
+                    {/* No isExternal: the file downloads; a new tab would only flash. */}
+                    <Link href={config.preUploadLinks.templateUrl} download>
+                      download a template
+                    </Link>{" "}
+                    for your image.
+                  </>
+                ) : (
+                  " to plan your image."
+                )}
+              </>
+            )}
           </Text>
         </Infobox>
       )}

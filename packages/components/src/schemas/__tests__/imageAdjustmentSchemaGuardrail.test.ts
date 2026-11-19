@@ -1,10 +1,8 @@
 import { describe, expect, it } from "vitest"
 
 import {
-  HeroBlockSchema,
   HeroCarouselSlideSchema,
   HeroFloatingSchema,
-  HeroLargeImageSchema,
 } from "../../interfaces/complex/Hero"
 import { IsomerComplexComponentsMap } from "../components"
 
@@ -18,7 +16,6 @@ const PENDING_COMPONENTS = new Set([
   "imagegallery",
   "blockquote",
   "infocards",
-  "infopic",
 ])
 
 interface ImageField {
@@ -79,8 +76,6 @@ describe("imageAdjustment schema guardrail", () => {
         // Pending: wired in a later PR of this stack.
         if (properties === HeroCarouselSlideSchema.properties) continue
         if (properties === HeroFloatingSchema.properties) continue
-        if (properties === HeroBlockSchema.properties) continue
-        if (properties === HeroLargeImageSchema.properties) continue
         expect(properties).toHaveProperty(`${imageFieldName}ImageAdjustment`)
       }
     })
