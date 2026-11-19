@@ -323,8 +323,7 @@ const CreditsSection = () => {
   )
 }
 
-// below lg
-const FooterMobile = ({
+export const Footer = ({
   site,
   siteName,
   agencyName,
@@ -339,93 +338,36 @@ const FooterMobile = ({
   termsOfUseLink,
 }: FooterProps) => {
   return (
-    <div className="flex flex-col gap-8 px-6 py-11 md:px-10 lg:hidden lg:py-16">
-      <SiteNameSection siteName={siteName} />
-      <NavSection
-        siteNavItems={navItems}
-        customNavItems={customItems}
-        site={site}
-      />
-      <ReachUsSection
-        socialMediaLinks={socialMediaLinks}
-        contactUsLink={contactUsLink}
-        feedbackFormLink={feedbackFormLink}
-        site={site}
-      />
-      <div className="flex flex-col gap-9">
-        <LegalSection
-          agencyName={agencyName}
-          isGovernment={isGovernment}
-          lastUpdated={lastUpdated}
-          privacyStatementLink={privacyStatementLink}
-          termsOfUseLink={termsOfUseLink}
-          site={site}
-        />
-        <CreditsSection />
-      </div>
-    </div>
-  )
-}
-
-// lg and above
-const FooterDesktop = ({
-  site,
-  siteName,
-  agencyName,
-  isGovernment,
-  lastUpdated,
-  siteNavItems: navItems,
-  customNavItems: customItems,
-  socialMediaLinks,
-  contactUsLink,
-  feedbackFormLink,
-  privacyStatementLink,
-  termsOfUseLink,
-}: FooterProps) => {
-  return (
-    <div className="hidden px-10 py-14 lg:block">
-      <div className="mx-auto flex max-w-[72.5rem] flex-col gap-6">
-        <SiteNameSection siteName={siteName} />
-        <div className="grid-cols-[1fr_min-content] grid-rows-[1fr_min-content] gap-x-10 gap-y-14 lg:grid">
-          <div>
+    <footer className="bg-base-canvas-inverse text-base-content-inverse">
+      <div className="flex flex-col gap-8 px-6 py-11 md:px-10 lg:gap-6 lg:px-10 lg:py-14">
+        <div className="mx-auto flex w-full max-w-[72.5rem] flex-col gap-8 lg:gap-6">
+          <SiteNameSection siteName={siteName} />
+          <div className="flex flex-col gap-8 lg:grid lg:grid-cols-[1fr_min-content] lg:grid-rows-[1fr_min-content] lg:gap-x-10 lg:gap-y-14">
             <NavSection
               siteNavItems={navItems}
               customNavItems={customItems}
               site={site}
             />
-          </div>
-          <div>
             <ReachUsSection
               socialMediaLinks={socialMediaLinks}
               contactUsLink={contactUsLink}
               feedbackFormLink={feedbackFormLink}
               site={site}
             />
-          </div>
-          <div>
-            <LegalSection
-              agencyName={agencyName}
-              isGovernment={isGovernment}
-              lastUpdated={lastUpdated}
-              privacyStatementLink={privacyStatementLink}
-              termsOfUseLink={termsOfUseLink}
-              site={site}
-            />
-          </div>
-          <div>
-            <CreditsSection />
+            <div className="flex flex-col gap-9 lg:contents">
+              <LegalSection
+                agencyName={agencyName}
+                isGovernment={isGovernment}
+                lastUpdated={lastUpdated}
+                privacyStatementLink={privacyStatementLink}
+                termsOfUseLink={termsOfUseLink}
+                site={site}
+              />
+              <CreditsSection />
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  )
-}
-
-export const Footer = (props: FooterProps) => {
-  return (
-    <footer className="bg-base-canvas-inverse text-base-content-inverse">
-      <FooterMobile {...props} />
-      <FooterDesktop {...props} />
     </footer>
   )
 }
