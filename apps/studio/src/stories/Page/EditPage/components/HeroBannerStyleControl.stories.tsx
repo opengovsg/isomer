@@ -108,8 +108,15 @@ export const ConfirmLeavingCarousel: Story = {
     )
     await userEvent.click(caption.closest("button") ?? caption)
 
-    // Cancelling keeps the carousel selected.
+    // Choosing a style updates the preview. Save is what asks.
     await userEvent.click(await canvas.findByRole("radio", { name: "Block" }))
+    await expect(
+      body.queryByRole("dialog", { name: "Discard extra carousel slides?" }),
+    ).toBeNull()
+    await expect(canvas.getByRole("radio", { name: "Block" })).toBeChecked()
+
+    // Save is what asks, and cancelling returns to the carousel they opened on.
+    await userEvent.click(canvas.getByRole("button", { name: "Save" }))
     await userEvent.click(
       await body.findByRole("button", { name: "Keep carousel" }),
     )
@@ -121,20 +128,24 @@ export const ConfirmLeavingCarousel: Story = {
     await expect(canvas.getByRole("radio", { name: "Carousel" })).toBeChecked()
 
     await userEvent.click(canvas.getByRole("radio", { name: "Block" }))
+    await userEvent.click(canvas.getByRole("button", { name: "Save" }))
     const modal = await body.findByRole("dialog", {
       name: "Discard extra carousel slides?",
     })
     await expect(modal).toHaveTextContent("The other 2 slides will be removed.")
     // The modal hides the drawer from assistive tech while it is open.
     await expect(
-      canvas.getByRole("radio", { name: "Carousel", hidden: true }),
+      canvas.getByRole("radio", { name: "Block", hidden: true }),
     ).toBeChecked()
 
     await userEvent.click(
       within(modal).getByRole("button", { name: "Yes, change style" }),
     )
-    await expect(
-      await canvas.findByRole("radio", { name: "Block" }),
-    ).toBeChecked()
+    await waitFor(() =>
+      expect(
+        canvas.queryByRole("dialog", { name: "Choose a hero banner style" }),
+      ).toBeNull(),
+    )
+    await expect(canvas.getByText("Block")).toBeVisible()
   },
 }

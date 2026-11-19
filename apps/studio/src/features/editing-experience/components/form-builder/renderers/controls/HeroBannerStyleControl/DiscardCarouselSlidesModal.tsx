@@ -45,7 +45,7 @@ export function DiscardCarouselSlidesModal({
           >
             Keep carousel
           </Button>
-          <Button colorScheme="critical" size="sm" onClick={onConfirm}>
+          <Button colorScheme="main" size="sm" onClick={onConfirm}>
             Yes, change style
           </Button>
         </ModalFooter>
