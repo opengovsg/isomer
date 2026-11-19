@@ -6,7 +6,7 @@ import { DateFilterDates } from "../CollectionCard/DateFilterDates"
 import { DateFilterStatusClient } from "../CollectionCard/DateFilterStatusClient"
 import { Title } from "../CollectionCard/Title" // Reusing since the logic is the same for both
 import { ImageClient } from "../ImageClient"
-import { Link } from "../Link"
+import { Link } from "../Link/ClientLink"
 import { PillTags, PlaintextTags } from "../Tags"
 
 export const BlogCard = ({

@@ -1,6 +1,6 @@
 import { BiFile } from "react-icons/bi"
 import { Highlight, Snippet, useHits } from "react-instantsearch"
-import { Link } from "~/templates/next/components/internal/Link"
+import { Link } from "~/templates/next/components/internal/Link/ClientLink"
 import { getFormattedDate } from "~/utils/getFormattedDate"
 
 interface EgazetteHit {

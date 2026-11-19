@@ -2,7 +2,7 @@ import type { CollectionCardProps } from "~/interfaces"
 import { isExternalUrl } from "~/utils/isExternalUrl"
 
 import { ImageClient } from "../ImageClient"
-import { Link } from "../Link"
+import { Link } from "../Link/ClientLink"
 import { PillTags, PlaintextTags } from "../Tags"
 import { cardImageStyles } from "./cardImageStyles"
 import { DateFilterDates } from "./DateFilterDates"

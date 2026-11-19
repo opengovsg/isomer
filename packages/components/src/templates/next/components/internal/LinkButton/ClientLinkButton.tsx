@@ -1,0 +1,50 @@
+"use client"
+
+import type { VariantProps } from "tailwind-variants"
+import type { LinkProps } from "~/interfaces/internal/Link"
+import { BiLinkExternal } from "react-icons/bi"
+import { twMerge } from "~/lib/twMerge"
+import { isExternalUrl } from "~/utils/isExternalUrl"
+
+import { buttonIconStyles, buttonStyles } from "../Button/common"
+import { Link } from "../Link/ClientLink"
+
+interface LinkButtonProps
+  extends LinkProps, VariantProps<typeof buttonStyles> {}
+
+export const LinkButton = ({
+  className,
+  variant,
+  size,
+  colorScheme,
+  ...props
+}: LinkButtonProps) => {
+  const href = props.href
+  const isExternalLink = !!href && isExternalUrl(props.href)
+
+  if (isExternalLink) {
+    return (
+      <Link
+        {...props}
+        className={twMerge(
+          buttonStyles({ variant, size, className, colorScheme }),
+          className,
+        )}
+        isExternal={isExternalLink}
+      >
+        {props.children}
+        <BiLinkExternal aria-hidden className={buttonIconStyles({ size })} />
+      </Link>
+    )
+  }
+
+  return (
+    <Link
+      {...props}
+      className={twMerge(
+        buttonStyles({ variant, size, className, colorScheme }),
+        className,
+      )}
+    />
+  )
+}

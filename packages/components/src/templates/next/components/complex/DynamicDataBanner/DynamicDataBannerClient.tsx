@@ -12,7 +12,7 @@ import {
 } from "~/utils/getSingaporeDate"
 
 import { ComponentContent } from "../../internal/customCssClass"
-import { Link } from "../../internal/Link"
+import { Link } from "../../internal/Link/ClientLink"
 
 const createDynamicDataBannerStyles = tv({
   slots: {

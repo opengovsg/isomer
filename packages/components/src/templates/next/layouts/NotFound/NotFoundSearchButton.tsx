@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { getWordsFromPermalink } from "~/utils/getWordsFromPermalink"
 
-import { LinkButton } from "../../components/internal/LinkButton"
+import { LinkButton } from "../../components/internal/LinkButton/ClientLinkButton"
 
 export const NotFoundSearchButton = () => {
   const [permalink, setPermalink] = useState("")

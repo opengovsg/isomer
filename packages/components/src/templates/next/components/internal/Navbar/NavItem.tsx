@@ -13,7 +13,7 @@ import {
 } from "~/utils/tailwind"
 
 import { IconButton } from "../IconButton"
-import { Link } from "../Link"
+import { Link } from "../Link/ClientLink"
 
 type NavbarItemProps = NavbarProps["items"][number] & {
   isOpen: boolean

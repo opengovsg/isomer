@@ -2,7 +2,7 @@ import type { HeadingTag } from "~/utils/getHeadingTag"
 import { tv } from "~/lib/tv"
 
 import { ImageClient } from "../../../internal/ImageClient"
-import { LinkButton } from "../../../internal/LinkButton/LinkButton"
+import { LinkButton } from "../../../internal/LinkButton/ClientLinkButton"
 
 export interface HeroCarouselSlideView {
   backgroundUrl: string

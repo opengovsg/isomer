@@ -4,7 +4,7 @@ import { tv } from "~/lib/tv"
 import { isExternalUrl } from "~/utils/isExternalUrl"
 import { focusVisibleHighlight } from "~/utils/tailwind"
 
-import { Link } from "../../Link"
+import { Link } from "../../Link/ClientLink"
 
 type NavItemAccordionProps = NavbarProps["items"][number] & {
   isOpen: boolean

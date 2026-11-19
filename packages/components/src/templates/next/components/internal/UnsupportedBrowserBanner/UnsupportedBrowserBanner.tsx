@@ -7,7 +7,7 @@ import { useSessionStorage } from "usehooks-ts"
 import { isSupportedBrowser } from "~/utils/isSupportedBrowser"
 
 import { IconButton } from "../IconButton"
-import { Link } from "../Link"
+import { Link } from "../Link/ClientLink"
 
 // TODO: move this to a official isomer.gov.sg once we migrate that to Isomer Next
 const supportedBrowserDocumentLink =
