@@ -1,7 +1,6 @@
 import { TRPCError } from "@trpc/server"
 import {
   deleteAssetsByUrlSchema,
-  deleteAssetsSchema,
   getPresignedGetUrlSchema,
   getPresignedPutUrlSchema,
   uploadSvgSchema,
@@ -17,7 +16,6 @@ import {
   getFileKey,
   getPresignedGetUrl,
   getPresignedPutUrl,
-  markFileAsDeleted,
   putFileDirect,
   sanitizeSvg,
   validateUserPermissionsForAsset,
@@ -93,62 +91,9 @@ export const assetRouter = router({
       return { presignedGetUrl }
     }),
 
-  // No rate limit: all agency editors reach Studio through a single shared
-  // egress IP (remote browser isolation), and the limiter keys on IP, so any
-  // limit here would be shared across every editor. Abuse risk is already low
-  // since permissions are validated before any S3 call and the per-request
-  // cap in deleteAssetsSchema bounds fan-out. Revisit if the rate-limit
-  // fingerprint gains a per-device/per-user component.
-  deleteAssets: protectedProcedure
-    .input(deleteAssetsSchema)
-    .mutation(async ({ ctx, input: { siteId, resourceId, fileKeys } }) => {
-      await validateUserPermissionsForAsset({
-        siteId,
-        resourceId,
-        action: "delete",
-        userId: ctx.user.id,
-      })
-
-      if (!doAllFileKeysBelongToSite({ fileKeys, siteId })) {
-        throw new TRPCError({
-          code: "FORBIDDEN",
-          message:
-            "One or more file keys do not belong to the specified site. You may only delete assets for the site you are authorized for.",
-        })
-      }
-
-      await Promise.allSettled(
-        fileKeys.map((fileKey) => markFileAsDeleted({ key: fileKey })),
-      ).then((results) => {
-        const deleteFailedCounts = results.filter(
-          (result) => result.status === "rejected",
-        ).length
-        const totalDeleteCounts = fileKeys.length
-
-        if (deleteFailedCounts > 0) {
-          ctx.logger.error(
-            {
-              merged: {
-                fileKeys,
-                deleteFailedCounts,
-                totalDeleteCounts,
-              },
-            },
-            "Failed to delete files/images",
-          )
-
-          throw new TRPCError({
-            code: "INTERNAL_SERVER_ERROR",
-            message: "Failed to delete files/images",
-          })
-        }
-      })
-    }),
-
   // OGP-admin-only tool: soft-deletes arbitrary asset URLs across any site
-  // (moderation/PDPA takedowns), unlike deleteAssets above which is scoped to
-  // a caller's own site. Rate-limited since it drives S3 + CloudFront calls
-  // per submitted URL.
+  // (moderation/PDPA takedowns). Rate-limited since it drives S3 + CloudFront
+  // calls per submitted URL.
   deleteAssetsByUrl: protectedProcedure
     .input(deleteAssetsByUrlSchema)
     .meta({ rateLimitOptions: { max: 10, windowMs: 60_000 } })
@@ -160,16 +105,12 @@ export const assetRouter = router({
 
       const results = await deleteAssetsByUrl(urls)
 
-      const successfulKeys = new Set(
-        results
-          .filter((result) => result.success && result.key)
-          .map((result) => result.key)
-          .filter((key): key is string => !!key),
+      // Failed results are invalidated too: tagging may have stopped partway
+      // through a folder, and evicting an untagged object is harmless
+      const attemptedKeys = new Set(
+        results.flatMap(({ key }) => (key ? [key] : [])),
       )
-      const invalidation = await invalidateAssetPaths(
-        ctx.logger,
-        successfulKeys,
-      )
+      const invalidation = await invalidateAssetPaths(ctx.logger, attemptedKeys)
 
       const failedCount = results.filter((result) => !result.success).length
       ctx.logger.info(

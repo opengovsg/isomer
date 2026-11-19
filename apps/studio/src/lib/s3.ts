@@ -2,6 +2,7 @@ import type {
   CopyObjectCommandInput,
   GetObjectCommandInput,
   HeadObjectCommandInput,
+  ListObjectsV2CommandInput,
   PutObjectCommandInput,
   PutObjectTaggingCommandInput,
 } from "@aws-sdk/client-s3"
@@ -11,6 +12,7 @@ import {
   GetObjectCommand,
   GetObjectTaggingCommand,
   HeadObjectCommand,
+  ListObjectsV2Command,
   PutObjectCommand,
   PutObjectRetentionCommand,
   PutObjectTaggingCommand,
@@ -285,6 +287,28 @@ export const isNotFoundError = (error: unknown): boolean => {
     name === "NoSuchKey" ||
     $metadata?.httpStatusCode === 404
   )
+}
+
+export const listObjectKeys = async ({
+  Bucket,
+  Prefix,
+}: Pick<ListObjectsV2CommandInput, "Bucket" | "Prefix">): Promise<string[]> => {
+  const keys: string[] = []
+  let ContinuationToken: string | undefined
+
+  do {
+    const response = await storage.send(
+      new ListObjectsV2Command({ Bucket, Prefix, ContinuationToken }),
+    )
+    keys.push(
+      ...(response.Contents ?? []).flatMap(({ Key }) => (Key ? [Key] : [])),
+    )
+    ContinuationToken = response.IsTruncated
+      ? response.NextContinuationToken
+      : undefined
+  } while (ContinuationToken)
+
+  return keys
 }
 
 export const getFileSize = async ({
