@@ -270,8 +270,8 @@ catalogs:
       specifier: ^4.27.0
       version: 4.27.0
     autoprefixer:
-      specifier: ^10.6.1
-      version: 10.6.1
+      specifier: ^10.6.2
+      version: 10.6.2
     axios:
       specifier: ^1.21.0
       version: 1.21.0
@@ -1222,7 +1222,7 @@ importers:
         version: 5.1.0(vitest@5.1.0)
       autoprefixer:
         specifier: 'catalog:'
-        version: 10.6.1(postcss@8.5.32)
+        version: 10.6.2(postcss@8.5.32)
       clean-webpack-plugin:
         specifier: 'catalog:'
         version: 4.0.0(webpack@5.105.4)
@@ -7353,6 +7353,13 @@ packages:
 
   autoprefixer@10.6.1:
     resolution: {integrity: sha512-cL1Qz6ADZhcEbny/8HPfe99J6HhNoYtpX2LFLIbhgGE7Q1hlQVkYFdetDN7Id3KiQxhDrHwzlHr/YQCnZ8+xSA==}
+    engines: {node: ^10 || ^12 || >=14}
+    hasBin: true
+    peerDependencies:
+      postcss: ^8.1.0
+
+  autoprefixer@10.6.2:
+    resolution: {integrity: sha512-VOw9/yGTGwPPgzFcODtcv6zhEPIeIWkRSe10L2ri2f5vZ7ID7lCt6jZzRF5/ubgOZ+szYydmEF5AYsA5jxX1tA==}
     engines: {node: ^10 || ^12 || >=14}
     hasBin: true
     peerDependencies:
@@ -17948,6 +17955,15 @@ snapshots:
   attr-accept@2.2.5: {}
 
   autoprefixer@10.6.1(postcss@8.5.32):
+    dependencies:
+      browserslist: 4.29.5
+      caniuse-lite: 1.0.30001820
+      fraction.js: 5.3.4
+      picocolors: 1.1.1
+      postcss: 8.5.32
+      postcss-value-parser: 4.2.0
+
+  autoprefixer@10.6.2(postcss@8.5.32):
     dependencies:
       browserslist: 4.29.5
       caniuse-lite: 1.0.30001820
