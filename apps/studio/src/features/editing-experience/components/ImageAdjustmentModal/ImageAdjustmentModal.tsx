@@ -26,6 +26,7 @@ import {
 import {
   Button,
   Infobox,
+  Link,
   ModalCloseButton,
   useToast,
 } from "@opengovsg/design-system-react"
@@ -149,6 +150,9 @@ interface ImageAdjustmentModalProps {
     imageFit?: "cover" | "contain"
   }) => void
 }
+
+const IMAGE_EDITING_GUIDE_URL =
+  "https://support.isomer.gov.sg/en/articles/18541169-preparing-images#h_9c22f08f46"
 
 export const ImageAdjustmentModal = ({
   isOpen,
@@ -398,15 +402,22 @@ export const ImageAdjustmentModal = ({
               Edit image
             </Text>
           </ModalHeader>
-          {/* TODO: add "Learn how to crop your image and set its focal point in
-              our guide" here (not inside ModalHeader) once the guide URL exists. */}
+          {/* Outside ModalHeader, which names the dialog for screen readers. */}
+          <Text textStyle="body-2" px="2rem">
+            Learn how to crop your image and set its focal point in our{" "}
+            <Link href={IMAGE_EDITING_GUIDE_URL} isExternal>
+              guide
+            </Link>
+          </Text>
 
           {/* No onClick: Chakra's close button already calls Modal's onClose. */}
           <ModalCloseButton size="lg" isDisabled={isSaving} />
 
           {/* On desktop each column scrolls. On mobile the body scrolls. */}
           <ModalBody
-            p="2rem"
+            px="2rem"
+            pt="1rem"
+            pb="2rem"
             flex="1"
             minH={0}
             overflow={{ base: "auto", md: "hidden" }}
