@@ -157,6 +157,7 @@ const preview: Preview = {
   ],
 
   parameters: {
+    a11y: { test: "error" },
     argos: {
       // Argos crops, pads and zooms the capture by default. Chromatic captured
       // the full viewport width as rendered.

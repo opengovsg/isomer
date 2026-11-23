@@ -13,23 +13,30 @@ const SENSITIVE_KEYS = new Set([
 
 const isSensitiveKey = (key: string) => SENSITIVE_KEYS.has(key.toLowerCase())
 
-export const redactLogInput = (input: unknown): unknown => {
-  if (input === null || input === undefined) {
+const REPEATED = "[REPEATED]"
+
+// A repeated object (shared reference or cycle) is logged once, then as a
+// marker, so neither this walk nor pino's JSON.stringify expands it again.
+export const redactLogInput = (
+  input: unknown,
+  seen = new WeakSet<object>(),
+): unknown => {
+  if (input === null || typeof input !== "object") {
     return input
   }
+  if (seen.has(input)) {
+    return REPEATED
+  }
+  seen.add(input)
 
   if (Array.isArray(input)) {
-    return input.map(redactLogInput)
+    return input.map((value) => redactLogInput(value, seen))
   }
 
-  if (typeof input === "object") {
-    return Object.fromEntries(
-      Object.entries(input).map(([key, value]) => [
-        key,
-        isSensitiveKey(key) ? REDACTED : redactLogInput(value),
-      ]),
-    )
-  }
-
-  return input
+  return Object.fromEntries(
+    Object.entries(input).map(([key, value]) => [
+      key,
+      isSensitiveKey(key) ? REDACTED : redactLogInput(value, seen),
+    ]),
+  )
 }

@@ -1853,7 +1853,7 @@ export const NestedColumns: Story = {
                 content: [
                   {
                     type: "text",
-                    text: "",
+                    text: "Type",
                   },
                 ],
               },
