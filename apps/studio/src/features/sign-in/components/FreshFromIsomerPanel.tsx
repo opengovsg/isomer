@@ -66,6 +66,7 @@ const SPOTLIGHTS: Spotlight[] = [
       "Pick a size, merge cells, add colours, resize or move columns and edit full screen.",
     learnMoreHref:
       "https://support.isomer.gov.sg/en/articles/10425930-text-block#h_6da533f62d",
+    learnMoreLabel: "Read how to edit tables",
   },
 ]
 
