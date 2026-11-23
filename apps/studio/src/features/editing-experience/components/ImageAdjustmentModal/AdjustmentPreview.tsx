@@ -481,6 +481,9 @@ const PreviewFrame = ({
   const handleIframeMount = useCallback(
     ({ document: iframeDocument }: IframeCallbackFnProps) => {
       if (!iframeDocument?.body) return
+      // A trailing margin collapses out of body, so scrollHeight undercounts
+      // and the frame would show a scrollbar.
+      iframeDocument.body.style.overflow = "hidden"
       const update = () => setMeasuredHeight(iframeDocument.body.scrollHeight)
       update()
       // The global ResizeObserver can observe a same-origin iframe's elements.

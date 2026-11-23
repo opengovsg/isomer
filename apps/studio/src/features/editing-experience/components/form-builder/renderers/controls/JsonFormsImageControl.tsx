@@ -312,20 +312,8 @@ function JsonFormsImageControl({
                 Read the{" "}
                 <Link href={config.preUploadLinks.guideUrl} isExternal>
                   {config.preUploadLinks.guideLabel} guide
-                </Link>
-                {config.preUploadLinks.templateUrl ? (
-                  <>
-                    {" "}
-                    or{" "}
-                    {/* No isExternal: the file downloads; a new tab would only flash. */}
-                    <Link href={config.preUploadLinks.templateUrl} download>
-                      download a template
-                    </Link>{" "}
-                    for your image.
-                  </>
-                ) : (
-                  " to plan your image."
-                )}
+                </Link>{" "}
+                to plan your image.
               </>
             )}
           </Text>
@@ -384,6 +372,21 @@ function JsonFormsImageControl({
               onSave={handleAdjustmentSave}
             />
           )}
+          {showAnimatedFormatCallout && (
+            <Infobox variant="warning" size="sm" mt="0.75rem">
+              <Text textStyle="body-2">
+                Animated images can't be adjusted. Editing would flatten it to a
+                single frame.
+              </Text>
+            </Infobox>
+          )}
+          {showUnsupportedFormatCallout && (
+            <Infobox variant="warning" size="sm" mt="0.75rem">
+              <Text textStyle="body-2">
+                Only JPG, PNG and WebP can be edited
+              </Text>
+            </Infobox>
+          )}
           {/* The modal owns the fit toggle. Offer it inline when the modal
               can't open. */}
           {hasImageFitField && !canAdjust && (
@@ -404,21 +407,6 @@ function JsonFormsImageControl({
                 </Radio>
               </RadioGroup>
             </FormControl>
-          )}
-          {showAnimatedFormatCallout && (
-            <Infobox variant="warning" size="sm" mt="0.75rem">
-              <Text textStyle="body-2">
-                Animated images can't be adjusted. Editing would flatten it to a
-                single frame.
-              </Text>
-            </Infobox>
-          )}
-          {showUnsupportedFormatCallout && (
-            <Infobox variant="warning" size="sm" mt="0.75rem">
-              <Text textStyle="body-2">
-                Only JPG, PNG and WebP can be edited
-              </Text>
-            </Infobox>
           )}
           {!canAdjust && (
             // Hidden. "Replace image" above clicks its file input.

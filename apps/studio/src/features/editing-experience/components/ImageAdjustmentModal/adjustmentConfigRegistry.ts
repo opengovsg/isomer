@@ -144,8 +144,6 @@ const HERO_GRADIENT_CONFIG: AdjustmentConfig = {
     guideLabel: "hero banner",
     guideUrl:
       "https://support.isomer.gov.sg/en/articles/10390602-editing-your-hero-banner",
-    templateUrl:
-      "https://isomer-user-content.by.gov.sg/Studio/Isomer%20-%20Hero%20banner%20Gradient%20%C2%B7%201920%C3%971080.png?original=true",
   },
 }
 
@@ -182,8 +180,6 @@ const HERO_BLOCK_CONFIG: AdjustmentConfig = {
     guideLabel: "hero banner",
     guideUrl:
       "https://support.isomer.gov.sg/en/articles/10390602-editing-your-hero-banner",
-    templateUrl:
-      "https://isomer-user-content.by.gov.sg/Studio/Isomer%20-%20Hero%20banner%20Block%20%C2%B7%201280%C3%97860.png?original=true",
   },
 }
 
@@ -195,20 +191,11 @@ const heroCarouselConfig = (block: IsomerComponent): AdjustmentConfig => {
     block.variant === "carousel" &&
     block.carousel?.layout === "block"
   const layoutConfig = isBlockLayout ? HERO_BLOCK_CONFIG : HERO_GRADIENT_CONFIG
-  const isCentred =
-    block.type === "hero" &&
-    block.variant === "carousel" &&
-    block.carousel?.layout === "gradient" &&
-    block.carousel.contentAlignment === "center"
-  // Centred gradient slides link to the guide only, with no template.
-  const links = layoutConfig.preUploadLinks
-  const centredLinks = links && (({ templateUrl: _, ...rest }) => rest)(links)
   // Everything else matches the single hero of that layout.
   return {
     ...layoutConfig,
     componentType: "hero:carousel",
     buildPreview: buildCarouselSlidePreview,
-    preUploadLinks: isCentred ? centredLinks : links,
   }
 }
 
@@ -264,8 +251,6 @@ const INFOPIC_CONFIG: AdjustmentConfig = {
     guideLabel: "image with text",
     guideUrl:
       "https://support.isomer.gov.sg/en/articles/18459544-image-with-text-homepage",
-    templateUrl:
-      "https://isomer-user-content.by.gov.sg/Studio/Isomer%20-%20Image%20with%20text%20%28homepage%29%20%C2%B7%201280%C3%97860.png?original=true",
   },
 }
 
@@ -290,8 +275,6 @@ const INFOPIC_FULL_CONFIG: AdjustmentConfig = {
     guideLabel: "image with text",
     guideUrl:
       "https://support.isomer.gov.sg/en/articles/18459544-image-with-text-homepage",
-    templateUrl:
-      "https://isomer-user-content.by.gov.sg/Studio/Isomer%20-%20Image%20with%20text%20%28homepage%29%20%C2%B7%201280%C3%97860.png?original=true",
   },
 }
 
@@ -319,8 +302,6 @@ const HERO_LARGE_IMAGE_CONFIG: AdjustmentConfig = {
     guideLabel: "hero banner",
     guideUrl:
       "https://support.isomer.gov.sg/en/articles/10390602-editing-your-hero-banner",
-    templateUrl:
-      "https://isomer-user-content.by.gov.sg/Studio/Isomer%20-%20Hero%20banner%20Large%20image%20%C2%B7%201920%C3%97960.png?original=true",
   },
 }
 
@@ -354,8 +335,6 @@ const HERO_FLOATING_CONFIG: AdjustmentConfig = {
     guideLabel: "hero banner",
     guideUrl:
       "https://support.isomer.gov.sg/en/articles/10390602-editing-your-hero-banner",
-    templateUrl:
-      "https://isomer-user-content.by.gov.sg/Studio/Isomer%20-%20Hero%20banner%20Floating%20%C2%B7%201500%C3%971000.png?original=true",
   },
 }
 
@@ -384,8 +363,6 @@ const BLOCKQUOTE_CONFIG: AdjustmentConfig = {
   preUploadLinks: {
     guideLabel: "quote",
     guideUrl: "https://support.isomer.gov.sg/en/articles/18459513-quote",
-    templateUrl:
-      "https://isomer-user-content.by.gov.sg/Studio/Isomer%20-%20Quote%20%C2%B7%20400%C3%97400.png?original=true",
   },
 }
 
@@ -418,8 +395,6 @@ const INFOCARDS_WITH_IMAGES_CONFIG: AdjustmentConfig = {
   preUploadLinks: {
     guideLabel: "cards",
     guideUrl: "https://support.isomer.gov.sg/en/articles/10425947-cards",
-    templateUrl:
-      "https://isomer-user-content.by.gov.sg/Studio/Isomer%20-%20Cards%20with%20images%20%C2%B7%20800%C3%97533.png?original=true",
   },
 }
 
@@ -450,8 +425,6 @@ const INFOCARDS_WITH_FULL_IMAGE_CONFIG: AdjustmentConfig = {
   preUploadLinks: {
     guideLabel: "cards",
     guideUrl: "https://support.isomer.gov.sg/en/articles/10425947-cards",
-    templateUrl:
-      "https://isomer-user-content.by.gov.sg/Studio/Isomer%20-%20Cards%20with%20full%20images%20%C2%B7%20800%C3%971200.png?original=true",
   },
 }
 

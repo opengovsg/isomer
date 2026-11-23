@@ -17,6 +17,7 @@ import {
   ModalHeader,
   ModalOverlay,
   Spacer,
+  Spinner,
   Text,
   Tooltip,
   VStack,
@@ -265,6 +266,7 @@ export const ImageAdjustmentModal = ({
   }
 
   const handleSave = async () => {
+    if (isSaving) return
     if (!isModified) {
       onClose()
       return
@@ -362,11 +364,14 @@ export const ImageAdjustmentModal = ({
           h={{ md: "min(50rem, 90vh)" }}
           minH={{ md: "min(50rem, 90vh)" }}
         >
-          <ModalHeader pr="4.5rem">
+          {/* 6xl has no design-system padding, so match the body's 2rem edge. */}
+          <ModalHeader pl="2rem" pr="4.5rem">
             <Text as="span" textStyle="h4" fontWeight="semibold">
               Edit image
             </Text>
           </ModalHeader>
+          {/* TODO: add "Learn how to crop your image and set its focal point in
+              our guide" here (not inside ModalHeader) once the guide URL exists. */}
 
           <ModalCloseButton
             size="lg"
@@ -567,11 +572,15 @@ export const ImageAdjustmentModal = ({
             </Flex>
           </ModalBody>
 
-          <ModalFooter borderTopWidth="1px" borderColor="base.divider.medium">
+          <ModalFooter
+            px="2rem"
+            borderTopWidth="1px"
+            borderColor="base.divider.medium"
+          >
             <HStack spacing="1rem" w="100%">
               <Button
-                variant="outline"
-                colorScheme="critical"
+                variant="clear"
+                colorScheme="neutral"
                 leftIcon={<BiReset />}
                 onClick={handleReset}
                 isDisabled={isResetDisabled || isSaving}
@@ -587,7 +596,14 @@ export const ImageAdjustmentModal = ({
               >
                 Cancel
               </Button>
-              <Button variant="solid" onClick={handleSave} isLoading={isSaving}>
+              {/* aria-disabled, not isLoading: a truly disabled button drops
+                  focus, and the focus trap then moves it into the preview. */}
+              <Button
+                variant="solid"
+                onClick={handleSave}
+                aria-disabled={isSaving}
+                leftIcon={isSaving ? <Spinner size="sm" /> : undefined}
+              >
                 Save changes
               </Button>
             </HStack>

@@ -106,12 +106,10 @@ export interface AdjustmentConfig {
   previewStates: AdjustmentPreviewState[]
   // Guidance copy shown before/around upload (resolution hints etc.).
   preUploadCopy?: string
-  // The banner appends "Read the <guideLabel> guide or download a template for
-  // your image." Without a templateUrl it ends "to plan your image." instead.
+  // The banner appends "Read the <guideLabel> guide to plan your image."
   preUploadLinks?: {
     guideLabel: string
     guideUrl: string
-    templateUrl?: string
   }
   // The recommended upload width from preUploadCopy. The modal warns when the
   // crop is narrower. Omit if the width is unbounded.
