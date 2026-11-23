@@ -48,7 +48,7 @@ export const EgazetteAlgoliaSearch = ({
       future={{ preserveSharedStateOnUnmount: true }}
     >
       <section className="mx-auto flex w-full max-w-screen-xl flex-col gap-8 px-6 py-10 lg:flex-row">
-        <aside className="flex w-full flex-col gap-4 lg:w-72 lg:flex-shrink-0">
+        <div className="flex w-full flex-col gap-4 lg:w-72 lg:flex-shrink-0">
           <SectionHeading>Search</SectionHeading>
           <SearchBox />
 
@@ -87,7 +87,7 @@ export const EgazetteAlgoliaSearch = ({
               maxLabel="To"
             />
           </div>
-        </aside>
+        </div>
 
         <div className="flex min-w-0 flex-1 flex-col">
           <div className="flex flex-wrap items-start justify-between gap-3">

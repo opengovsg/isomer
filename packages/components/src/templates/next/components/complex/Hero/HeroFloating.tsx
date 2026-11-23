@@ -66,9 +66,15 @@ export const HeroFloating = ({
         >
           {/* Text container */}
           <div className={`flex flex-col gap-6 text-start ${heroTitleColour}`}>
-            <Tag className={`prose-display-xl ${heroTitleColour}`}>{title}</Tag>
+            <Tag
+              className={`prose-display-xl text-[2.25rem] leading-[1.2] md:text-[3rem] md:leading-[1.1] xl:text-[3rem] xl:leading-[1.1] ${heroTitleColour}`}
+            >
+              {title}
+            </Tag>
             {subtitle && (
-              <p className={`prose-title-lg-regular ${heroSubtitleColour}`}>
+              <p
+                className={`prose-title-lg-regular text-[1.125rem] md:text-[1.5rem] ${heroSubtitleColour}`}
+              >
                 {subtitle}
               </p>
             )}
@@ -76,7 +82,7 @@ export const HeroFloating = ({
 
           {/* Button container */}
           {buttonLabel && buttonUrl && (
-            <div className="flex flex-col justify-start gap-x-5 gap-y-4 md:flex-row">
+            <div className="flex flex-wrap justify-start gap-x-5 gap-y-4 [&>*]:h-auto">
               <LinkButton
                 href={getReferenceLinkHref(
                   buttonUrl,

@@ -2,31 +2,54 @@ import { Button, Flex, Grid, GridItem, Text } from "@chakra-ui/react"
 import { RestrictedGovtMasthead } from "@opengovsg/design-system-react"
 import NextLink from "next/link"
 import { useRouter } from "next/router"
-import posthog from "posthog-js"
 import { useEffect } from "react"
 import { FullscreenSpinner } from "~/components/FullscreenSpinner"
 import { IsomerLogo } from "~/components/Svg"
 import { useLoginState } from "~/features/auth"
+import { captureEvent } from "~/lib/posthogCapture"
 import { SIGN_IN_SINGPASS } from "~/lib/routes"
 import { callbackUrlSchema } from "~/schemas/url"
 import { trpc } from "~/utils/trpc"
 
-/**
- * This component is responsible for handling the callback from the Singpass
- * login.
- */
-export const SingpassCallback = (): JSX.Element => {
+import { singpassCallbackFailurePath } from "../singpassRedirect"
+
+const queryValue = (value: string | string[] | undefined): string | undefined =>
+  typeof value === "string" && value.length > 0 ? value : undefined
+
+const RedirectToSingpassSignIn = ({
+  singpassError,
+}: {
+  singpassError: string | undefined
+}): JSX.Element => {
+  const router = useRouter()
+
+  useEffect(() => {
+    void router.replace(singpassCallbackFailurePath(singpassError))
+  }, [router, singpassError])
+
+  return <FullscreenSpinner />
+}
+
+const CompleteSingpassLogin = ({
+  code,
+  state,
+  iss,
+}: {
+  code: string
+  state: string
+  iss?: string
+}): JSX.Element => {
   const { setHasLoginStateFlag } = useLoginState()
 
   const router = useRouter()
   const utils = trpc.useUtils()
 
-  const {
-    query: { code, state },
-  } = router
-
   const [data, dataQuery] = trpc.auth.singpass.callback.useSuspenseQuery(
-    { code: String(code), state: String(state) },
+    {
+      code,
+      state,
+      iss,
+    },
     {
       staleTime: Infinity,
     },
@@ -43,7 +66,7 @@ export const SingpassCallback = (): JSX.Element => {
     void utils.me.get.invalidate()
 
     if (!isNewUser) {
-      posthog.capture("user_logged_in", { method: "singpass" })
+      captureEvent("user_logged_in", { method: "singpass" })
       void router.replace(callbackUrlSchema.parse(redirectUrl))
     }
   }, [
@@ -112,4 +135,29 @@ export const SingpassCallback = (): JSX.Element => {
       </Grid>
     </Flex>
   )
+}
+
+/**
+ * This component is responsible for handling the callback from the Singpass
+ * login.
+ */
+export const SingpassCallback = (): JSX.Element => {
+  const router = useRouter()
+
+  if (!router.isReady) {
+    return <FullscreenSpinner />
+  }
+
+  const code = queryValue(router.query.code)
+  const state = queryValue(router.query.state)
+  const iss = queryValue(router.query.iss)
+  const singpassError = queryValue(router.query.error)
+
+  // A failed Singpass redirect has `error` and no authorization code. Do not
+  // send a stand-in code to the token exchange.
+  if (singpassError || !code || !state) {
+    return <RedirectToSingpassSignIn singpassError={singpassError} />
+  }
+
+  return <CompleteSingpassLogin code={code} state={state} iss={iss} />
 }

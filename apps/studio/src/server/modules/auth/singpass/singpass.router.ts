@@ -1,6 +1,7 @@
 import type { SessionData } from "~/lib/types/session"
 import { TRPCError } from "@trpc/server"
 import { set } from "lodash-es"
+import { getIsSingpassFapi2Enabled } from "~/lib/growthbook"
 import { DASHBOARD } from "~/lib/routes"
 import {
   singpassCallbackSchema,
@@ -16,11 +17,18 @@ import {
   generateSessionOptions,
   SINGPASS_COMPLETED_SESSION_TTL_HOURS,
 } from "../session"
+import {
+  singpassErrorCode,
+  singpassLoginLogFields,
+  singpassLogMessage,
+} from "./singpass.observability"
 import { getAuthorizationUrl, login } from "./singpass.service"
 
 export const singpassRouter = router({
   login: publicProcedure
     .input(singpassLoginSchema)
+    // TODO: Re-enable per-user + IP rate limits once fingerprint can include session userId.
+    // .meta({ rateLimitOptions: { max: 10, windowMs: 60 * 1000 } })
     .mutation(async ({ ctx, input: { landingUrl } }) => {
       // NOTE: The Singpass login flow is not the first login mechanism that the
       // user encounters, as they should have completed the email OTP
@@ -35,12 +43,77 @@ export const singpassRouter = router({
 
       const { userId, verificationToken } = ctx.session.singpass.sessionState
 
+      // GrowthBook is created per request. The email attribute set during OTP
+      // verification does not carry over, so reload it from the user row
+      // before evaluating the FAPI flag. Targeting lives in the GrowthBook
+      // dashboard (`email` is in the list), not in an in-app allowlist.
+      const user = await ctx.db
+        .selectFrom("User")
+        .select(["email"])
+        .where("User.id", "=", userId)
+        .executeTakeFirstOrThrow(
+          () => new TRPCError({ code: "NOT_FOUND", message: "User not found" }),
+        )
+
+      await ctx.gb.setAttributes({ email: user.email })
+      const useFapi = getIsSingpassFapi2Enabled({ gb: ctx.gb })
+
       ctx.logger.info(
-        { landingUrl },
-        `Starting Singpass login flow: ${landingUrl.toString()}`,
+        singpassLoginLogFields({
+          useFapi,
+          stage: "authorization",
+          authorizationPhase: "start",
+          landingUrl,
+        }),
+        singpassLogMessage({
+          useFapi,
+          message: `login flow starting: ${landingUrl.toString()}`,
+        }),
       )
 
-      const { authorizationUrl, session } = await getAuthorizationUrl()
+      ctx.logger.info(
+        singpassLoginLogFields({
+          useFapi,
+          stage: "authorization",
+          authorizationPhase: "routed",
+        }),
+        singpassLogMessage({
+          useFapi,
+          message: "login routed to authorization flow",
+        }),
+      )
+
+      let authorizationUrl: string
+      let session: Awaited<ReturnType<typeof getAuthorizationUrl>>["session"]
+      try {
+        const authorization = await getAuthorizationUrl({
+          useFapi,
+          logger: ctx.logger,
+        })
+        authorizationUrl = authorization.authorizationUrl
+        session = authorization.session
+      } catch (error) {
+        ctx.logger.error(
+          {
+            ...singpassLoginLogFields({
+              useFapi,
+              stage: "authorization",
+              outcome: "failure",
+            }),
+            singpassError: singpassErrorCode(error),
+            err: error,
+          },
+          singpassLogMessage({
+            useFapi,
+            message: "authorization request failed",
+          }),
+        )
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Singpass login failed",
+          cause: error,
+        })
+      }
 
       // Reset session state without destroy() — iron-session v9 treats destroy as terminal.
       clearSessionData(ctx.session)
@@ -86,7 +159,9 @@ export const singpassRouter = router({
 
   callback: publicProcedure
     .input(singpassCallbackSchema)
-    .query(async ({ ctx, input: { state, code } }) => {
+    // TODO: Re-enable per-user + IP rate limits once fingerprint can include session userId.
+    // .meta({ rateLimitOptions: { max: 10, windowMs: 60 * 1000 } })
+    .query(async ({ ctx, input: { state, code, iss } }) => {
       if (!ctx.session.singpass?.sessionState) {
         ctx.logger.warn("No Singpass session state found")
 
@@ -96,20 +171,47 @@ export const singpassRouter = router({
         })
       }
 
-      const { codeVerifier, nonce, userId, verificationToken } =
-        ctx.session.singpass.sessionState
+      const {
+        codeVerifier,
+        nonce,
+        userId,
+        verificationToken,
+        state: expectedState,
+        useFapi,
+        dpopPrivateJwk,
+      } = ctx.session.singpass.sessionState
 
-      if (!code || !codeVerifier || !nonce || !userId) {
+      if (
+        !code ||
+        !codeVerifier ||
+        !nonce ||
+        !userId ||
+        !expectedState ||
+        state !== expectedState ||
+        (useFapi && !dpopPrivateJwk)
+      ) {
         // Do not log `code`, `codeVerifier`, or `nonce` — they are OAuth/OIDC secrets
         // (PKCE verifier + auth code complete the token exchange; nonce binds the ID token).
         ctx.logger.error(
           {
+            ...singpassLoginLogFields({
+              useFapi: useFapi === true,
+              stage: "callback",
+              outcome: "failure",
+              reason: "invalid_session_state",
+            }),
             hasCode: !!code,
             hasCodeVerifier: !!codeVerifier,
             hasNonce: !!nonce,
+            hasState: !!expectedState,
+            stateMatches: state === expectedState,
+            hasDpopKey: !!dpopPrivateJwk,
             userId,
           },
-          "Invalid Singpass session state",
+          singpassLogMessage({
+            useFapi: useFapi === true,
+            message: "invalid session state",
+          }),
         )
 
         throw new TRPCError({
@@ -118,23 +220,62 @@ export const singpassRouter = router({
         })
       }
 
-      const { uuid } = await login({
-        code,
-        codeVerifier,
-        nonce,
-        state,
-      })
+      let uuid: string | undefined
+      try {
+        const result = await login({
+          code,
+          codeVerifier,
+          nonce,
+          state: expectedState,
+          iss,
+          useFapi: useFapi === true,
+          dpopPrivateJwk,
+          logger: ctx.logger,
+        })
+        uuid = result.uuid
+      } catch (error) {
+        ctx.logger.error(
+          {
+            ...singpassLoginLogFields({
+              useFapi: useFapi === true,
+              stage: "callback",
+              outcome: "failure",
+              reason: "token_exchange",
+            }),
+            singpassError: singpassErrorCode(error),
+            err: error,
+          },
+          singpassLogMessage({
+            useFapi: useFapi === true,
+            message: "login failed",
+          }),
+        )
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Singpass login failed",
+          cause: error,
+        })
+      }
 
       if (!uuid) {
         // Do not log `code`, `codeVerifier`, or `nonce` — see comment above.
         ctx.logger.error(
           {
+            ...singpassLoginLogFields({
+              useFapi: useFapi === true,
+              stage: "callback",
+              outcome: "failure",
+              reason: "missing_uuid",
+            }),
             hasCode: !!code,
             hasCodeVerifier: !!codeVerifier,
             hasNonce: !!nonce,
             state,
           },
-          "Failed to login to Singpass",
+          singpassLogMessage({
+            useFapi: useFapi === true,
+            message: "login failed",
+          }),
         )
 
         throw new TRPCError({
@@ -177,6 +318,19 @@ export const singpassRouter = router({
           })
         })
       } else if (possibleUser.singpassUuid !== uuid) {
+        ctx.logger.error(
+          singpassLoginLogFields({
+            useFapi: useFapi === true,
+            stage: "callback",
+            outcome: "failure",
+            reason: "profile_mismatch",
+            userId,
+          }),
+          singpassLogMessage({
+            useFapi: useFapi === true,
+            message: "profile does not match user",
+          }),
+        )
         throw new TRPCError({
           // NOTE: We use NOT_FOUND here as UNAUTHORIZED would cause the session
           // state to be destroyed by the error handler middleware
@@ -205,6 +359,20 @@ export const singpassRouter = router({
         }),
       )
       await ctx.session.save()
+
+      ctx.logger.info(
+        singpassLoginLogFields({
+          useFapi: useFapi === true,
+          stage: "callback",
+          outcome: "success",
+          isNewUser: !possibleUser.singpassUuid,
+          userId,
+        }),
+        singpassLogMessage({
+          useFapi: useFapi === true,
+          message: "login completed",
+        }),
+      )
 
       return {
         isNewUser: !possibleUser.singpassUuid,

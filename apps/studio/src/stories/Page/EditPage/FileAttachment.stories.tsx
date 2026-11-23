@@ -24,7 +24,6 @@ const meta: Meta<typeof FileAttachment> = {
     setHref: (href) => console.log("setHref", href),
     maxSizeInBytes: MAX_FILE_SIZE_BYTES,
     acceptedFileTypes: FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING,
-    shouldFetchResource: false,
   },
 }
 

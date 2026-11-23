@@ -270,9 +270,13 @@ describe("HistoryStateDrawer", () => {
     // that text is already rendered unconditionally in the row list, so an
     // unscoped assertion would pass even if the click handler did nothing).
     // The highlight-toggle checkbox only exists once `PageDiffModal` mounts.
+    // Its `Suspense` renders the fallback skeleton first and swaps in the
+    // content after an effect, so wait for the checkbox rather than query once.
     const dialog = await screen.findByRole("dialog")
     expect(
-      within(dialog).getByRole("checkbox", { name: "Highlight changes" }),
+      await within(dialog).findByRole("checkbox", {
+        name: "Highlight changes",
+      }),
     ).not.toBeNull()
   })
 
@@ -311,7 +315,11 @@ describe("HistoryStateDrawer", () => {
     screen.getByRole("button", { name: "View changes" }).click()
 
     // Assert
+    // Same skeleton race as the test above: the heading is inside
+    // `PageDiffContent`, which mounts only after `Suspense`'s effect.
     const dialog = await screen.findByRole("dialog")
-    expect(within(dialog).queryByText("Changes in version 1")).not.toBeNull()
+    expect(
+      await within(dialog).findByText("Changes in version 1"),
+    ).not.toBeNull()
   })
 })
