@@ -46,7 +46,8 @@ export const DefaultContactInformationUI = ({
     isLoading,
   })
   const hasTitle = !!title || isLoading
-  const TitleTag = getHeadingTag(headingLevel)
+  // The loading placeholder is empty, and screen readers announce empty headings.
+  const TitleTag = isLoading ? "div" : getHeadingTag(headingLevel)
   // "Other Information" only nests one level deeper than the title if the
   // title actually renders — otherwise it would be a heading with no parent
   // heading in between, skipping a level.

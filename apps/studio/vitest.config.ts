@@ -9,6 +9,12 @@ import { configDefaults, defineConfig } from "vitest/config"
 // instead of a simulated DOM. Everything else runs in the "node" project.
 const BROWSER_TEST_PATTERN = "src/**/*.browser.test.{ts,tsx}"
 
+// Not VITEST_STORYBOOK alone: addon-a11y only fails on violations when that is
+// unset, but Storybook's UI runner still sets it.
+const isStorybookRun = !!(
+  process.env.STORYBOOK_TESTS || process.env.VITEST_STORYBOOK
+)
+
 export default defineConfig({
   resolve: {
     tsconfigPaths: true,
@@ -25,10 +31,10 @@ export default defineConfig({
       ],
     },
     // Story console noise floods the CI output; keep it only for failed stories.
-    silent: process.env.VITEST_STORYBOOK ? "passed-only" : undefined,
-    // Storybook runs separately (VITEST_STORYBOOK=true) so unit runs never load
+    silent: isStorybookRun ? "passed-only" : undefined,
+    // Storybook runs separately (STORYBOOK_TESTS=true) so unit runs never load
     // the Argos plugin, which uploads screenshots on CI.
-    projects: process.env.VITEST_STORYBOOK
+    projects: isStorybookRun
       ? [
           {
             extends: true,
