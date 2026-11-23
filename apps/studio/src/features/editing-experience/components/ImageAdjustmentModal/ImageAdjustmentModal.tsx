@@ -32,7 +32,7 @@ import {
 } from "@opengovsg/design-system-react"
 import { isFocalApplicable } from "@opengovsg/isomer-components"
 import { useEffect, useMemo, useRef, useState } from "react"
-import { BiInfoCircle, BiReset } from "react-icons/bi"
+import { BiInfoCircle, BiRevision } from "react-icons/bi"
 import { captureSiteEvent } from "~/lib/posthogCapture"
 
 import type { AdjustmentConfig } from "./AdjustmentConfig"
@@ -623,7 +623,7 @@ export const ImageAdjustmentModal = ({
               <Button
                 variant="clear"
                 colorScheme="neutral"
-                leftIcon={<BiReset />}
+                leftIcon={<BiRevision />}
                 onClick={handleReset}
                 isDisabled={isResetDisabled || isSaving}
               >
