@@ -18,5 +18,6 @@ type Story = StoryObj<typeof IconButton>
 export const Default: Story = {
   args: {
     icon: BiSearch,
+    "aria-label": "Search",
   },
 }
