@@ -391,7 +391,7 @@ const SaveButton = ({
       isDisabled={isNonEditableBlock || !isEmpty(errors)}
       onClick={onClick}
     >
-      Save block
+      Save changes
     </Button>
   )
 }
