@@ -135,6 +135,8 @@ const Page = async (props: DynamicPageProps) => {
     site: {
       siteName: config.site.siteName,
       url: config.site.url,
+      // @ts-ignore to fix when types are proper
+      siteMap: sitemap,
     },
   })
 
