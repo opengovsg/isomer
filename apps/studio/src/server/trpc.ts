@@ -11,7 +11,6 @@
 import { initTRPC, TRPCError } from "@trpc/server"
 import { getHTTPStatusCodeFromError } from "@trpc/server/http"
 import { timingSafeEqual } from "node:crypto"
-import superjson from "superjson"
 import { APP_VERSION_HEADER_KEY } from "~/constants/version"
 import { env } from "~/env.mjs"
 import { createBaseLogger } from "~/lib/logger"
@@ -23,6 +22,7 @@ import { db } from "./modules/database"
 import { defaultUserSelect } from "./modules/me/me.select"
 import { checkRateLimit } from "./modules/rate-limit/rate-limit.service"
 import { isEmailWhitelisted } from "./modules/whitelist/whitelist.service"
+import { safeSuperjson } from "./safeTransformer"
 import { flattenZodErrorForTrpcClient } from "./trpcZodError"
 
 const MIN_SERVER_ERROR_STATUS_CODE = 500
@@ -38,7 +38,7 @@ const t = initTRPC
     /**
      * @see https://trpc.io/docs/v10/data-transformers
      */
-    transformer: superjson,
+    transformer: safeSuperjson,
     /**
      * @see https://trpc.io/docs/v10/error-formatting
      */
