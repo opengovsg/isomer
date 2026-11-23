@@ -114,6 +114,8 @@ function JsonFormsImageControl({
     config,
   } = useAdjustmentConfigForField(path)
 
+  const componentType = config?.componentType
+
   // Editors can upload AVIF and TIFF, but canvas can't re-encode them.
   const isBakeableFormat =
     !!data && canBakeImage(mimeFromKeyExtension(data) ?? "")
@@ -205,11 +207,35 @@ function JsonFormsImageControl({
     if (canAdjust) {
       captureSiteEvent("image_adjustment_modal_opened", siteId, {
         resource_id: resourceId,
+        component_type: componentType,
         source: "post_upload",
       })
       onAdjustmentModalOpen()
+    } else if (isImageAdjustmentEnabled && componentType) {
+      captureSiteEvent("image_adjustment_unavailable", siteId, {
+        resource_id: resourceId,
+        component_type: componentType,
+        reason: showAnimatedFormatCallout
+          ? "animated"
+          : showUnsupportedFormatCallout
+            ? "unsupported_format"
+            : "other",
+        // The extension lookup only knows bakeable formats.
+        file_type: uploadedOriginalRef.current?.file.type || assetMime,
+      })
     }
-  }, [animationResolved, canAdjust, onAdjustmentModalOpen, siteId, resourceId])
+  }, [
+    animationResolved,
+    canAdjust,
+    onAdjustmentModalOpen,
+    siteId,
+    resourceId,
+    componentType,
+    isImageAdjustmentEnabled,
+    showAnimatedFormatCallout,
+    showUnsupportedFormatCallout,
+    assetMime,
+  ])
 
   // InfoCards' cards and the collection thumbnail own a sibling `imageFit`
   // field. The modal's fit control writes back to it.
@@ -239,6 +265,9 @@ function JsonFormsImageControl({
     onUploadSuccess: () => {
       captureSiteEvent("image_upload_completed", siteId, {
         resource_id: resourceId,
+        component_type: componentType,
+        file_type: pendingFileRef.current?.type,
+        is_adjustment_enabled: isImageAdjustmentEnabled,
       })
     },
     setHref: (src?: string) => {
@@ -331,6 +360,7 @@ function JsonFormsImageControl({
                 ? () => {
                     captureSiteEvent("image_adjustment_modal_opened", siteId, {
                       resource_id: resourceId,
+                      component_type: componentType,
                       source: "manual_edit",
                     })
                     onAdjustmentModalOpen()

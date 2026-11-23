@@ -159,7 +159,7 @@ export interface SaveImageAdjustmentResult {
   imageAdjustment: ImageAdjustment
 }
 
-const SAVE_TIMEOUT_MESSAGE = "Saving took too long. Please try again."
+export const SAVE_TIMEOUT_MESSAGE = "Saving took too long. Please try again."
 
 /**
  * Hook to save an image adjustment via the fail-safe order:

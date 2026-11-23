@@ -47,6 +47,7 @@ import {
 import { computeLowResWarning } from "./resolutionWarning"
 import {
   resolveOriginalKey,
+  SAVE_TIMEOUT_MESSAGE,
   useSaveImageAdjustment,
 } from "./useSaveImageAdjustment"
 
@@ -205,14 +206,34 @@ export const ImageAdjustmentModal = ({
   // Track each tool once per modal session, not once per drag.
   const trackedToolsRef = useRef(new Set<string>())
   const previewRailRef = useRef<HTMLDivElement>(null)
-  const trackToolUsed = (tool: "crop" | "focal") => {
+  const track = (event: string, properties?: Record<string, unknown>) =>
+    captureSiteEvent(event, siteId, {
+      resource_id: resourceId,
+      component_type: config.componentType,
+      ...properties,
+    })
+  const trackToolUsed = (tool: "crop" | "focal" | "fit" | "reset") => {
     if (trackedToolsRef.current.has(tool)) return
     trackedToolsRef.current.add(tool)
-    captureSiteEvent("image_adjustment_tool_used", siteId, {
-      resource_id: resourceId,
-      tool,
-    })
+    track("image_adjustment_tool_used", { tool })
   }
+  // The modal stays mounted while closed, so end each opening with a clean set.
+  const takeToolsUsed = () => {
+    const tools = [...trackedToolsRef.current]
+    trackedToolsRef.current.clear()
+    return tools
+  }
+  const trackClosed = (outcome: "discarded" | "unchanged") =>
+    track("image_adjustment_modal_closed", {
+      outcome,
+      tools_used: takeToolsUsed(),
+    })
+  const trackSaved = (isBaked: boolean) =>
+    track("image_adjustment_saved", {
+      is_baked: isBaked,
+      tools_used: takeToolsUsed(),
+      had_low_res_warning: !!lowResWarning,
+    })
   // The hook bounds the real save to SAVE_TIMEOUT_MS itself, so isPending is
   // the single source of truth -- no separate local flag needed.
   const isSaving = saveMutation.isPending
@@ -255,6 +276,7 @@ export const ImageAdjustmentModal = ({
     if (isModified) {
       onDiscardChangesModalOpen()
     } else {
+      trackClosed("unchanged")
       onClose()
     }
   }
@@ -266,8 +288,8 @@ export const ImageAdjustmentModal = ({
   }
 
   const handleSave = async () => {
-    if (isSaving) return
     if (!isModified) {
+      trackClosed("unchanged")
       onClose()
       return
     }
@@ -278,6 +300,7 @@ export const ImageAdjustmentModal = ({
         imageAdjustment: value,
         imageFit: hasImageFitControl ? imageFit : undefined,
       })
+      trackSaved(false)
       onClose()
       return
     }
@@ -300,15 +323,20 @@ export const ImageAdjustmentModal = ({
         draft,
         originalFile,
       })
-      captureSiteEvent("image_adjustment_saved", siteId, {
-        resource_id: resourceId,
-      })
+      trackSaved(true)
       onSave({
         ...result,
         imageFit: hasImageFitControl ? imageFit : undefined,
       })
       onClose()
     } catch (err) {
+      // Never send err.message: it can contain file keys.
+      track("image_adjustment_save_failed", {
+        reason:
+          err instanceof Error && err.message === SAVE_TIMEOUT_MESSAGE
+            ? "timeout"
+            : "other",
+      })
       toast({
         title: "Failed to save image adjustment",
         description: err instanceof Error ? err.message : "An error occurred",
@@ -327,6 +355,7 @@ export const ImageAdjustmentModal = ({
   const isResetDisabled = isLockedRatioAspectPending
 
   const handleReset = () => {
+    trackToolUsed("reset")
     setDraft((d) => ({
       ...ensureAdjustment(d),
       crop: defaultCropRect(lockedRatio, imageAspect ?? 1),
@@ -340,6 +369,7 @@ export const ImageAdjustmentModal = ({
         isOpen={isDiscardChangesModalOpen}
         onClose={onDiscardChangesModalClose}
         onDiscard={() => {
+          trackClosed("discarded")
           handleDiscard()
           onClose()
         }}
@@ -373,11 +403,8 @@ export const ImageAdjustmentModal = ({
           {/* TODO: add "Learn how to crop your image and set its focal point in
               our guide" here (not inside ModalHeader) once the guide URL exists. */}
 
-          <ModalCloseButton
-            size="lg"
-            onClick={handleClose}
-            isDisabled={isSaving}
-          />
+          {/* No onClick: Chakra's close button already calls Modal's onClose. */}
+          <ModalCloseButton size="lg" isDisabled={isSaving} />
 
           {/* On desktop each column scrolls. On mobile the body scrolls. */}
           <ModalBody
@@ -455,7 +482,10 @@ export const ImageAdjustmentModal = ({
                         variant={imageFit === "cover" ? "solid" : "outline"}
                         aria-pressed={imageFit === "cover"}
                         isDisabled={isSaving}
-                        onClick={() => setImageFit("cover")}
+                        onClick={() => {
+                          trackToolUsed("fit")
+                          setImageFit("cover")
+                        }}
                       >
                         Fill
                       </Button>
@@ -463,7 +493,10 @@ export const ImageAdjustmentModal = ({
                         variant={imageFit === "contain" ? "solid" : "outline"}
                         aria-pressed={imageFit === "contain"}
                         isDisabled={isSaving}
-                        onClick={() => setImageFit("contain")}
+                        onClick={() => {
+                          trackToolUsed("fit")
+                          setImageFit("contain")
+                        }}
                       >
                         Fit
                       </Button>
