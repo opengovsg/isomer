@@ -14,24 +14,26 @@ interface Spotlight {
   title: string
   description: string
   learnMoreHref: string
+  // Link text. Say where it goes ("See all the winners"); defaults to "Learn more".
+  learnMoreLabel?: string
 }
 
 // Hardcoded login spotlight. Replace these entries (up to 3) when the edition changes.
 const SPOTLIGHTS: Spotlight[] = [
   {
-    id: "hero-banners",
-    tabLabel: "Hero banners",
+    id: "dsa-2026",
+    tabLabel: "DSA 2026",
     media: {
       type: "video",
-      src: "/assets/fresh-from-isomer/hero-banners.mp4",
+      src: "/assets/fresh-from-isomer/dsa-2026.mp4",
     },
-    aspectRatio: 1920 / 1080,
+    aspectRatio: 1280 / 853,
     badge: "New",
-    title: "New hero banner styles",
+    title: "🎉 Isomer winners at the Digital Services Awards 2026",
     description:
-      "Curve the image edge, surface up to four quick links, or rotate up to four slides with their own images, text and buttons.",
-    learnMoreHref:
-      "https://support.isomer.gov.sg/en/articles/10390602-editing-your-home-page",
+      "Congratulations to the 15 Isomer sites recognised at the GovTech Digital Services Awards 2026 for accessibility, usability and discoverability.",
+    learnMoreHref: "https://www.digitalservicesawards.gov.sg/winners/2026/",
+    learnMoreLabel: "See all the winners",
   },
   {
     id: "table-editing",
@@ -148,7 +150,7 @@ export const FreshFromIsomerPanel = (): JSX.Element | null => {
             borderRadius="full"
             flexShrink={0}
           >
-            Nov 2026 edition
+            Dec 2026 edition
           </Badge>
         </Flex>
 
@@ -322,7 +324,7 @@ export const FreshFromIsomerPanel = (): JSX.Element | null => {
           variant="inline"
           w="fit-content"
         >
-          Learn more
+          {active.learnMoreLabel ?? "Learn more"}
         </Link>
       </Stack>
     </Stack>
