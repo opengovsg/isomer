@@ -23,20 +23,27 @@ interface GetTextAsHtmlArgs {
   site: IsomerSiteProps
   content?: (HardBreakProps | TextProps)[]
   shouldHideEmptyHardBreak?: boolean
-  shouldStripContentHtmlTags?: boolean
 }
 
-// DOMPurify returns HTML with entities escaped, ready for the HTML consumer.
-function stripHtmlTags(input: string): string {
-  return DOMPurify.sanitize(input, { ALLOWED_TAGS: [] })
-}
+// Matches an escaped character reference, e.g. "&amp;nbsp;" or "&amp;#39;"
+const ESCAPED_CHARACTER_REFERENCE_REGEX =
+  /&amp;(#\d+|#x[\da-f]+|[a-z][a-z\d]*);/gi
+
+// Stored text uses character references such as "&nbsp;", so let them
+// through to render as characters while still escaping markup
+const escapeKeepingCharacterReferences = (text: string) =>
+  escape(text).replace(ESCAPED_CHARACTER_REFERENCE_REGEX, "&$1;")
+
+// Decodes HTML into plain text, e.g. "A &amp; B&reg;" -> "A & B®"
+export const getHtmlAsPlainText = (html: string) =>
+  DOMPurify.sanitize(html, { ALLOWED_TAGS: [], RETURN_DOM_FRAGMENT: true })
+    .textContent
 
 // Converts the text node with marks into the appropriate HTML
 export const getTextAsHtml = ({
   site,
   content,
   shouldHideEmptyHardBreak,
-  shouldStripContentHtmlTags = false,
 }: GetTextAsHtmlArgs) => {
   if (!content) {
     // Note: We need to return a <br /> tag to ensure that the paragraph is not collapsed
@@ -61,9 +68,7 @@ export const getTextAsHtml = ({
       return
     }
 
-    const text = shouldStripContentHtmlTags
-      ? stripHtmlTags(node.text)
-      : escape(node.text)
+    const text = escapeKeepingCharacterReferences(node.text)
 
     const currentNodeLinkMark = node.marks?.find((mark) => mark.type === "link")
     const isLinkMarkNew =

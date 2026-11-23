@@ -4,6 +4,7 @@ import { escape, unescape } from "lodash-es"
 import { renderToStaticMarkup } from "react-dom/server"
 import { beforeAll, describe, expect, it } from "vitest"
 import { generateSiteConfig } from "~/stories/helpers/generateSiteConfig"
+import { renderComponent } from "~/templates/next/render/renderComponent"
 import { getTextAsHtml } from "~/utils/getTextAsHtml"
 
 import { Accordion } from "../../../complex/Accordion"
@@ -20,6 +21,15 @@ const site = generateSiteConfig()
 const payload =
   '<a href="javascript:alert(1)">Download form</a><img src="injected.png"> &lt;b&gt;'
 
+const renderTopLevelProse = (prose: Pick<ProseProps, "type" | "content">) =>
+  renderComponent({
+    component: prose,
+    layout: "content",
+    site,
+    permalink: "/",
+    headingLevel: 2,
+  })
+
 const containers = (text: TextProps) => {
   const paragraph: Omit<ParagraphProps, "site"> = {
     type: "paragraph",
@@ -31,15 +41,7 @@ const containers = (text: TextProps) => {
   }
   return [
     ["prose", <Prose {...prose} site={site} headingLevel={2} />],
-    [
-      "top-level prose",
-      <Prose
-        {...prose}
-        site={site}
-        headingLevel={2}
-        shouldStripContentHtmlTags
-      />,
-    ],
+    ["top-level prose", renderTopLevelProse(prose)],
     [
       "table",
       <Prose
@@ -136,39 +138,48 @@ describe("prose text rendering", () => {
         expect(html).not.toMatch(/<a\b/i)
         expect(html).not.toContain('src="injected.png"')
         expect(unescape(html.replace(/<[^>]*>/g, ""))).toContain(
-          name === "top-level prose" ? "Download form <b>" : payload,
+          unescape(payload),
         )
       })
     }
   }
 
-  it.each([undefined, [{ type: "bold" } as const]])(
-    "preserves HTML stripping and entity handling with marks %j",
-    (marks) => {
-      // Arrange
-      const content = getTextAsHtml({
-        site,
-        shouldStripContentHtmlTags: true,
-        content: [
-          {
-            type: "text",
-            text: 'Before <span style="font-size:99px">label</span> after &amp; &lt;b&gt;<script>alert(1)</script>',
-            marks,
-          },
-        ],
-      })
-
+  for (const [name, element] of containers({
+    type: "text",
+    text: "A&nbsp;B &reg; &#169; &#x2122; &amp; R&D; &lt;img src=x&gt;",
+  })) {
+    it(`renders character references as characters in ${name}`, () => {
       // Act
-      const html = renderToStaticMarkup(<BaseParagraph content={content} />)
+      const html = renderToStaticMarkup(element)
 
       // Assert
-      expect(unescape(html.replace(/<[^>]*>/g, ""))).toBe(
-        "Before label after & <b>",
+      expect(unescape(html.replace(/<[^>]*>/g, ""))).toContain(
+        "A B ® © ™ & R&D; <img src=x>",
       )
-      expect(html).not.toContain("font-size")
-      expect(html).not.toContain("alert(1)")
-      if (marks)
-        expect(html).toContain("<b>Before label after &amp; &lt;b&gt;</b>")
+      expect(html).not.toMatch(/<img src="?x/i)
+    })
+  }
+
+  it.each([undefined, [{ type: "bold" } as const]])(
+    "renders tag-like text in top-level prose as typed with marks %j",
+    (marks) => {
+      // Arrange
+      const text =
+        'Enter <your NRIC> <span style="font-size:99px">label</span> m<sup>3</sup> & <script>alert(1)</script> <x'
+
+      // Act
+      const html = renderToStaticMarkup(
+        renderTopLevelProse({
+          type: "prose",
+          content: [
+            { type: "paragraph", content: [{ type: "text", text, marks }] },
+          ],
+        }),
+      )
+
+      // Assert
+      expect(unescape(html.replace(/<[^>]*>/g, ""))).toBe(text)
+      expect(html).not.toMatch(/<(span|sup|script)\b/i)
     },
   )
 
@@ -233,6 +244,21 @@ describe("prose text rendering", () => {
 
     // Assert
     expect(unescape(html.replace(/<[^>]*>/g, ""))).toBe("A & B < C")
+  })
+
+  it("decodes character references in headings", () => {
+    // Act
+    const html = renderToStaticMarkup(
+      <Heading
+        attrs={{ level: 2 }}
+        content={[{ type: "text", text: "A &amp; B&nbsp;&reg; <b>x</b>" }]}
+        site={site}
+        headingLevel={2}
+      />,
+    )
+
+    // Assert
+    expect(unescape(html.replace(/<[^>]*>/g, ""))).toBe("A & B ® <b>x</b>")
   })
 })
 
