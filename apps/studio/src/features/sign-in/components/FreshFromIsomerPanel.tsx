@@ -27,7 +27,7 @@ const SPOTLIGHTS: Spotlight[] = [
       type: "video",
       src: "/assets/fresh-from-isomer/dsa-2026.mp4",
     },
-    aspectRatio: 1280 / 853,
+    aspectRatio: 1920 / 1080,
     badge: "New",
     title: "🎉 Isomer winners at the Digital Services Awards 2026",
     description:
