@@ -38,6 +38,29 @@ export const resolveOriginalKey = (
   return draft.originalKey || currentSrc.replace(/^\//, "")
 }
 
+export type SaveFailureReason =
+  | "timeout"
+  | "invalid_crop"
+  | "fetch_original_failed"
+  | "unsupported_format"
+  | "bake_failed"
+  | "too_large"
+  | "presign_failed"
+  | "upload_failed"
+  | "not_readable"
+
+// Carries a fixed reason code for analytics. The message is for the toast and
+// can contain file keys, so it must never be sent as an event property.
+export class SaveImageAdjustmentError extends Error {
+  constructor(
+    readonly reason: SaveFailureReason,
+    message: string,
+  ) {
+    super(message)
+    this.name = "SaveImageAdjustmentError"
+  }
+}
+
 /**
  * Choose the MIME type to use for baking, preserving the original format.
  * Unsupported formats are rejected rather than silently flattened to JPEG,
@@ -60,7 +83,8 @@ export const chooseBakeMime = (
   const fromExtension = mimeFromKeyExtension(originalKey)
   if (fromExtension) return fromExtension
 
-  throw new Error(
+  throw new SaveImageAdjustmentError(
+    "unsupported_format",
     `This image can't be adjusted. Only JPEG, PNG, and WebP images are supported (got "${originalType}").`,
   )
 }
@@ -114,7 +138,10 @@ export const fetchImageBlob = async (
   // tryFetch swallows the abort, so surface the deadline's own reason here.
   signal?.throwIfAborted()
   if (!blob) {
-    throw new Error(`Failed to fetch image: ${key}`)
+    throw new SaveImageAdjustmentError(
+      "fetch_original_failed",
+      `Failed to fetch image: ${key}`,
+    )
   }
   return blob
 }
@@ -134,7 +161,8 @@ export const validateCropBounds = (crop: ImageAdjustment["crop"]): void => {
     crop.width <= 0 ||
     crop.height <= 0
   ) {
-    throw new Error(
+    throw new SaveImageAdjustmentError(
+      "invalid_crop",
       `Invalid crop: (x=${crop.x}, width=${crop.width}, y=${crop.y}, height=${crop.height}) extends outside the image or has no area.`,
     )
   }
@@ -159,7 +187,11 @@ export interface SaveImageAdjustmentResult {
   imageAdjustment: ImageAdjustment
 }
 
-export const SAVE_TIMEOUT_MESSAGE = "Saving took too long. Please try again."
+const timeoutError = () =>
+  new SaveImageAdjustmentError(
+    "timeout",
+    "Saving took too long. Please try again.",
+  )
 
 /**
  * Hook to save an image adjustment via the fail-safe order:
@@ -188,9 +220,25 @@ export const useSaveImageAdjustment = ({
     mutationFn: async ({ currentSrc, draft, originalFile }) => {
       const controller = new AbortController()
       const timeoutId = setTimeout(
-        () => controller.abort(new Error(SAVE_TIMEOUT_MESSAGE)),
+        () => controller.abort(timeoutError()),
         SAVE_TIMEOUT_MS,
       )
+      // Tags a step's untyped failure with a reason, keeping its message.
+      const step = async <T>(
+        reason: SaveFailureReason,
+        fn: () => Promise<T>,
+      ): Promise<T> => {
+        try {
+          return await fn()
+        } catch (err) {
+          if (err instanceof SaveImageAdjustmentError) throw err
+          if (controller.signal.aborted) throw timeoutError()
+          throw new SaveImageAdjustmentError(
+            reason,
+            err instanceof Error ? err.message : "An error occurred",
+          )
+        }
+      }
 
       try {
         // Step 1: Resolve the original key
@@ -217,13 +265,16 @@ export const useSaveImageAdjustment = ({
         // bakeImage itself rejects animated sources (WebP/APNG pass the MIME
         // gate but would flatten). Canvas work can't be interrupted mid-encode,
         // so just skip starting it past the deadline.
-        if (controller.signal.aborted) throw new Error(SAVE_TIMEOUT_MESSAGE)
-        const bakedBlob = await bakeImageWithinSizeLimit(originalBlob, draft, {
-          mimeType: mime,
-          maxBytes: MAX_IMG_FILE_SIZE_BYTES,
-        })
+        if (controller.signal.aborted) throw timeoutError()
+        const bakedBlob = await step("bake_failed", () =>
+          bakeImageWithinSizeLimit(originalBlob, draft, {
+            mimeType: mime,
+            maxBytes: MAX_IMG_FILE_SIZE_BYTES,
+          }),
+        )
         if (bakedBlob.size > MAX_IMG_FILE_SIZE_BYTES) {
-          throw new Error(
+          throw new SaveImageAdjustmentError(
+            "too_large",
             `This edited image is too large to save (over ${formatFileSizeLimit({ bytes: MAX_IMG_FILE_SIZE_BYTES })}). Try cropping to a smaller region, or use a smaller source image.`,
           )
         }
@@ -235,39 +286,45 @@ export const useSaveImageAdjustment = ({
         // Step 6: Get presigned PUT URL for the bake. tRPC's mutateAsync has
         // no signal passthrough, so this call isn't abortable mid-flight --
         // still bail up front if the deadline already passed.
-        if (controller.signal.aborted) throw new Error(SAVE_TIMEOUT_MESSAGE)
-        const { fileKey, uploadConfig } = await getPresignedPutUrlForBake({
-          siteId,
-          resourceId: resourceId || "",
-          src: currentSrc,
-          // Keeps the uploader's filename in the baked key (derived from the
-          // true original, so re-edits don't accumulate suffixes).
-          originalKey,
-          ext,
-          fileSize: bakedBlob.size,
-        })
+        if (controller.signal.aborted) throw timeoutError()
+        const { fileKey, uploadConfig } = await step("presign_failed", () =>
+          getPresignedPutUrlForBake({
+            siteId,
+            resourceId: resourceId || "",
+            src: currentSrc,
+            // Keeps the uploader's filename in the baked key (derived from the
+            // true original, so re-edits don't accumulate suffixes).
+            originalKey,
+            ext,
+            fileSize: bakedBlob.size,
+          }),
+        )
 
         // Step 7: Upload the baked image to S3
         const file = new File([bakedBlob], `baked.${ext}`, { type: mime })
-        await performUpload(file, fileKey, uploadConfig, controller.signal)
+        await step("upload_failed", () =>
+          performUpload(file, fileKey, uploadConfig, controller.signal),
+        )
 
         // Step 8: Wait for the malware scan to tag the upload as readable, so
         // repointing the block doesn't momentarily 403 (see useAssetUpload).
         // The retry predicate stops the loop once the deadline fires, since
         // the delay between retries isn't itself abortable.
-        await backOff(
-          async () => {
-            const response = await fetch(generateAssetUrl(`/${fileKey}`), {
-              signal: controller.signal,
-            })
-            if (!response.ok) {
-              throw new Error(`Unable to read from ${fileKey}`)
-            }
-          },
-          {
-            ...getAssetUploadBackoffOptions({}),
-            retry: () => !controller.signal.aborted,
-          },
+        await step("not_readable", () =>
+          backOff(
+            async () => {
+              const response = await fetch(generateAssetUrl(`/${fileKey}`), {
+                signal: controller.signal,
+              })
+              if (!response.ok) {
+                throw new Error(`Unable to read from ${fileKey}`)
+              }
+            },
+            {
+              ...getAssetUploadBackoffOptions({}),
+              retry: () => !controller.signal.aborted,
+            },
+          ),
         )
 
         // Step 9: Return the new src and imageAdjustment

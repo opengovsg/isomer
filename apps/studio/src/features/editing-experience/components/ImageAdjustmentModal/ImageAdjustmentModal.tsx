@@ -47,7 +47,7 @@ import {
 import { computeLowResWarning } from "./resolutionWarning"
 import {
   resolveOriginalKey,
-  SAVE_TIMEOUT_MESSAGE,
+  SaveImageAdjustmentError,
   useSaveImageAdjustment,
 } from "./useSaveImageAdjustment"
 
@@ -323,19 +323,17 @@ export const ImageAdjustmentModal = ({
         draft,
         originalFile,
       })
-      trackSaved(true)
       onSave({
         ...result,
         imageFit: hasImageFitControl ? imageFit : undefined,
       })
       onClose()
+      // Last, so a throw above can't record both saved and save_failed.
+      trackSaved(true)
     } catch (err) {
       // Never send err.message: it can contain file keys.
       track("image_adjustment_save_failed", {
-        reason:
-          err instanceof Error && err.message === SAVE_TIMEOUT_MESSAGE
-            ? "timeout"
-            : "other",
+        reason: err instanceof SaveImageAdjustmentError ? err.reason : "other",
       })
       toast({
         title: "Failed to save image adjustment",
