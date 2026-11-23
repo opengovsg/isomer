@@ -49,6 +49,7 @@ const SPOTLIGHTS: Spotlight[] = [
       "Pick a size, merge cells, add colours, resize or move columns and edit full screen.",
     learnMoreHref:
       "https://support.isomer.gov.sg/en/articles/10425930-text-block#h_6da533f62d",
+    learnMoreLabel: "See how to edit tables",
   },
   {
     id: "page-history",
@@ -64,6 +65,7 @@ const SPOTLIGHTS: Spotlight[] = [
       "See every published version of a page and compare any of them side by side with what's live now — changes highlighted, no guesswork.",
     learnMoreHref:
       "https://support.isomer.gov.sg/en/articles/17673203-viewing-a-page-s-history",
+    learnMoreLabel: "See how to view page history",
   },
 ]
 
