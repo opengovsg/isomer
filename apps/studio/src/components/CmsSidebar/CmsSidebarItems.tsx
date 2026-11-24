@@ -13,6 +13,7 @@ export type CmsSidebarItem = {
 } & MergeExclusive<
   {
     href: string
+    isExternal?: boolean
   },
   {
     onClick: () => void
@@ -45,6 +46,10 @@ const generateSidebarItem = (
               bg: "interaction.muted.main.active",
             }}
             href={item.href}
+            {...(item.isExternal && {
+              target: "_blank",
+              rel: "noopener noreferrer",
+            })}
           />
         ) : (
           <IconButton
