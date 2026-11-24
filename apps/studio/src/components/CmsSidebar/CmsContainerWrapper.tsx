@@ -10,6 +10,7 @@ import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
 import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
 import { OpenSidebarIcon } from "../Svg/OpenSidebarIcon"
+import { PolyglotIcon } from "../Svg/PolyglotIcon"
 
 interface CmsContainerWrapperProps {
   siteId: string
@@ -73,9 +74,16 @@ export const CmsContainerWrapper = ({
         ]
       : []),
     {
+      icon: PolyglotIcon,
+      label: "Polyglot Studio",
+      href: "https://studio.polyglot.gov.sg",
+      isExternal: true,
+    },
+    {
       icon: BiHelpCircle,
       label: "Get support",
       href: "https://support.isomer.gov.sg",
+      isExternal: true,
     },
   ]
 
