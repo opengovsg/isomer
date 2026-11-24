@@ -8,7 +8,7 @@ import {
   type PointerEvent,
 } from "react"
 import { useIntersectionObserver } from "usehooks-ts"
-import { HERO_CAROUSEL_SLIDE_LIMITS } from "~/interfaces/complex/Hero"
+import { HERO_CAROUSEL_SLIDE_LIMITS } from "~/interfaces/complex/Hero/constants"
 
 import { HERO_CAROUSEL_ROTATION_INTERVAL_MS } from "../constants"
 import { useHeroCarouselPreview } from "../HeroCarouselPreviewContext"

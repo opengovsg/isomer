@@ -5,7 +5,7 @@ import type {
   IsomerSiteConfigProps,
 } from "~/types/site"
 import type { IsomerSitemap } from "~/types/sitemap"
-import { HERO_STYLE } from "~/interfaces/complex/Hero"
+import { HERO_STYLE } from "~/interfaces/complex/Hero/constants"
 import { ISOMER_PAGE_LAYOUTS } from "~/types/constants"
 import { getBreadcrumbFromSiteMap } from "~/utils/getBreadcrumbFromSiteMap"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"

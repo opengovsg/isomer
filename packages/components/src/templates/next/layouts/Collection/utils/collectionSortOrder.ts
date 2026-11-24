@@ -4,7 +4,7 @@ import {
   DEFAULT_COLLECTION_SORT_ORDER,
   type CollectionSortOrder,
 } from "~/types/constants"
-import { isDateFilter } from "~/types/page"
+import { isDateFilter } from "~/types/tagCategory"
 import {
   COLLECTION_SORT_ORDER_PATTERN,
   DATE_FILTER_SORT_ORDER_REGEX,

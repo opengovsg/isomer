@@ -3,7 +3,7 @@ import type {
   NativeSearchableTableProps,
   SearchableTableProps,
 } from "~/interfaces"
-import { DATA_SOURCE_TYPE } from "~/interfaces/integration"
+import { DATA_SOURCE_TYPE } from "~/interfaces/integration/dataSource"
 
 import { DGSSearchableTable } from "./DGS"
 import { NativeSearchableTable } from "./Native"

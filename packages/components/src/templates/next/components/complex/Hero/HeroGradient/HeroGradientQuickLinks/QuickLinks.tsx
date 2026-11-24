@@ -1,4 +1,4 @@
-import type { HeroGradientQuickLinksProps } from "~/interfaces/complex/Hero"
+import type { HeroGradientQuickLinksProps } from "~/interfaces/complex/Hero/Hero"
 import { tv } from "~/lib/tv"
 import { getHeadingTag } from "~/utils/getHeadingTag"
 

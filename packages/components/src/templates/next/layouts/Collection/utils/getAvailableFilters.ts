@@ -1,6 +1,6 @@
 import type { ProcessedCollectionCardProps } from "~/interfaces"
 import type { CollectionPageSchemaType } from "~/types"
-import { isDateFilter } from "~/types/page"
+import { isDateFilter } from "~/types/tagCategory"
 
 import type { Filter } from "../../../types/Filter"
 import { getDateFilters } from "./getDateFilters"

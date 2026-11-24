@@ -4,7 +4,7 @@ import type { HeadingTag } from "~/utils/getHeadingTag"
 import {
   HERO_BLOCK_IMAGE_POSITION,
   type HeroCarouselImagePosition,
-} from "~/interfaces/complex/Hero"
+} from "~/interfaces/complex/Hero/constants"
 import { tv } from "~/lib/tv"
 
 import type { HeroCarouselSlideView } from "./CarouselSlides"
