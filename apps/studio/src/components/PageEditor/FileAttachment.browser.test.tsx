@@ -73,7 +73,7 @@ describe("FileAttachment", () => {
   it("asks for confirmation before uploading a risky file", async () => {
     // Arrange
     const { setHref, getFileInput } = renderFileAttachment({
-      enableRiskyFileWarning: true,
+      enableUploadWarnings: true,
     })
 
     // Act: pick a risky file
