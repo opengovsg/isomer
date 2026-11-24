@@ -122,26 +122,6 @@ export const uploadSvgSchema = z.object({
   tags: z.array(z.object({ key: z.string(), value: z.string() })).optional(),
 })
 
-// Upper bound on how many assets a single deleteAssets call may target.
-// Each key fans out to paid S3 tagging calls, so an uncapped array lets one
-// authenticated caller drive an unbounded number of S3 operations. Legitimate
-// saves only delete a handful of keys, so 100 sits far above real usage.
-export const MAX_DELETE_FILE_KEYS = 100
-
-export const deleteAssetsSchema = z.object({
-  siteId: z.number().min(1),
-  resourceId: z.string(),
-  fileKeys: z
-    .array(
-      z.string({
-        error: "Missing file keys",
-      }),
-    )
-    .max(MAX_DELETE_FILE_KEYS, {
-      error: `You can only delete up to ${MAX_DELETE_FILE_KEYS} assets at a time`,
-    }),
-})
-
 export const getPresignedGetUrlSchema = z.object({
   siteId: z.number().min(1),
   fileKey: z.string({
@@ -150,9 +130,9 @@ export const getPresignedGetUrlSchema = z.object({
 })
 
 // Upper bound on how many asset URLs a single admin deleteAssetsByUrl call
-// may target. Mirrors MAX_DELETE_FILE_KEYS's rationale: each URL fans out to
-// a paid S3 tagging call, so an uncapped array lets one caller drive an
-// unbounded number of S3 operations across every site.
+// may target. Each URL fans out to paid S3 tagging calls, so an uncapped
+// array lets one caller drive an unbounded number of S3 operations across
+// every site.
 export const MAX_DELETE_ASSET_URLS = 50
 
 export const deleteAssetsByUrlSchema = z.object({

@@ -6,17 +6,15 @@ import {
   createMockRequest,
 } from "tests/integration/helpers/iron-session"
 import {
-  setupAdminPermissions,
   setupEditorPermissions,
   setupFolder,
   setupIsomerAdmin,
   setupPageResource,
-  setupPublisherPermissions,
   setUpWhitelist,
 } from "tests/integration/helpers/seed"
 import { vi } from "vitest"
 import { deleteFile, generateSignedPutUrl, putObjectDirect } from "~/lib/s3"
-import { MAX_DELETE_ASSET_URLS, MAX_DELETE_FILE_KEYS } from "~/schemas/asset"
+import { MAX_DELETE_ASSET_URLS } from "~/schemas/asset"
 import { createCallerFactory } from "~/server/trpc"
 import { IsomerAdminRole, ResourceType } from "~prisma/generated/generatedEnums"
 
@@ -32,8 +30,8 @@ vi.mock("~/lib/s3", () => ({
   generateSignedPutUrl: vi
     .fn()
     .mockResolvedValue("https://example.com/signed-url"),
-  markFileAsDeleted: vi.fn().mockResolvedValue(undefined),
   deleteFile: vi.fn().mockResolvedValue(undefined),
+  listObjectKeys: vi.fn().mockResolvedValue([]),
   putObjectDirect: vi.fn().mockResolvedValue(undefined),
   isNotFoundError: vi.fn().mockReturnValue(false),
 }))
@@ -249,311 +247,6 @@ describe("asset.router", async () => {
     })
   })
 
-  describe("deleteAssets", () => {
-    it("should throw 401 if not logged in", async () => {
-      // Arrange
-      const unauthedSession = applySession()
-      const unauthedCaller = createCaller(createMockRequest(unauthedSession))
-
-      // Act
-      const result = unauthedCaller.deleteAssets({
-        siteId: 1,
-        resourceId: "1",
-        fileKeys: ["test.png"],
-      })
-
-      // Assert
-      await expect(result).rejects.toThrow(
-        new TRPCError({ code: "UNAUTHORIZED" }),
-      )
-    })
-
-    it("should throw 404 if site does not exist", async () => {
-      // Arrange
-      const { site, page } = await setupPageResource({
-        resourceType: ResourceType.Page,
-      })
-
-      // Act
-      const result = caller.deleteAssets({
-        siteId: site.id + 1,
-        resourceId: page.id,
-        fileKeys: ["test.png"],
-      })
-
-      // Assert
-      await expect(result).rejects.toThrow(
-        new TRPCError({
-          code: "NOT_FOUND",
-          message: "The requested resource does not exist",
-        }),
-      )
-    })
-
-    it("should throw 403 if user does not have permission to read resource", async () => {
-      // Arrange
-      const { site, folder } = await setupFolder({})
-      const { page } = await setupPageResource({
-        resourceType: ResourceType.Page,
-        parentId: folder.id,
-        siteId: site.id,
-      })
-
-      // Act
-      const result = caller.deleteAssets({
-        siteId: site.id,
-        resourceId: page.id,
-        fileKeys: ["test.png"],
-      })
-
-      // Assert
-      await expect(result).rejects.toThrow(
-        new TRPCError({
-          code: "FORBIDDEN",
-          message:
-            "You do not have sufficient permissions to perform this action",
-        }),
-      )
-    })
-
-    it("should return success if user only has Editor permission to read non-root resource", async () => {
-      // Arrange
-      const { site, folder } = await setupFolder({})
-      const { page } = await setupPageResource({
-        resourceType: ResourceType.Page,
-        parentId: folder.id,
-        siteId: site.id,
-      })
-      await setupEditorPermissions({
-        siteId: site.id,
-        userId: String(session.userId),
-      })
-      const fileKey = `${site.id}/test-uuid/test.png`
-
-      // Act
-      const result = caller.deleteAssets({
-        siteId: site.id,
-        resourceId: page.id,
-        fileKeys: [fileKey],
-      })
-
-      // Assert
-      await expect(result).resolves.not.toThrow()
-    })
-
-    it("should throw 403 if user does only has Editor permission to read root resource", async () => {
-      // Arrange
-      const { site, page } = await setupPageResource({
-        resourceType: ResourceType.Page,
-      })
-      await setupEditorPermissions({
-        siteId: site.id,
-        userId: String(session.userId),
-      })
-
-      // Act
-      const result = caller.deleteAssets({
-        siteId: site.id,
-        resourceId: page.id,
-        fileKeys: ["test.png"],
-      })
-
-      // Assert
-      await expect(result).rejects.toThrow(
-        new TRPCError({
-          code: "FORBIDDEN",
-          message:
-            "You do not have sufficient permissions to perform this action",
-        }),
-      )
-    })
-
-    it("should return success if user only has Publisher permission to read non-root resource", async () => {
-      // Arrange
-      const { site, folder } = await setupFolder({})
-      const { page } = await setupPageResource({
-        resourceType: ResourceType.Page,
-        parentId: folder.id,
-        siteId: site.id,
-      })
-      await setupPublisherPermissions({
-        siteId: site.id,
-        userId: String(session.userId),
-      })
-      const fileKey = `${site.id}/test-uuid/test.png`
-
-      // Act
-      const result = caller.deleteAssets({
-        siteId: site.id,
-        resourceId: page.id,
-        fileKeys: [fileKey],
-      })
-
-      // Assert
-      await expect(result).resolves.not.toThrow()
-    })
-
-    it("should throw 403 if user does only has Publisher permission to read root resource", async () => {
-      // Arrange
-      const { site, page } = await setupPageResource({
-        resourceType: ResourceType.Page,
-      })
-      await setupPublisherPermissions({
-        siteId: site.id,
-        userId: String(session.userId),
-      })
-
-      // Act
-      const result = caller.deleteAssets({
-        siteId: site.id,
-        resourceId: page.id,
-        fileKeys: ["test.png"],
-      })
-
-      // Assert
-      await expect(result).rejects.toThrow(
-        new TRPCError({
-          code: "FORBIDDEN",
-          message:
-            "You do not have sufficient permissions to perform this action",
-        }),
-      )
-    })
-
-    it("should return success if user only has Admin permission to read root resource", async () => {
-      // Arrange
-      const { site, page } = await setupPageResource({
-        resourceType: ResourceType.Page,
-      })
-      await setupAdminPermissions({
-        siteId: site.id,
-        userId: String(session.userId),
-      })
-      const fileKey = `${site.id}/test-uuid/test.png`
-
-      // Act
-      const result = caller.deleteAssets({
-        siteId: site.id,
-        resourceId: page.id,
-        fileKeys: [fileKey],
-      })
-
-      // Assert
-      await expect(result).resolves.not.toThrow()
-    })
-
-    it("should call deleteFile with correct parameters for each file key", async () => {
-      // Arrange
-      const { site, page } = await setupPageResource({
-        resourceType: ResourceType.Page,
-      })
-      await setupAdminPermissions({
-        siteId: site.id,
-        userId: String(session.userId),
-      })
-      const fileKeys = [
-        `${site.id}/uuid1/file1.png`,
-        `${site.id}/uuid2/file2.jpg`,
-        `${site.id}/uuid3/file3.pdf`,
-      ]
-
-      // Act
-      await caller.deleteAssets({
-        siteId: site.id,
-        resourceId: page.id,
-        fileKeys,
-      })
-
-      // Assert — .png and .jpg are optimizable formats, so each also
-      // deletes its .webp and .avif derivatives alongside the original;
-      // .pdf is not optimizable, so only the original is deleted.
-      expect(deleteFile).toHaveBeenCalledTimes(7)
-      expect(deleteFile).toHaveBeenCalledWith({
-        Bucket: expect.any(String),
-        Key: `${site.id}/uuid1/file1.webp`,
-      })
-      expect(deleteFile).toHaveBeenCalledWith({
-        Bucket: expect.any(String),
-        Key: `${site.id}/uuid1/file1.avif`,
-      })
-      expect(deleteFile).toHaveBeenCalledWith({
-        Bucket: expect.any(String),
-        Key: `${site.id}/uuid2/file2.webp`,
-      })
-      expect(deleteFile).toHaveBeenCalledWith({
-        Bucket: expect.any(String),
-        Key: `${site.id}/uuid2/file2.avif`,
-      })
-      fileKeys.forEach((fileKey) => {
-        expect(deleteFile).toHaveBeenCalledWith({
-          Bucket: expect.any(String),
-          Key: fileKey,
-        })
-      })
-    })
-
-    it("should throw 403 if fileKeys contain a key from another site (IDOR)", async () => {
-      // Arrange: user has delete permission on site A
-      const { site, page } = await setupPageResource({
-        resourceType: ResourceType.Page,
-      })
-      await setupAdminPermissions({
-        siteId: site.id,
-        userId: String(session.userId),
-      })
-      const otherSiteId = site.id + 100
-      const fileKeysFromOtherSite = `${otherSiteId}/some-uuid/attacker-target.png`
-
-      // Act: pass authorized siteId but fileKey belonging to another site
-      const result = caller.deleteAssets({
-        siteId: site.id,
-        resourceId: page.id,
-        fileKeys: [fileKeysFromOtherSite],
-      })
-
-      // Assert: request rejected, no delete performed
-      await expect(result).rejects.toThrow(
-        new TRPCError({
-          code: "FORBIDDEN",
-          message:
-            "One or more file keys do not belong to the specified site. You may only delete assets for the site you are authorized for.",
-        }),
-      )
-      expect(deleteFile).not.toHaveBeenCalled()
-    })
-
-    it("should reject and not call deleteFile when fileKeys exceeds the cap", async () => {
-      // Arrange
-      const { site, page } = await setupPageResource({
-        resourceType: ResourceType.Page,
-      })
-      await setupAdminPermissions({
-        siteId: site.id,
-        userId: String(session.userId),
-      })
-      const tooManyFileKeys = Array.from(
-        { length: MAX_DELETE_FILE_KEYS + 1 },
-        (_, i) => `${site.id}/uuid-${i}/file-${i}.png`,
-      )
-
-      // Act
-      const result = caller.deleteAssets({
-        siteId: site.id,
-        resourceId: page.id,
-        fileKeys: tooManyFileKeys,
-      })
-
-      // Assert: input validation rejects before any S3 call. The Zod-derived
-      // TRPCError carries the issue JSON as its message, so match on that
-      // rather than on the literal "BAD_REQUEST" string.
-      await expect(result).rejects.toThrow(
-        `You can only delete up to ${MAX_DELETE_FILE_KEYS} assets at a time`,
-      )
-      await expect(result).rejects.toMatchObject({ code: "BAD_REQUEST" })
-      expect(deleteFile).not.toHaveBeenCalled()
-    })
-  })
-
   describe("deleteAssetsByUrl", () => {
     // Matches NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME in .env.test — parseAssetUrlToKey
     // only resolves a key for URLs on this host with a `siteId/uuid/filename` path.
@@ -644,12 +337,37 @@ describe("asset.router", async () => {
         success: true,
         invalidationId: "INV123",
       })
-      // .png is an optimizable format, so each URL also deletes its .webp
-      // and .avif derivatives alongside the original: 3 calls per URL.
-      expect(deleteFile).toHaveBeenCalledTimes(6)
+      expect(deleteFile).toHaveBeenCalledTimes(2)
       expect(invalidateAssetPaths).toHaveBeenCalledWith(
         expect.anything(),
         new Set([`1/${UUID_1}/a.png`, `2/${UUID_2}/b.png`]),
+      )
+    })
+
+    it("should invalidate CloudFront for assets whose deletion failed partway", async () => {
+      // Arrange
+      await setupIsomerAdmin({
+        userId: String(session.userId),
+        role: IsomerAdminRole.Core,
+      })
+      vi.mocked(deleteFile).mockRejectedValueOnce(new Error("S3 unavailable"))
+      const url = `https://${ASSET_DOMAIN}/1/${UUID_1}/a.png`
+
+      // Act
+      const result = await caller.deleteAssetsByUrl({ urls: [url] })
+
+      // Assert
+      expect(result.results).toEqual([
+        {
+          url,
+          key: `1/${UUID_1}/a.png`,
+          success: false,
+          error: "Failed to delete asset",
+        },
+      ])
+      expect(invalidateAssetPaths).toHaveBeenCalledWith(
+        expect.anything(),
+        new Set([`1/${UUID_1}/a.png`]),
       )
     })
 

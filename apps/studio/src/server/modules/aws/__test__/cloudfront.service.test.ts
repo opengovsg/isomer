@@ -53,16 +53,16 @@ describe("invalidateAssetPaths", () => {
     expect(mockSend).not.toHaveBeenCalled()
   })
 
-  it("should create one invalidation batching a path per unique key when configured", async () => {
+  it("should create one invalidation batching a wildcard path per unique asset folder when configured", async () => {
     // Arrange
     env.CLOUDFRONT_ASSETS_DISTRIBUTION_ID = "DIST123"
     mockSend.mockResolvedValueOnce({ Invalidation: { Id: "INV123" } })
 
     // Act
     const result = await invalidateAssetPaths(mockLogger, [
-      "1/a.png",
-      "2/b.png",
-      "1/a.png",
+      "1/uuid-a/a.png",
+      "2/uuid-b/b.png",
+      "1/uuid-a/a.png",
     ])
 
     // Assert
@@ -71,7 +71,7 @@ describe("invalidateAssetPaths", () => {
       expect.objectContaining({
         DistributionId: "DIST123",
         InvalidationBatch: expect.objectContaining({
-          Paths: { Quantity: 2, Items: ["/1/a.png", "/2/b.png"] },
+          Paths: { Quantity: 2, Items: ["/1/uuid-a/*", "/2/uuid-b/*"] },
         }),
       }),
     )
