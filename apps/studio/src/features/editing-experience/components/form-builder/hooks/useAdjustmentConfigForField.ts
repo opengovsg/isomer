@@ -7,6 +7,11 @@ import { get } from "lodash-es"
 import { useMemo } from "react"
 import { useOptionalEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { resolveAdjustmentConfig } from "~/features/editing-experience/components/ImageAdjustmentModal/adjustmentConfigRegistry"
+import { pageOrLinkSchema } from "~/features/editing-experience/schema"
+import { useQueryParse } from "~/hooks/useQueryParse"
+import { ResourceType } from "~prisma/generated/generatedEnums"
+
+import { useCollectionIndexVariant } from "./useCollectionIndexVariant"
 
 /**
  * Resolves the adjustment config, containing block, and sibling
@@ -26,6 +31,19 @@ export const useAdjustmentConfigForField = (path: string) => {
   // pageLayout is undefined there.
   const editorDrawerContext = useOptionalEditorDrawerContext()
   const pageLayout = editorDrawerContext?.previewPageState.layout
+  // Only collection items (CollectionPage, CollectionLink) use the page-level
+  // `image` field as a collection thumbnail. Other layouts have the same field
+  // for their own page thumbnail, so check the resource type, not the shape.
+  // The link route has no EditorDrawerProvider. A linkId in the route means
+  // the form edits a CollectionLink.
+  const { siteId: routeSiteId, linkId } = useQueryParse(pageOrLinkSchema)
+  const isLinkEditorRoute = editorDrawerContext === null && linkId !== undefined
+  const resourceType = editorDrawerContext?.type
+  const isCollectionItemResource =
+    isLinkEditorRoute ||
+    resourceType === ResourceType.CollectionPage ||
+    resourceType === ResourceType.CollectionLink
+
   const pathParts = path.split(".")
   const fieldName = pathParts.pop() ?? ""
   // The host's position in its array, e.g. 1 for "slides.1". Undefined when
@@ -36,9 +54,17 @@ export const useAdjustmentConfigForField = (path: string) => {
     : undefined
   const parentPath = pathParts.join(".")
 
-  // Matches the key generateAdjustableImageFields emits. A per-field key lets
-  // one component carry two image fields.
-  const siblingKey = `${fieldName}ImageAdjustment`
+  // The page thumbnail sits directly on the page object, so its parentPath is
+  // exactly "image".
+  const isCollectionThumbnail =
+    isCollectionItemResource && parentPath === "image"
+
+  // Content components key the adjustment by field name, e.g.
+  // backgroundUrlImageAdjustment, so two image fields never collide. The
+  // collection thumbnail is a single image and keeps the fixed key.
+  const siblingKey = isCollectionThumbnail
+    ? "imageAdjustment"
+    : `${fieldName}ImageAdjustment`
   const siblingPath = [parentPath, siblingKey].filter(Boolean).join(".")
 
   // The object that holds the field. That is the block for a root-level
@@ -64,6 +90,13 @@ export const useAdjustmentConfigForField = (path: string) => {
       ? (rootData as IsomerComponent)
       : undefined
 
+  // Disabled unless this is a collection thumbnail.
+  const collectionVariant = useCollectionIndexVariant({
+    siteId: editorDrawerContext?.siteId ?? routeSiteId,
+    pageId: editorDrawerContext?.pageId ?? linkId ?? 0,
+    enabled: isCollectionThumbnail,
+  })
+
   const currentAdjustment = get(rootData, siblingPath) as
     | ImageAdjustment
     | undefined
@@ -79,7 +112,7 @@ export const useAdjustmentConfigForField = (path: string) => {
       config: resolveAdjustmentConfig({
         block: ownerBlock,
         fieldName,
-        context: { pageLayout },
+        context: { pageLayout, isCollectionThumbnail, collectionVariant },
       }),
     }),
     [
@@ -90,6 +123,8 @@ export const useAdjustmentConfigForField = (path: string) => {
       siblingPath,
       currentAdjustment,
       pageLayout,
+      isCollectionThumbnail,
+      collectionVariant,
     ],
   )
 }

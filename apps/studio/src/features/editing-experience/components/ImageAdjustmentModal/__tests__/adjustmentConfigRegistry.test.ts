@@ -532,6 +532,128 @@ describe("resolveAdjustmentConfig", () => {
     })
   })
 
+  describe("collection item thumbnail (page-level, context-resolved)", () => {
+    // The page thumbnail has no block, so only the isCollectionThumbnail
+    // context flag resolves it.
+    it("resolves when isCollectionThumbnail is set, regardless of block shape", () => {
+      const config = resolveAdjustmentConfig({
+        block: { layout: "article" },
+        fieldName: "src",
+        context: { isCollectionThumbnail: true },
+      })
+      expect(config).toBeDefined()
+      expect(config?.cropMode).toBe("custom")
+      expect(config?.focalEnabled).toBe(true)
+      expect(config?.ownsImageFitField).toBe(true)
+      expect(config?.skipRealComponentPreview).toBe(true)
+    })
+
+    it("does not resolve for a similar-looking page without the collection-item signal", () => {
+      // Content, index and database pages have the same `image` field for
+      // their own thumbnail. Without the flag they must not resolve.
+      expect(
+        resolveAdjustmentConfig({
+          block: { layout: "content" },
+          fieldName: "src",
+        }),
+      ).toBeUndefined()
+      expect(
+        resolveAdjustmentConfig({
+          block: { layout: "content" },
+          fieldName: "src",
+          context: { isCollectionThumbnail: false },
+        }),
+      ).toBeUndefined()
+    })
+
+    // The homepage CollectionBlock also shows this image, but its frame
+    // depends on the live item count. The preview only shows the collection's
+    // own listing.
+    const aspectRatiosFor = (config: AdjustmentConfig) =>
+      config.previewStates.map((s) => s.aspectRatio)
+
+    it("models the 1-column (CollectionCard) layout as a fixed 5:4 frame at every breakpoint", () => {
+      const config = resolveAdjustmentConfig({
+        block: {},
+        fieldName: "src",
+        context: {
+          isCollectionThumbnail: true,
+          collectionVariant: "collection",
+        },
+      })
+      expect(aspectRatiosFor(config!)).toEqual([
+        { width: 5, height: 4 },
+        { width: 5, height: 4 },
+        { width: 5, height: 4 },
+      ])
+    })
+
+    it("models the 2-column (BlogCard) layout as a fixed 2:1 frame at every breakpoint", () => {
+      const config = resolveAdjustmentConfig({
+        block: {},
+        fieldName: "src",
+        context: { isCollectionThumbnail: true, collectionVariant: "blog" },
+      })
+      expect(aspectRatiosFor(config!)).toEqual([
+        { width: 2, height: 1 },
+        { width: 2, height: 1 },
+        { width: 2, height: 1 },
+      ])
+    })
+
+    it("uses layout-specific upload copy and blur thresholds", () => {
+      const resolve = (collectionVariant: "collection" | "blog") =>
+        resolveAdjustmentConfig({
+          block: {},
+          fieldName: "src",
+          context: { isCollectionThumbnail: true, collectionVariant },
+        })!
+      const guideUrl =
+        "https://support.isomer.gov.sg/en/articles/18459803-managing-collection-thumbnails"
+
+      for (const [variant, copy, width] of [
+        ["collection", "Recommended 400 × 320 px.", 400],
+        ["blog", "Recommended 640 × 320 px.", 640],
+      ] as const) {
+        const config = resolve(variant)
+        expect(config.preUploadCopy).toBe(copy)
+        expect(config.maxRenderedWidthPx).toBe(width)
+        expect(config.maxRenderedHeightPx).toBe(320)
+        expect(config.preUploadLinks).toEqual({
+          guideLabel: "thumbnail",
+          guideUrl,
+        })
+      }
+    })
+
+    // Guessing a frame here could show a shape that doesn't match the real
+    // card once the parent's actual layout resolves.
+    it("shows no frame and skips the recommended-size copy while the variant is unresolved", () => {
+      const pending = resolveAdjustmentConfig({
+        block: {},
+        fieldName: "src",
+        context: { isCollectionThumbnail: true },
+      })!
+      const failed = resolveAdjustmentConfig({
+        block: {},
+        fieldName: "src",
+        context: {
+          isCollectionThumbnail: true,
+          collectionVariant: "pending",
+        },
+      })!
+
+      for (const config of [pending, failed]) {
+        expect(config.previewStates).toEqual([])
+        expect(config.preUploadCopy).toBeUndefined()
+        expect(config.maxRenderedWidthPx).toBeUndefined()
+        expect(config.skipRealComponentPreview).toBe(true)
+        expect(config.cropMode).toBe("custom")
+        expect(config.focalEnabled).toBe(true)
+      }
+    })
+  })
+
   // Same for the frame shape. The bake applies the locked ratio to the saved
   // image, so if the frame drifts, object-cover re-crops every saved image.
   describe("pinned frame values", () => {

@@ -5,13 +5,14 @@ import type {
 } from "~/interfaces/complex/CollectionBlock"
 import { BiRightArrowAlt } from "react-icons/bi"
 import { tv } from "~/lib/tv"
+import { getEffectiveImageAdjustment } from "~/utils/getEffectiveImageAdjustment"
 import { getHeadingTag } from "~/utils/getHeadingTag"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 import { getResourceIdFromReferenceLink } from "~/utils/getResourceIdFromReferenceLink"
 import { isExternalUrl } from "~/utils/isExternalUrl"
 
 import { ComponentContent } from "../../internal/customCssClass"
-import { ImageClient } from "../../internal/ImageClient"
+import { ImageClientWithAdjustment } from "../../internal/ImageClient"
 import { Link } from "../../internal/Link"
 import { LinkButton } from "../../internal/LinkButton"
 import { PlaintextTags } from "../../internal/Tags"
@@ -92,6 +93,10 @@ const SingleCard = ({
 }: CollectionBlockSingleCardProps): JSX.Element => {
   const isExternalLink = !!referenceLinkHref && isExternalUrl(referenceLinkHref)
   const CardTitleTag = getHeadingTag(headingLevel)
+  const effectiveImageAdjustment = getEffectiveImageAdjustment(
+    image?.imageAdjustment,
+    isContainNeeded,
+  )
 
   const renderImage = () => {
     if (!image?.src) {
@@ -100,7 +105,7 @@ const SingleCard = ({
 
     return (
       <div className={compoundStyles.cardImageContainer({ numberOfCards })}>
-        <ImageClient
+        <ImageClientWithAdjustment
           src={image.src}
           alt={image.alt}
           width="100%"
@@ -109,6 +114,7 @@ const SingleCard = ({
           })}
           lazyLoading={shouldLazyLoad}
           assetsBaseUrl={site.assetsBaseUrl}
+          imageAdjustment={effectiveImageAdjustment}
         />
       </div>
     )

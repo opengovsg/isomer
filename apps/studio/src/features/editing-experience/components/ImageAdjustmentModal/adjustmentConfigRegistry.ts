@@ -470,9 +470,70 @@ const IMAGE_GALLERY_CONFIG: AdjustmentConfig = {
   },
 }
 
-// resolveAdjustmentConfig matches these on `type:variant` or bare `type`,
-// plus the image field name. The first match wins, so a `type:variant` entry
-// must come before a bare `type` entry for the same type.
+// Collection item thumbnail (`page.image`). It is a page-level field with no
+// block type, so resolveAdjustmentConfig handles it before the block lookup.
+// The preview shows the collection's own listing only: a 5:4 CollectionCard
+// for the "collection" layout, a 2:1 BlogCard for "blog". The homepage
+// CollectionBlock frame depends on the live item count, so it is not previewed.
+// The listing renders on a different page, so this skips the real-component
+// preview like ImageGallery does. Fit and fill work as on InfoCards.
+const COLLECTION_THUMBNAIL_GUIDE_LINK = {
+  guideLabel: "thumbnail",
+  guideUrl:
+    "https://support.isomer.gov.sg/en/articles/18459803-managing-collection-thumbnails",
+}
+
+const buildCollectionThumbnailConfig = (
+  collectionVariant: "collection" | "blog" | "pending" = "pending",
+): AdjustmentConfig => {
+  const base = {
+    componentType: "collection:thumbnail",
+    imageField: "src",
+    cropMode: "custom",
+    focalEnabled: true,
+    ownsImageFitField: true,
+    skipRealComponentPreview: true,
+  } as const
+
+  // The parent's layout isn't known yet (still loading, or the lookup
+  // failed), so there is no frame to show without guessing one that might not
+  // match the real card. An empty previewStates renders "Preview unavailable".
+  // The recommended size is also layout-specific, so it's withheld too.
+  if (collectionVariant === "pending") {
+    return { ...base, previewStates: [] }
+  }
+
+  const isBlogVariant = collectionVariant === "blog"
+
+  return {
+    ...base,
+    // Warn below the recommended size in preUploadCopy, which differs by
+    // layout (CollectionCard list vs BlogCard).
+    maxRenderedWidthPx: isBlogVariant ? 640 : 400,
+    maxRenderedHeightPx: 320,
+    // Neither card changes ratio across breakpoints, so all three preview
+    // states share one.
+    previewStates: isBlogVariant
+      ? responsivePreviewStates({
+          mobile: { width: 2, height: 1 },
+          tablet: { width: 2, height: 1 },
+          desktop: { width: 2, height: 1 },
+        })
+      : responsivePreviewStates({
+          mobile: { width: 5, height: 4 },
+          tablet: { width: 5, height: 4 },
+          desktop: { width: 5, height: 4 },
+        }),
+    preUploadCopy: isBlogVariant
+      ? "Recommended 640 × 320 px."
+      : "Recommended 400 × 320 px.",
+    preUploadLinks: COLLECTION_THUMBNAIL_GUIDE_LINK,
+  }
+}
+
+// Static configs. resolveAdjustmentConfig matches on `type:variant` or bare
+// `type`, plus the image field name. The first match wins, so list a
+// `type:variant` entry before the bare `type` one.
 export const CONFIGS: AdjustmentConfig[] = [
   IMAGE_CONFIG,
   IMAGE_GALLERY_CONFIG,
@@ -498,6 +559,11 @@ export function resolveAdjustmentConfig(args: {
   fieldName: string
   context?: AdjustmentRenderContext
 }): AdjustmentConfig | undefined {
+  // The collection thumbnail has no block type, so resolve it before the
+  // block lookup.
+  if (args.context?.isCollectionThumbnail)
+    return buildCollectionThumbnailConfig(args.context.collectionVariant)
+
   const { block, fieldName } = args
   if (!block) return undefined
   const variant =

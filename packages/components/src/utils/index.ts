@@ -1,4 +1,5 @@
 export { getBreadcrumbFromSiteMap } from "./getBreadcrumbFromSiteMap"
+export { getEffectiveImageAdjustment } from "./getEffectiveImageAdjustment"
 export { getFocalObjectPosition } from "./getFocalObjectPosition"
 export { getFormattedDate } from "./getFormattedDate"
 export { getAskgovIdFromString } from "./getAskgovIdFromString"
