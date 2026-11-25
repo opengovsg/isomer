@@ -1,5 +1,6 @@
 import type { Static } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
+import { NO_STYLIZED_UNICODE_REGEX } from "~/utils/validation"
 
 import { ARRAY_RADIO_FORMAT } from "../format"
 import { DgsDataSourceSchema, NativeDataSourceSchema } from "../integration"
@@ -14,13 +15,17 @@ const BaseSearchableTableSchema = Type.Object({
   ),
 })
 
+// Not IsomerString: its per-cell `errorMessage` block makes validating a
+// 100k-row table cost ~4GB (V8 tries to optimise Ajv's single giant validator).
+const TableCellString = Type.String({ pattern: NO_STYLIZED_UNICODE_REGEX })
+
 const NativeSearchableTableSchema = Type.Intersect(
   [
     NativeDataSourceSchema,
     Type.Object({
-      headers: Type.Array(Type.Union([IsomerString(), Type.Number()])),
+      headers: Type.Array(Type.Union([TableCellString, Type.Number()])),
       items: Type.Array(
-        Type.Array(Type.Union([IsomerString(), Type.Number()])),
+        Type.Array(Type.Union([TableCellString, Type.Number()])),
       ),
     }),
   ],
