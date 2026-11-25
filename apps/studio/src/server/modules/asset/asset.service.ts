@@ -48,7 +48,8 @@ export const generateTagsQueryString = (
   return entries.join("&")
 }
 
-const getFilenameFromKey = (key: string): string => key.split("/").pop() ?? ""
+export const getFilenameFromKey = (key: string): string =>
+  key.split("/").pop() ?? ""
 
 const getExtensionFromFilename = (filename: string): string =>
   filename.includes(".") ? filename.substring(filename.lastIndexOf(".")) : ""
@@ -153,6 +154,50 @@ export const getPresignedPutUrl = async ({
     Tagging: tags && generateTagsQueryString(tags),
   })
   return { presignedPutUrl, contentType, contentDisposition }
+}
+
+// Marks a key as server-generated (vs. uploader-provided). Referenced by
+// downstream bake logic that needs to recognise/strip it, so it's a shared
+// constant rather than a literal repeated at each call site.
+export const BAKED_FILE_PREFIX = "baked-"
+
+/**
+ * Derive a bake key from the source image's current location.
+ * Bridges relative path to full URL, extracts folder, and mints server leaf.
+ */
+export const deriveBakeKey = ({
+  src,
+  ext,
+  siteId,
+}: {
+  src: string
+  ext: string
+  siteId: number
+}): string => {
+  // Bridge relative path to full URL
+  const fullUrl = `https://${env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME}${src}`
+  const key = parseAssetUrlToKey(fullUrl)
+
+  if (!key) {
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message: "Invalid image source URL",
+    })
+  }
+
+  // Extract folder: drop the leaf (last segment) from `${siteId}/${uuid}/${file}`
+  const folder = key.substring(0, key.lastIndexOf("/"))
+
+  // Defense-in-depth: assert folder belongs to this site
+  if (!doAllFileKeysBelongToSite({ fileKeys: [folder], siteId })) {
+    throw new TRPCError({
+      code: "FORBIDDEN",
+      message: "Image source does not belong to this site",
+    })
+  }
+
+  // Mint server leaf and return full bake key
+  return `${folder}/${BAKED_FILE_PREFIX}${randomUUID()}.${ext}`
 }
 
 // Best-effort delete: the derived format may not exist for every asset
