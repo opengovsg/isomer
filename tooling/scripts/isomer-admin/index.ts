@@ -12,6 +12,7 @@ import { publishSiteResources } from "./apps/publish-site-resources"
 import { rebuildAllCodebuildProjects } from "./apps/rebuild-all-codebuild-projects"
 import { removeGazetteSearchRecords } from "./apps/remove-gazette-search-records"
 import { repairGazetteSearchRecords } from "./apps/repair-gazette-search-records"
+import { restoreCloudfrontOrigins } from "./apps/restore-cloudfront-origins"
 
 const main = async () => {
   const script = await select<IsomerAdminScriptType>({
@@ -82,6 +83,12 @@ const main = async () => {
           "Re-submit Search Records to Algolia for gazette resource IDs (incident response).",
         value: "repair-gazette-search-records",
       },
+      {
+        name: "Restore CloudFront origins",
+        description:
+          "Point site origins back at their latest successful build (incident response).",
+        value: "restore-cloudfront-origins",
+      },
     ],
   })
 
@@ -118,6 +125,9 @@ const main = async () => {
       break
     case "repair-gazette-search-records":
       await repairGazetteSearchRecords()
+      break
+    case "restore-cloudfront-origins":
+      await restoreCloudfrontOrigins()
       break
     default:
       const _: never = script

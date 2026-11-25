@@ -110,3 +110,30 @@ Re-submits gazette **Search Records** to the shared egazette Algolia index. The 
 **Use case:** Incident response — when a batch of gazettes ends up with missing or stale Search Records in Algolia (e.g. the ingestion cron misfired), use this to re-submit the affected gazettes.
 
 Requires `ALGOLIA_APP_ID`, `ALGOLIA_API_KEY`, `ALGOLIA_INDEX_NAME`, `S3_GAZETTE_BUCKET_NAME`, `S3_GAZETTE_DOMAIN_NAME` and `DATABASE_URL` in `.env`, plus AWS credentials for the gazette bucket (e.g. `aws sso login --profile <your-profile>`).
+
+### Restore CloudFront Origins
+
+Points each site's CloudFront origin back at its latest successful build, then invalidates the cache. Takes comma-separated site names (the CodeBuild project name, i.e. `shortName` in `isomer-next-infra/src/publishing/sites.<env>.csv`) or `all`. It checks every site first and changes nothing. It then lists each result, and restores the `mismatch` sites only after you confirm.
+
+**Use case:** Incident response — when sites serve `NoSuchKey` or 403/404 because the origin points at a build that no longer exists (e.g. a `pulumi up` rewrote origins from stale state, IR-1474). Also use it as the check after any `pulumi up` that touches CloudFront: run it against `all` and decline the prompt. Restore one Isomer-owned site first, and get a second engineer to check the list before confirming in production.
+
+| Status      | Meaning                                                                       |
+| ----------- | ----------------------------------------------------------------------------- |
+| `unchanged` | Origin already points at the latest successful build                          |
+| `mismatch`  | Origin would be changed as shown; restored if you confirm                     |
+| `restored`  | Origin updated and `/*` invalidated                                           |
+| `skipped`   | No successful build to restore to, or a publish is in progress (re-run later) |
+| `failed`    | Unknown site, origin not found, target build missing from S3, or an AWS error |
+
+How it decides:
+
+- The site's distribution ID and bucket come from its CodeBuild project's env vars, which are the values `publisher.sh` uses. Decommissioned sites have no project, so `all` never reaches them.
+- The latest build is the highest build number whose CodeBuild run `SUCCEEDED`, not the highest build number in S3. A failed build can leave a partial upload in S3. `publisher.sh` updates the origin as its last step, so a successful run means its build was complete and live.
+- It selects the site origin by ID (the bucket name), because each distribution also has a `<bucket>-static` origin.
+- It skips an origin that points at a build newer than the last success, because that publish is still finishing.
+- It fails a site, rather than restoring it, if the target build's `index.html` is missing from S3.
+- It retries on `PreconditionFailed`, which means a publish changed the same distribution at the same moment.
+
+A site with no successful run left in CodeBuild's build history is `skipped`; fix it by hand or trigger a fresh build.
+
+Requires AWS credentials for the target account (e.g. `aws sso login --profile <your-profile>`). No `.env` values are needed.
