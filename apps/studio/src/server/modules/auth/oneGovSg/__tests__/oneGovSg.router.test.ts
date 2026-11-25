@@ -22,9 +22,11 @@ import * as OneGovSgService from "../oneGovSg.service"
 const createCaller = createCallerFactory(oneGovSgRouter)
 const TEST_VALID_EMAIL = "test@open.gov.sg"
 const TEST_AUTHORIZATION_URL = "https://one.gov.sg/api/auth/authorize"
+const TEST_SINGPASS_UUID = "2625dd66-2cbb-414b-a136-f62bb516653c"
 const TEST_LOGIN_ATTEMPT = {
   identifier: getIpFingerprint(TEST_VALID_EMAIL, LOCALHOST),
   method: ONE_GOV_SG_LOGIN_METHOD,
+  loginMethod: "email-otp",
 }
 const INVALID_LOGIN_FLOW = new TRPCError({
   code: "BAD_REQUEST",
@@ -54,9 +56,10 @@ describe("auth.oneGovSg", () => {
       authorizationUrl: TEST_AUTHORIZATION_URL,
       session: createSessionState(),
     })
-    vi.spyOn(OneGovSgService, "exchangeCode").mockResolvedValue(
-      TEST_VALID_EMAIL,
-    )
+    vi.spyOn(OneGovSgService, "exchangeCode").mockResolvedValue({
+      email: TEST_VALID_EMAIL,
+      loginMethod: "email-otp",
+    })
   })
 
   afterEach(() => {
@@ -279,9 +282,10 @@ describe("auth.oneGovSg", () => {
 
     it("should throw 401 and not provision if the email is not whitelisted", async () => {
       // Arrange
-      vi.spyOn(OneGovSgService, "exchangeCode").mockResolvedValue(
-        "outsider@example.com",
-      )
+      vi.spyOn(OneGovSgService, "exchangeCode").mockResolvedValue({
+        email: "outsider@example.com",
+        loginMethod: "wogad",
+      })
 
       // Act
       const result = caller.callback(callbackInput)
@@ -326,6 +330,94 @@ describe("auth.oneGovSg", () => {
           verificationToken: TEST_LOGIN_ATTEMPT,
         })
       })
+
+      describe("with a strong one.gov.sg login method", () => {
+        const setUpSingpassUser = async () => {
+          await setupUser({ email: TEST_VALID_EMAIL })
+          return db
+            .updateTable("User")
+            .set({ singpassUuid: TEST_SINGPASS_UUID })
+            .where("email", "=", TEST_VALID_EMAIL)
+            .returningAll()
+            .executeTakeFirstOrThrow()
+        }
+
+        it.each(["wogad", "singpass"])(
+          "should log in a %s user who has set up Singpass without the Singpass step",
+          async (loginMethod) => {
+            // Arrange
+            const user = await setUpSingpassUser()
+            const alertSpy = vi.spyOn(mailService, "sendLoginAlertEmail")
+            vi.spyOn(OneGovSgService, "exchangeCode").mockResolvedValue({
+              email: TEST_VALID_EMAIL,
+              loginMethod,
+            })
+
+            // Act
+            const result = await caller.callback(callbackInput)
+
+            // Assert
+            const auditLog = await db
+              .selectFrom("AuditLog")
+              .selectAll()
+              .where("eventType", "=", AuditLogEvent.Login)
+              .executeTakeFirstOrThrow()
+            expect(result).toEqual({ redirectUrl: DASHBOARD, isLoggedIn: true })
+            expect(session.userId).toBe(user.id)
+            expect(session.singpass).toBeUndefined()
+            expect(auditLog.delta).toEqual({
+              before: { ...TEST_LOGIN_ATTEMPT, loginMethod },
+              after: null,
+            })
+            expect(alertSpy).not.toHaveBeenCalled()
+          },
+        )
+
+        it("should still send a user who has never set up Singpass through it", async () => {
+          // Arrange
+          vi.spyOn(OneGovSgService, "exchangeCode").mockResolvedValue({
+            email: TEST_VALID_EMAIL,
+            loginMethod: "wogad",
+          })
+
+          // Act
+          const result = await caller.callback(callbackInput)
+
+          // Assert
+          expect(result).toEqual({
+            redirectUrl: SIGN_IN_SINGPASS,
+            isLoggedIn: false,
+          })
+          expect(session.userId).toBeUndefined()
+        })
+      })
+
+      it.each(["email-otp", undefined, "healthad"])(
+        "should send login method %s through Singpass even after setup",
+        async (loginMethod) => {
+          // Arrange
+          await setupUser({ email: TEST_VALID_EMAIL })
+          await db
+            .updateTable("User")
+            .set({ singpassUuid: TEST_SINGPASS_UUID })
+            .where("email", "=", TEST_VALID_EMAIL)
+            .execute()
+          vi.spyOn(OneGovSgService, "exchangeCode").mockResolvedValue({
+            email: TEST_VALID_EMAIL,
+            loginMethod,
+          })
+
+          // Act
+          const result = await caller.callback(callbackInput)
+
+          // Assert
+          expect(result).toEqual({
+            redirectUrl: SIGN_IN_SINGPASS,
+            isLoggedIn: false,
+          })
+          expect(session.userId).toBeUndefined()
+        },
+      )
     })
 
     describe("when singpass is not enabled", () => {

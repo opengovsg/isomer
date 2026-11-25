@@ -131,6 +131,7 @@ describe("oneGovSg.service", () => {
           createIdTokenSet({
             sub: " Officer@Agency.gov.sg ",
             aud: TEST_CLIENT_ID,
+            login_method: "wogad",
           }),
         )
       const { exchangeCode } = await loadService()
@@ -143,7 +144,10 @@ describe("oneGovSg.service", () => {
       })
 
       // Assert
-      expect(result).toBe("officer@agency.gov.sg")
+      expect(result).toEqual({
+        email: "officer@agency.gov.sg",
+        loginMethod: "wogad",
+      })
       expect(callback).toHaveBeenCalledWith(
         expect.stringMatching(/\/sign-in\/onegov\/callback$/),
         { code: "code", state: SESSION.state, iss: TEST_ISSUER },
@@ -153,6 +157,28 @@ describe("oneGovSg.service", () => {
           code_verifier: SESSION.codeVerifier,
         },
       )
+    })
+
+    it("drops a login_method that is not a string", async () => {
+      // Arrange
+      vi.spyOn(issuer.Client.prototype, "callback").mockResolvedValue(
+        createIdTokenSet({
+          sub: "officer@agency.gov.sg",
+          aud: TEST_CLIENT_ID,
+          login_method: ["wogad"],
+        }),
+      )
+      const { exchangeCode } = await loadService()
+
+      // Act
+      const result = await exchangeCode({
+        code: "code",
+        iss: TEST_ISSUER,
+        session: SESSION,
+      })
+
+      // Assert
+      expect(result.loginMethod).toBeUndefined()
     })
 
     it.each([
@@ -178,6 +204,29 @@ describe("oneGovSg.service", () => {
       )
     })
   })
+})
+
+describe("canSkipSingpass", () => {
+  it.each([
+    ["wogad", "singpass-uuid", true],
+    ["singpass", "singpass-uuid", true],
+    ["wogad", null, false],
+    ["email-otp", "singpass-uuid", false],
+    [undefined, "singpass-uuid", false],
+    ["healthad", "singpass-uuid", false],
+  ])(
+    "returns %s with Singpass UUID %s -> %s",
+    async (loginMethod, singpassUuid, expected) => {
+      // Arrange
+      const { canSkipSingpass } = await import("../oneGovSg.service")
+
+      // Act
+      const result = canSkipSingpass({ loginMethod, singpassUuid })
+
+      // Assert
+      expect(result).toBe(expected)
+    },
+  )
 })
 
 describe("describeOneGovSgError", () => {

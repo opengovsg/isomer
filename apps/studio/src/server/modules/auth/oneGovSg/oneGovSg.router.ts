@@ -21,8 +21,13 @@ import { isEmailWhitelisted } from "../../whitelist/whitelist.service"
 import { recordUserLogin } from "../auth.service"
 import { upsertUser } from "../email/email.service"
 import { getOtpFingerPrint } from "../email/utils"
-import { clearSessionData } from "../session"
 import {
+  clearSessionData,
+  generateSessionOptions,
+  SINGPASS_COMPLETED_SESSION_TTL_HOURS,
+} from "../session"
+import {
+  canSkipSingpass,
   consumePendingLogin,
   describeOneGovSgError,
   exchangeCode,
@@ -152,9 +157,9 @@ export const oneGovSgRouter = router({
         })
       }
 
-      let email: string
+      let identity: Awaited<ReturnType<typeof exchangeCode>>
       try {
-        email = await exchangeCode({ code, iss, session: sessionState })
+        identity = await exchangeCode({ code, iss, session: sessionState })
       } catch (err) {
         ctx.logger.error(
           { reason: describeOneGovSgError(err) },
@@ -165,6 +170,8 @@ export const oneGovSgRouter = router({
           message: "one.gov.sg login failed",
         })
       }
+
+      const { email, loginMethod } = identity
 
       // one.gov.sg admits any officer; whether they may use Studio is ours to
       // decide, before anything is provisioned.
@@ -185,6 +192,7 @@ export const oneGovSgRouter = router({
       const loginAttempt: OneGovSgLoginAttempt = {
         identifier: getOtpFingerPrint(email, ctx.req),
         method: ONE_GOV_SG_LOGIN_METHOD,
+        loginMethod,
       }
 
       if (!getIsSingpassEnabled({ gb: ctx.gb })) {
@@ -214,13 +222,40 @@ export const oneGovSgRouter = router({
         .transaction()
         .execute((tx) => upsertUser({ tx, email }))
 
+      if (canSkipSingpass({ loginMethod, singpassUuid: user.singpassUuid })) {
+        const userId = user.id as NonNullable<SessionData["userId"]>
+
+        await db
+          .transaction()
+          .execute((tx) =>
+            recordUserLogin({ tx, userId, verificationToken: loginAttempt }),
+          )
+
+        ctx.session.userId = userId
+        ctx.session.updateConfig(
+          generateSessionOptions({
+            ttlInHours: SINGPASS_COMPLETED_SESSION_TTL_HOURS,
+          }),
+        )
+        await ctx.session.save()
+
+        ctx.logger.info(
+          { email, loginMethod },
+          "one.gov.sg login completed without Singpass",
+        )
+        return { redirectUrl: DASHBOARD, isLoggedIn: true }
+      }
+
       set(ctx.session, "singpass.sessionState", {
         userId: user.id,
         verificationToken: loginAttempt,
       })
       await ctx.session.save()
 
-      ctx.logger.info({ email }, "one.gov.sg verified, continuing to Singpass")
+      ctx.logger.info(
+        { email, loginMethod },
+        "one.gov.sg verified, continuing to Singpass",
+      )
       return { redirectUrl: SIGN_IN_SINGPASS, isLoggedIn: false }
     }),
 })

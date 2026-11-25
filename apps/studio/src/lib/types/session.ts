@@ -23,6 +23,9 @@ export const ONE_GOV_SG_LOGIN_METHOD = "one.gov.sg"
 export type OneGovSgLoginAttempt = {
   identifier: `${string}|${string}`
   method: typeof ONE_GOV_SG_LOGIN_METHOD
+  // one.gov.sg's `login_method` claim, recorded so the audit log shows why
+  // Singpass was or wasn't required.
+  loginMethod?: string
 }
 
 export interface SessionData {

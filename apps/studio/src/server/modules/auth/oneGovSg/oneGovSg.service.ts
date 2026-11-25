@@ -169,18 +169,45 @@ export const describeOneGovSgError = (error: unknown): string => {
   return "unknown"
 }
 
+// one.gov.sg can't confirm that the WOG Entra tenant enforced MFA; Studio
+// accepts WOG's tenant policy as its second factor.
+const STRONG_LOGIN_METHODS = new Set(["singpass", "wogad"])
+
+interface CanSkipSingpassParams {
+  loginMethod?: string
+  singpassUuid: string | null
+}
+
+/**
+ * Singpass is Studio's second factor. It is skipped only after a strong
+ * one.gov.sg sign-in, and only once the officer's Singpass identity is on
+ * file. Anything else, including a missing or new method, fails closed.
+ */
+export const canSkipSingpass = ({
+  loginMethod,
+  singpassUuid,
+}: CanSkipSingpassParams): boolean =>
+  !!singpassUuid &&
+  loginMethod !== undefined &&
+  STRONG_LOGIN_METHODS.has(loginMethod)
+
+interface OneGovSgIdentity {
+  email: string
+  loginMethod?: string
+}
+
 interface ExchangeCodeParams {
   code: string
   iss: string
   session: OneGovSgSessionState
 }
 
-/** Returns the officer's email. openid-client checks state, nonce, PKCE and id_token. */
+/** Returns the officer's identity. openid-client checks state, nonce, PKCE and id_token. */
 export const exchangeCode = async ({
   code,
   iss,
   session,
-}: ExchangeCodeParams): Promise<string> => {
+}: ExchangeCodeParams): Promise<OneGovSgIdentity> => {
   const tokenSet = await (
     await getClient()
   ).callback(
@@ -192,7 +219,7 @@ export const exchangeCode = async ({
       code_verifier: session.codeVerifier,
     },
   )
-  const { aud, sub } = tokenSet.claims()
+  const { aud, sub, login_method: loginMethod } = tokenSet.claims()
 
   // openid-client accepts our client_id anywhere in a multi-valued `aud`.
   const audiences = Array.isArray(aud) ? aud : [aud]
@@ -200,6 +227,9 @@ export const exchangeCode = async ({
     throw new Error("one.gov.sg id_token has an unexpected audience")
   }
 
-  // `sub` is the officer's normalised email and the stable user key.
-  return sub.trim().toLowerCase()
+  return {
+    // `sub` is the officer's normalised email and the stable user key.
+    email: sub.trim().toLowerCase(),
+    loginMethod: typeof loginMethod === "string" ? loginMethod : undefined,
+  }
 }
