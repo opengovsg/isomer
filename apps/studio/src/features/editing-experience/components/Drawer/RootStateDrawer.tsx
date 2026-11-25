@@ -44,6 +44,7 @@ import { IsomerAdminRole, ResourceType } from "~prisma/generated/generatedEnums"
 
 import { TYPE_TO_ICON } from "../../constants"
 import { pageSchema } from "../../schema"
+import { captureBlockReordered } from "../../utils/blockTracking"
 import { getIsHeroFirstBlock } from "../../utils/getIsHeroFirstBlock"
 import { ActivateRawJsonEditorMode } from "../ActivateRawJsonEditorMode"
 import { BaseBlock } from "../Block/BaseBlock"
@@ -205,7 +206,8 @@ export default function RootStateDrawer() {
   })
   const toast = useToast()
   const { mutate } = trpc.page.reorderBlock.useMutation({
-    onSuccess: async () => {
+    onSuccess: async (_, { from, to, blocks }) => {
+      captureBlockReordered(siteId, { from, to, blocks })
       await utils.page.readPage.invalidate({ pageId, siteId })
     },
     onError: (error, variables) => {
