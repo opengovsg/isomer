@@ -13,6 +13,7 @@ import { trpc } from "~/utils/trpc"
 
 import { useTextEditor } from "../hooks/useTextEditor"
 import { pageSchema } from "../schema"
+import { captureBlockAdded } from "../utils/blockTracking"
 import { isValidProse } from "../utils/isValidProse"
 import { CHANGES_SAVED_PLEASE_PUBLISH_MESSAGE } from "./constants"
 import { DeleteBlockModal } from "./DeleteBlockModal"
@@ -44,6 +45,7 @@ function TipTapProseComponent({ content }: TipTapComponentProps) {
     currActiveIdx,
     addedBlockIndex,
     setAddedBlockIndex,
+    addedBlockSource,
   } = useEditorDrawerContext()
 
   const [isContentValid, setIsContentValid] = useState(() =>
@@ -181,6 +183,11 @@ function TipTapProseComponent({ content }: TipTapComponentProps) {
                     },
                     {
                       onSuccess: () => {
+                        captureBlockAdded(siteId, {
+                          source: addedBlockSource,
+                          index: addedBlockIndex,
+                          blocks: previewPageState.content,
+                        })
                         setAddedBlockIndex(null)
                         setDrawerState({ state: "root" })
                       },

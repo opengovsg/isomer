@@ -1,7 +1,42 @@
+import type { BlockAddSource } from "~/types/editorDrawer"
 import { captureSiteEvent } from "~/lib/posthogCapture"
 
 interface Block {
   type: string
+}
+
+export const getBlockAddedProperties = ({
+  source,
+  index,
+  blocks,
+}: {
+  source: BlockAddSource
+  index: number
+  blocks: readonly Block[]
+}) => ({
+  source,
+  block_type: blocks[index]?.type,
+  position: index + 1,
+  block_count: blocks.length,
+})
+
+// Fires on save, not on pick: a picked block that is then discarded or
+// deleted never reaches the page, so it isn't counted as added.
+export const captureBlockAdded = (
+  siteId: number | string,
+  added: {
+    source: BlockAddSource | null
+    index: number | null
+    blocks: readonly Block[]
+  },
+) => {
+  const { source, index, blocks } = added
+  if (source === null || index === null) return
+  captureSiteEvent(
+    "block_added",
+    siteId,
+    getBlockAddedProperties({ source, index, blocks }),
+  )
 }
 
 // Positions are 1-based so they read the same as "position 3" in the

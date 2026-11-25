@@ -530,7 +530,12 @@ export default function RootStateDrawer() {
                           flexShrink={0}
                           leftIcon={<BiPlusCircle fontSize="1.25rem" />}
                           variant="clear"
-                          onClick={() => setDrawerState({ state: "addBlock" })}
+                          onClick={() =>
+                            setDrawerState({
+                              state: "addBlock",
+                              source: "top_button",
+                            })
+                          }
                         >
                           Add block
                         </Button>
@@ -579,7 +584,10 @@ export default function RootStateDrawer() {
                                       variant="outline"
                                       w="100%"
                                       onClick={() =>
-                                        setDrawerState({ state: "addBlock" })
+                                        setDrawerState({
+                                          state: "addBlock",
+                                          source: "empty_state",
+                                        })
                                       }
                                       leftIcon={
                                         <Icon as={BiPlus} fontSize="1.25rem" />

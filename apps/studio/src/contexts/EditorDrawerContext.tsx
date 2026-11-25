@@ -4,7 +4,7 @@ import type { ModifiedAsset } from "~/types/assets"
 import type { ResourceType } from "~prisma/generated/generatedEnums"
 import { createContext, useCallback, useContext, useState } from "react"
 import { flushSync } from "react-dom"
-import { type DrawerState } from "~/types/editorDrawer"
+import { type BlockAddSource, type DrawerState } from "~/types/editorDrawer"
 
 interface DrawerContextType extends Pick<
   EditorDrawerProviderProps,
@@ -22,6 +22,8 @@ interface DrawerContextType extends Pick<
   setModifiedAssets: Dispatch<SetStateAction<ModifiedAsset[]>>
   addedBlockIndex: number | null
   setAddedBlockIndex: Dispatch<SetStateAction<number | null>>
+  addedBlockSource: BlockAddSource | null
+  setAddedBlockSource: Dispatch<SetStateAction<BlockAddSource | null>>
 }
 const EditorDrawerContext = createContext<DrawerContextType | null>(null)
 
@@ -59,6 +61,9 @@ export function EditorDrawerProvider({
   // Holding state for images/files that have been modified in the page
   const [modifiedAssets, setModifiedAssets] = useState<ModifiedAsset[]>([])
   const [addedBlockIndex, setAddedBlockIndex] = useState<number | null>(null)
+  // Kept alongside addedBlockIndex so block_added can report its source on save
+  const [addedBlockSource, setAddedBlockSource] =
+    useState<BlockAddSource | null>(null)
 
   const setPreviewPageState = useCallback(
     (previewPageState: SetStateAction<IsomerSchema>) => {
@@ -90,6 +95,8 @@ export function EditorDrawerProvider({
         setModifiedAssets,
         addedBlockIndex,
         setAddedBlockIndex,
+        addedBlockSource,
+        setAddedBlockSource,
         type,
         permalink,
         siteId,

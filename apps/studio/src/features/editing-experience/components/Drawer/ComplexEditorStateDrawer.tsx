@@ -16,6 +16,7 @@ import { trpc } from "~/utils/trpc"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import { pageSchema } from "../../schema"
+import { captureBlockAdded } from "../../utils/blockTracking"
 import {
   CHANGES_SAVED_PLEASE_PUBLISH_MESSAGE,
   PLACEHOLDER_IMAGE_FILENAME,
@@ -42,6 +43,7 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
     type,
     addedBlockIndex,
     setAddedBlockIndex,
+    addedBlockSource,
     setDrawerState,
     currActiveIdx,
     savedPageState,
@@ -234,6 +236,11 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
       },
       {
         onSuccess: () => {
+          captureBlockAdded(siteId, {
+            source: addedBlockSource,
+            index: addedBlockIndex,
+            blocks: newPageState.content,
+          })
           setModifiedAssets([])
           setPreviewPageState(newPageState)
           setSavedPageState(newPageState)
@@ -250,6 +257,8 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
       },
     )
   }, [
+    addedBlockIndex,
+    addedBlockSource,
     currActiveIdx,
     deleteAssets,
     modifiedAssets,

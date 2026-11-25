@@ -6,8 +6,12 @@ interface RawJsonEditorModeDrawerState {
   state: "rawJsonEditor"
 }
 
+// Where the editor opened the block picker from
+export type BlockAddSource = "top_button" | "empty_state" | "inline"
+
 interface AddNewBlockState {
   state: "addBlock"
+  source: BlockAddSource
 }
 
 interface NativeEditorState {

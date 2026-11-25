@@ -120,8 +120,13 @@ function ComponentSelector() {
     setSavedPageState,
     setPreviewPageState,
     setAddedBlockIndex,
+    setAddedBlockSource,
+    drawerState,
     type,
   } = useEditorDrawerContext()
+
+  // This drawer only renders in the addBlock state, which carries the source
+  const source = drawerState.state === "addBlock" ? drawerState.source : null
 
   const onProceed = (sectionType: SectionType) => {
     if (
@@ -147,6 +152,7 @@ function ComponentSelector() {
       setSavedPageState(nextPageState)
       setCurrActiveIdx(childrenpagesIdx)
       setAddedBlockIndex(childrenpagesIdx)
+      setAddedBlockSource(source)
       setPreviewPageState(nextPageState)
       return
     }
@@ -171,6 +177,7 @@ function ComponentSelector() {
     setDrawerState({ state: nextState })
     setCurrActiveIdx(nextPageState.content.length - 1)
     setAddedBlockIndex(nextPageState.content.length - 1)
+    setAddedBlockSource(source)
     setPreviewPageState(nextPageState)
   }
 
