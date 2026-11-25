@@ -1,7 +1,8 @@
 import type { CollectionCardProps } from "~/interfaces"
+import { getEffectiveImageAdjustment } from "~/utils/getEffectiveImageAdjustment"
 import { isExternalUrl } from "~/utils/isExternalUrl"
 
-import { ImageClient } from "../ImageClient"
+import { ImageClientWithAdjustment } from "../ImageClient"
 import { Link } from "../Link"
 import { PillTags, PlaintextTags } from "../Tags"
 import { cardImageStyles } from "./cardImageStyles"
@@ -30,6 +31,10 @@ export const CollectionCard = ({
 }): JSX.Element => {
   const isExternalLink = !!referenceLinkHref && isExternalUrl(referenceLinkHref)
   const hasDateFilters = (dateFilterDisplayEntries?.length ?? 0) > 0
+  const effectiveImageAdjustment = getEffectiveImageAdjustment(
+    image?.imageAdjustment,
+    isContainNeeded,
+  )
 
   return (
     <Link
@@ -77,12 +82,13 @@ export const CollectionCard = ({
       </div>
       {image && (
         <div className="relative mt-3 flex h-[160px] w-[200px] shrink-0 items-center justify-center md:ml-4 md:mt-0">
-          <ImageClient
+          <ImageClientWithAdjustment
             src={imageSrc || ""}
             alt={image.alt}
             width="100%"
             className={cardImageStyles({ contain: isContainNeeded })}
             assetsBaseUrl={siteAssetsBaseUrl}
+            imageAdjustment={effectiveImageAdjustment}
           />
         </div>
       )}

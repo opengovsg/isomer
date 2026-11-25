@@ -5,6 +5,7 @@ import { ARRAY_RADIO_FORMAT } from "~/interfaces/format"
 const generateImageFitSchema = (props: {
   title: string
   description?: string
+  format?: string
 }) =>
   Type.Union(
     [
@@ -26,7 +27,18 @@ export const ChildrenPagesImageFitSchema = generateImageFitSchema({
   title: "Thumbnail display",
 })
 
+// Hidden from the card form: the image-adjustment modal now owns this control
+// (see JsonFormsImageControl's initialImageFit), writing back to the same field.
 export const InfoCardsImageFitSchema = generateImageFitSchema({
   title: "Image display",
   description: `Select "Resize image to fit" only if the image has a white background.`,
+  format: "hidden",
+})
+
+// Same pattern as InfoCardsImageFitSchema, for the collection item thumbnail
+// (page.image).
+export const CollectionThumbnailImageFitSchema = generateImageFitSchema({
+  title: "Image display",
+  description: `Select "Resize image to fit" only if the image has a white background.`,
+  format: "hidden",
 })

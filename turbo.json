@@ -32,6 +32,7 @@
     "SKIP_PRODUCTION_SOURCE_MAPS",
     "SKIP_STANDALONE_OUTPUT"
   ],
+  "globalPassThroughEnv": ["DD_*"],
   "tasks": {
     "build": {
       "dependsOn": ["generate"]

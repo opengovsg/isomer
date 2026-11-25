@@ -108,11 +108,11 @@ settings:
 catalogs:
   argos:
     '@argos-ci/cli':
-      specifier: ^6.10.0
-      version: 6.11.0
+      specifier: ^6.12.0
+      version: 6.12.0
     '@argos-ci/storybook':
-      specifier: ^6.4.2
-      version: 6.4.4
+      specifier: ^6.4.5
+      version: 6.4.5
   atlaskitPragmaticDnd:
     '@atlaskit/pragmatic-drag-and-drop':
       specifier: ^4.0.0
@@ -292,7 +292,7 @@ catalogs:
       version: 4.0.0
     commander:
       specifier: ^15.0.0
-      version: 15.0.0
+      version: 15.1.0
     content-disposition:
       specifier: ^3.0.0
       version: 3.0.0
@@ -335,6 +335,9 @@ catalogs:
     iron-session:
       specifier: ^9.0.1
       version: 9.0.1
+    is-animated:
+      specifier: ^3.0.20
+      version: 3.0.20
     isomorphic-dompurify:
       specifier: ^4.5.0
       version: 4.6.0
@@ -345,8 +348,8 @@ catalogs:
       specifier: ^3.0.1
       version: 3.0.1
     js-md5:
-      specifier: ^0.9.2
-      version: 0.9.2
+      specifier: ^0.10.0
+      version: 0.10.0
     jsdom:
       specifier: ^31.0.1
       version: 31.0.1
@@ -1033,6 +1036,9 @@ importers:
       iron-session:
         specifier: 'catalog:'
         version: 9.0.1
+      is-animated:
+        specifier: 'catalog:'
+        version: 3.0.20
       isomorphic-dompurify:
         specifier: 'catalog:'
         version: 4.6.0(@noble/hashes@2.2.0)
@@ -1132,10 +1138,10 @@ importers:
     devDependencies:
       '@argos-ci/cli':
         specifier: catalog:argos
-        version: 6.11.0(@types/node@26.6.6)(supports-color@8.1.1)
+        version: 6.12.0(@types/node@26.6.6)(supports-color@8.1.1)
       '@argos-ci/storybook':
         specifier: catalog:argos
-        version: 6.4.4(@types/node@26.6.6)(@vitest/browser-playwright@5.1.0)(@vitest/browser@5.1.0(msw@3.0.3(@types/node@26.6.6)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3)))(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3))(vitest@5.1.0))(playwright@1.65.1)(storybook@10.6.7(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(supports-color@8.1.1)(vitest@5.1.0)
+        version: 6.4.5(@types/node@26.6.6)(@vitest/browser-playwright@5.1.0)(@vitest/browser@5.1.0(msw@3.0.3(@types/node@26.6.6)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3)))(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3))(vitest@5.1.0))(playwright@1.65.1)(storybook@10.6.7(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(supports-color@8.1.1)(vitest@5.1.0)
       '@babel/plugin-transform-class-properties':
         specifier: catalog:babel
         version: 8.0.1(@babel/core@8.0.1)
@@ -1228,7 +1234,7 @@ importers:
         version: 4.0.0(webpack@5.105.4)
       commander:
         specifier: 'catalog:'
-        version: 15.0.0
+        version: 15.1.0
       dotenv:
         specifier: 'catalog:'
         version: 16.6.1
@@ -1449,7 +1455,7 @@ importers:
         version: 4.6.0(@noble/hashes@2.2.0)
       js-md5:
         specifier: 'catalog:'
-        version: 0.9.2
+        version: 0.10.0
       lodash-es:
         specifier: 'catalog:'
         version: 4.18.1
@@ -1477,10 +1483,10 @@ importers:
     devDependencies:
       '@argos-ci/cli':
         specifier: catalog:argos
-        version: 6.11.0(@types/node@26.5.1)(supports-color@8.1.1)
+        version: 6.12.0(@types/node@26.5.1)(supports-color@8.1.1)
       '@argos-ci/storybook':
         specifier: catalog:argos
-        version: 6.4.4(@types/node@26.5.1)(@vitest/browser-playwright@5.1.0)(@vitest/browser@5.1.0(msw@3.0.3(@types/node@26.5.1)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3)))(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3))(vitest@5.1.0))(playwright@1.65.1)(storybook@10.6.7(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(supports-color@8.1.1)(vitest@5.1.0)
+        version: 6.4.5(@types/node@26.5.1)(@vitest/browser-playwright@5.1.0)(@vitest/browser@5.1.0(msw@3.0.3(@types/node@26.5.1)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3)))(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3))(vitest@5.1.0))(playwright@1.65.1)(storybook@10.6.7(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(supports-color@8.1.1)(vitest@5.1.0)
       '@isomer/oxlint-config':
         specifier: workspace:*
         version: link:../../tooling/oxlint
@@ -2203,39 +2209,39 @@ packages:
     resolution: {integrity: sha512-UrcABB+4bUrFABwbluTIBErXwvbsU/V7TZWfmbgJfbkwiBuziS9gxdODUyuiecfdGQ85jglMW6juS3+z5TsKLw==}
     engines: {node: '>=10'}
 
-  '@argos-ci/api-client@0.31.3':
-    resolution: {integrity: sha512-BkkEVnHLPFNblZfUAKD7llhCL0tRvpbi5OnJCBsp10H5mP4b9SSIi3RByxWVE84DyVDkYZ89LzyKibKKmQB8/w==}
+  '@argos-ci/api-client@0.32.0':
+    resolution: {integrity: sha512-C/ee3bkTGdqgag3KpCCka4hGUoBcJYnisaD9Atq7mj/aVVgco8V38M9MNldch5Wg4FP71mP6mVoos1fQ3F90TA==}
     engines: {node: '>=22.0.0'}
 
-  '@argos-ci/browser@6.6.0':
-    resolution: {integrity: sha512-fn83whAKleP/rqlDFsqKfAICeb9WS0Nkl3tE3kgdnc8LJ6nK3M8ElcL8ZB3rUFMaDGb6hkYWb7nJyANpNVlnsw==}
+  '@argos-ci/browser@6.6.1':
+    resolution: {integrity: sha512-duIrTsl7FM3tQsh8IqSkfr5+DBXoODOHC8l4sv7s1Vp1BgjfNcF1xI6meDap6avZpG2oUCiJAb10rZCqUWlKsQ==}
     engines: {node: '>=22.0.0'}
 
-  '@argos-ci/cli@6.11.0':
-    resolution: {integrity: sha512-8U3RhSdcsVszW1WbKJDr5XZDr77mbSI9C/Ivl5SYKrEsApBUE8Ke5AwypRyXLl3GQe3R2AFkx+s09GBlaMnftQ==}
+  '@argos-ci/cli@6.12.0':
+    resolution: {integrity: sha512-Q3Wb/Rc8NYrkNPECGDEj0C2utJrehZC+0q5gbVa5kglSgD6op7sDMy5rfqXooy2vwMkCrSCaCikphn2jtX4a4Q==}
     engines: {node: '>=22.0.0'}
     hasBin: true
 
-  '@argos-ci/core@6.8.8':
-    resolution: {integrity: sha512-Y7pdBqlz6G9hjFLLBDthKmJL0s3AOyTyZ4i7iK4279xanQCxsxMNY30oJKGUtcaSD9a/QKxqJnYNuNC/2pJlvA==}
+  '@argos-ci/core@6.9.0':
+    resolution: {integrity: sha512-upfQtaHW52tud/OsxmXXSFZ1doeW4AUKZvvLqE6hjLCnhHI9W76DUdhURqRcks00qFKIhu+BhofnLJosah9yng==}
     engines: {node: '>=22.0.0'}
 
-  '@argos-ci/playwright@7.8.0':
-    resolution: {integrity: sha512-LFvhcscGBstip1lHjvP0sqGel1+c0tn0673hG6awV+3P/yZaIGUdTK9zQJMFEvq/IO7qE3pSbXco/r7PZfsvmg==}
+  '@argos-ci/playwright@7.9.0':
+    resolution: {integrity: sha512-eRBsuCwBQPPKVp7ZqmJAwncm5qLAaLkWrMUxQ7bLfJo+Cksn3PI9yz6+7rLrW+Ep1DZc4Iels8NsSzOLN2u3Kw==}
     engines: {node: '>=22.0.0'}
 
-  '@argos-ci/storybook@6.4.4':
-    resolution: {integrity: sha512-yXcmYBwG5B/bedJ8E1r7xqI14X90qnDnZGInWl572VjERLR30qcl6QGqjhTngZgdcBsN9MfaEqXVsujVcG6GzA==}
+  '@argos-ci/storybook@6.4.5':
+    resolution: {integrity: sha512-97fxk8I8ldX3CsSrExEPCosD50WihVLGbL89DQKifcLbW7jg4iHvUw/tzX8/NPuyjcV0tUMSYc3OcCgoSj3pmw==}
     engines: {node: '>=22.0.0'}
     peerDependencies:
       storybook: ^8.0.0 || ^9.0.0 || ^10.0.0 || ^11.0.0-0
 
-  '@argos-ci/util@4.2.3':
-    resolution: {integrity: sha512-4Lna1kV57nziBkXilHuxEF2BVcxggoU+4pW343T6+RFrCBuaq1RekOXQiyE+AjYf2VM/FJO5Wv0Tt9xu42IDOg==}
+  '@argos-ci/util@4.3.0':
+    resolution: {integrity: sha512-ReA/yhR0rGxOv32RhQZjIoabDco+59K+Yv0E78ewf1bVTl2d7BIJeWPWrCTAebF3s1rXpQwREoWJHZg/fzoBzg==}
     engines: {node: '>=22.0.0'}
 
-  '@argos-ci/vitest@0.9.0':
-    resolution: {integrity: sha512-gq8tNVzuAOB1NhMwunIBKXc7vlnpK5iAtxpmJ00oh0c90nOl4MzVQXgxirBFTUSrSpTIc6CxXXF3kP+O2t01jQ==}
+  '@argos-ci/vitest@0.10.0':
+    resolution: {integrity: sha512-NZ62f1ex3YvySWhQGjqaJ/DE4IOlcvAvBMnFZ8fuPXNFxumsPTJY9Ruk8DkJ3jwcjWHECW6LsZfaboE8gLJ9Yw==}
     engines: {node: '>=22.0.0'}
     peerDependencies:
       '@vitest/browser': '>=4'
@@ -7786,8 +7792,8 @@ packages:
     resolution: {integrity: sha512-H+y0Jo/T1RZ9qPP4Eh1pkcQcLRglraJaSLoyOtHxu6AapkjWVCy2Sit1QQ4x3Dng8qDlSsZEet7g5Pq06MvTgw==}
     engines: {node: '>=20'}
 
-  commander@15.0.0:
-    resolution: {integrity: sha512-z67u4ZhzCL/Tydu1lJARtEZYWbWaN7oYLHbsuzocr6y4N6WZAagG3RQ4FW61V1/0+jImpj293XfrcYnd1qxtPg==}
+  commander@15.1.0:
+    resolution: {integrity: sha512-cgnQ88TRrWcC7pVq46RzJVRMktu3W2RcbnoidnfBsl1bmDCBwJS/udcIZpKoCrbAYYaCqsz1yZCVIgbIaU3ddQ==}
     engines: {node: '>=22.12.0'}
 
   commander@2.20.3:
@@ -8979,6 +8985,10 @@ packages:
   is-alphanumerical@2.0.1:
     resolution: {integrity: sha512-hmbYhX/9MUMF5uh7tOXyK/n0ZvWpad5caBA17GsC6vyuCqaWliRG5K1qS9inmUhEMaOBIW7/whAnSwveW/LtZw==}
 
+  is-animated@3.0.20:
+    resolution: {integrity: sha512-HYvuR9b4kuVZBGI3cA691gXlWsHsXZU8iRE9LdqNIB8iwSzxGBnRxXlrY3DAYzrzfxlSMZU5G6++1jVvnCiq6Q==}
+    engines: {node: '>=20.0.0'}
+
   is-arrayish@0.2.1:
     resolution: {integrity: sha512-zz06S8t0ozoDXMG+ube26zeCTNXcKIPJZJi8hBrF4idCLms4CG9QtK7qBl1boi5ODzFpjswb5JPmHCbMpjaYzg==}
 
@@ -9169,8 +9179,8 @@ packages:
     resolution: {integrity: sha512-34wB/Y7MW7bzjKRjUKTa46I2Z7eV62Rkhva+KkopW7Qvv/OSWBqvkSY7vusOPrNuZcUG3tApvdVgNB8POj3SPw==}
     engines: {node: '>=10'}
 
-  js-md5@0.9.2:
-    resolution: {integrity: sha512-QK62elp/ozZj7kzyCG5yaeK+uWeqxPlg3w3znYDBvwyqzJs7nh5bgTAAH9KltLni2LT7qx/E1EgSVwfiOSRe0Q==}
+  js-md5@0.10.0:
+    resolution: {integrity: sha512-ty2QGIWsaCGQkw9OKXhrDElDXuAaCtFAkNW/N75NbHoU+ELVQA5FRqyzqrTUr0olOKeoEHuTIYOfu7VssGw+2Q==}
 
   js-tokens@10.0.0:
     resolution: {integrity: sha512-lM/UBzQmfJRo9ABXbPWemivdCW8V2G8FHaHdypQaIy523snUjog0W71ayWXTjiR+ixeMyVHN2XcpnTd/liPg/Q==}
@@ -12461,7 +12471,7 @@ snapshots:
 
   '@alloc/quick-lru@5.2.0': {}
 
-  '@argos-ci/api-client@0.31.3(supports-color@8.1.1)':
+  '@argos-ci/api-client@0.32.0(supports-color@8.1.1)':
     dependencies:
       debug: 4.4.3(supports-color@8.1.1)
       openapi-fetch: 0.17.0
@@ -12469,36 +12479,36 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@argos-ci/browser@6.6.0': {}
+  '@argos-ci/browser@6.6.1': {}
 
-  '@argos-ci/cli@6.11.0(@types/node@26.5.1)(supports-color@8.1.1)':
+  '@argos-ci/cli@6.12.0(@types/node@26.5.1)(supports-color@8.1.1)':
     dependencies:
-      '@argos-ci/api-client': 0.31.3(supports-color@8.1.1)
-      '@argos-ci/core': 6.8.8(@types/node@26.5.1)(supports-color@8.1.1)
+      '@argos-ci/api-client': 0.32.0(supports-color@8.1.1)
+      '@argos-ci/core': 6.9.0(@types/node@26.5.1)(supports-color@8.1.1)
       '@vercel/detect-agent': 1.2.7
-      commander: 15.0.0
+      commander: 15.1.0
       open: 11.0.4
       ora: 9.4.1
     transitivePeerDependencies:
       - '@types/node'
       - supports-color
 
-  '@argos-ci/cli@6.11.0(@types/node@26.6.6)(supports-color@8.1.1)':
+  '@argos-ci/cli@6.12.0(@types/node@26.6.6)(supports-color@8.1.1)':
     dependencies:
-      '@argos-ci/api-client': 0.31.3(supports-color@8.1.1)
-      '@argos-ci/core': 6.8.8(@types/node@26.6.6)(supports-color@8.1.1)
+      '@argos-ci/api-client': 0.32.0(supports-color@8.1.1)
+      '@argos-ci/core': 6.9.0(@types/node@26.6.6)(supports-color@8.1.1)
       '@vercel/detect-agent': 1.2.7
-      commander: 15.0.0
+      commander: 15.1.0
       open: 11.0.4
       ora: 9.4.1
     transitivePeerDependencies:
       - '@types/node'
       - supports-color
 
-  '@argos-ci/core@6.8.8(@types/node@26.5.1)(supports-color@8.1.1)':
+  '@argos-ci/core@6.9.0(@types/node@26.5.1)(supports-color@8.1.1)':
     dependencies:
-      '@argos-ci/api-client': 0.31.3(supports-color@8.1.1)
-      '@argos-ci/util': 4.2.3
+      '@argos-ci/api-client': 0.32.0(supports-color@8.1.1)
+      '@argos-ci/util': 4.3.0
       convict: 6.2.5
       debug: 4.4.3(supports-color@8.1.1)
       fast-glob: 3.3.3
@@ -12510,10 +12520,10 @@ snapshots:
       - '@types/node'
       - supports-color
 
-  '@argos-ci/core@6.8.8(@types/node@26.6.6)(supports-color@8.1.1)':
+  '@argos-ci/core@6.9.0(@types/node@26.6.6)(supports-color@8.1.1)':
     dependencies:
-      '@argos-ci/api-client': 0.31.3(supports-color@8.1.1)
-      '@argos-ci/util': 4.2.3
+      '@argos-ci/api-client': 0.32.0(supports-color@8.1.1)
+      '@argos-ci/util': 4.3.0
       convict: 6.2.5
       debug: 4.4.3(supports-color@8.1.1)
       fast-glob: 3.3.3
@@ -12525,34 +12535,34 @@ snapshots:
       - '@types/node'
       - supports-color
 
-  '@argos-ci/playwright@7.8.0(@types/node@26.5.1)(supports-color@8.1.1)':
+  '@argos-ci/playwright@7.9.0(@types/node@26.5.1)(supports-color@8.1.1)':
     dependencies:
-      '@argos-ci/browser': 6.6.0
-      '@argos-ci/core': 6.8.8(@types/node@26.5.1)(supports-color@8.1.1)
-      '@argos-ci/util': 4.2.3
+      '@argos-ci/browser': 6.6.1
+      '@argos-ci/core': 6.9.0(@types/node@26.5.1)(supports-color@8.1.1)
+      '@argos-ci/util': 4.3.0
       chalk: 6.0.1
       debug: 4.4.3(supports-color@8.1.1)
     transitivePeerDependencies:
       - '@types/node'
       - supports-color
 
-  '@argos-ci/playwright@7.8.0(@types/node@26.6.6)(supports-color@8.1.1)':
+  '@argos-ci/playwright@7.9.0(@types/node@26.6.6)(supports-color@8.1.1)':
     dependencies:
-      '@argos-ci/browser': 6.6.0
-      '@argos-ci/core': 6.8.8(@types/node@26.6.6)(supports-color@8.1.1)
-      '@argos-ci/util': 4.2.3
+      '@argos-ci/browser': 6.6.1
+      '@argos-ci/core': 6.9.0(@types/node@26.6.6)(supports-color@8.1.1)
+      '@argos-ci/util': 4.3.0
       chalk: 6.0.1
       debug: 4.4.3(supports-color@8.1.1)
     transitivePeerDependencies:
       - '@types/node'
       - supports-color
 
-  '@argos-ci/storybook@6.4.4(@types/node@26.5.1)(@vitest/browser-playwright@5.1.0)(@vitest/browser@5.1.0(msw@3.0.3(@types/node@26.5.1)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3)))(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3))(vitest@5.1.0))(playwright@1.65.1)(storybook@10.6.7(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(supports-color@8.1.1)(vitest@5.1.0)':
+  '@argos-ci/storybook@6.4.5(@types/node@26.5.1)(@vitest/browser-playwright@5.1.0)(@vitest/browser@5.1.0(msw@3.0.3(@types/node@26.5.1)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3)))(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3))(vitest@5.1.0))(playwright@1.65.1)(storybook@10.6.7(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(supports-color@8.1.1)(vitest@5.1.0)':
     dependencies:
-      '@argos-ci/core': 6.8.8(@types/node@26.5.1)(supports-color@8.1.1)
-      '@argos-ci/playwright': 7.8.0(@types/node@26.5.1)(supports-color@8.1.1)
-      '@argos-ci/util': 4.2.3
-      '@argos-ci/vitest': 0.9.0(@types/node@26.5.1)(@vitest/browser-playwright@5.1.0)(@vitest/browser@5.1.0(msw@3.0.3(@types/node@26.5.1)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3)))(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3))(vitest@5.1.0))(playwright@1.65.1)(supports-color@8.1.1)(vitest@5.1.0)
+      '@argos-ci/core': 6.9.0(@types/node@26.5.1)(supports-color@8.1.1)
+      '@argos-ci/playwright': 7.9.0(@types/node@26.5.1)(supports-color@8.1.1)
+      '@argos-ci/util': 4.3.0
+      '@argos-ci/vitest': 0.10.0(@types/node@26.5.1)(@vitest/browser-playwright@5.1.0)(@vitest/browser@5.1.0(msw@3.0.3(@types/node@26.5.1)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3)))(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3))(vitest@5.1.0))(playwright@1.65.1)(supports-color@8.1.1)(vitest@5.1.0)
       storybook: 10.6.7(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
     transitivePeerDependencies:
       - '@types/node'
@@ -12562,12 +12572,12 @@ snapshots:
       - supports-color
       - vitest
 
-  '@argos-ci/storybook@6.4.4(@types/node@26.6.6)(@vitest/browser-playwright@5.1.0)(@vitest/browser@5.1.0(msw@3.0.3(@types/node@26.6.6)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3)))(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3))(vitest@5.1.0))(playwright@1.65.1)(storybook@10.6.7(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(supports-color@8.1.1)(vitest@5.1.0)':
+  '@argos-ci/storybook@6.4.5(@types/node@26.6.6)(@vitest/browser-playwright@5.1.0)(@vitest/browser@5.1.0(msw@3.0.3(@types/node@26.6.6)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3)))(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3))(vitest@5.1.0))(playwright@1.65.1)(storybook@10.6.7(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(supports-color@8.1.1)(vitest@5.1.0)':
     dependencies:
-      '@argos-ci/core': 6.8.8(@types/node@26.6.6)(supports-color@8.1.1)
-      '@argos-ci/playwright': 7.8.0(@types/node@26.6.6)(supports-color@8.1.1)
-      '@argos-ci/util': 4.2.3
-      '@argos-ci/vitest': 0.9.0(@types/node@26.6.6)(@vitest/browser-playwright@5.1.0)(@vitest/browser@5.1.0(msw@3.0.3(@types/node@26.6.6)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3)))(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3))(vitest@5.1.0))(playwright@1.65.1)(supports-color@8.1.1)(vitest@5.1.0)
+      '@argos-ci/core': 6.9.0(@types/node@26.6.6)(supports-color@8.1.1)
+      '@argos-ci/playwright': 7.9.0(@types/node@26.6.6)(supports-color@8.1.1)
+      '@argos-ci/util': 4.3.0
+      '@argos-ci/vitest': 0.10.0(@types/node@26.6.6)(@vitest/browser-playwright@5.1.0)(@vitest/browser@5.1.0(msw@3.0.3(@types/node@26.6.6)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3)))(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3))(vitest@5.1.0))(playwright@1.65.1)(supports-color@8.1.1)(vitest@5.1.0)
       storybook: 10.6.7(@types/react@18.3.31)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
     transitivePeerDependencies:
       - '@types/node'
@@ -12577,14 +12587,14 @@ snapshots:
       - supports-color
       - vitest
 
-  '@argos-ci/util@4.2.3': {}
+  '@argos-ci/util@4.3.0': {}
 
-  '@argos-ci/vitest@0.9.0(@types/node@26.5.1)(@vitest/browser-playwright@5.1.0)(@vitest/browser@5.1.0(msw@3.0.3(@types/node@26.5.1)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3)))(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3))(vitest@5.1.0))(playwright@1.65.1)(supports-color@8.1.1)(vitest@5.1.0)':
+  '@argos-ci/vitest@0.10.0(@types/node@26.5.1)(@vitest/browser-playwright@5.1.0)(@vitest/browser@5.1.0(msw@3.0.3(@types/node@26.5.1)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3)))(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3))(vitest@5.1.0))(playwright@1.65.1)(supports-color@8.1.1)(vitest@5.1.0)':
     dependencies:
-      '@argos-ci/browser': 6.6.0
-      '@argos-ci/core': 6.8.8(@types/node@26.5.1)(supports-color@8.1.1)
-      '@argos-ci/playwright': 7.8.0(@types/node@26.5.1)(supports-color@8.1.1)
-      '@argos-ci/util': 4.2.3
+      '@argos-ci/browser': 6.6.1
+      '@argos-ci/core': 6.9.0(@types/node@26.5.1)(supports-color@8.1.1)
+      '@argos-ci/playwright': 7.9.0(@types/node@26.5.1)(supports-color@8.1.1)
+      '@argos-ci/util': 4.3.0
       '@vitest/browser': 5.1.0(msw@3.0.3(@types/node@26.5.1)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3)))(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3))(vitest@5.1.0)
       '@vitest/browser-playwright': 5.1.0(msw@3.0.3(@types/node@26.5.1)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3)))(playwright@1.65.1)(vite@8.3.8(@types/node@26.5.1)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.103.1)(terser@5.46.1)(tsx@4.23.13)(yaml@2.8.3))(vitest@5.1.0)
       playwright: 1.65.1
@@ -12593,12 +12603,12 @@ snapshots:
       - '@types/node'
       - supports-color
 
-  '@argos-ci/vitest@0.9.0(@types/node@26.6.6)(@vitest/browser-playwright@5.1.0)(@vitest/browser@5.1.0(msw@3.0.3(@types/node@26.6.6)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3)))(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3))(vitest@5.1.0))(playwright@1.65.1)(supports-color@8.1.1)(vitest@5.1.0)':
+  '@argos-ci/vitest@0.10.0(@types/node@26.6.6)(@vitest/browser-playwright@5.1.0)(@vitest/browser@5.1.0(msw@3.0.3(@types/node@26.6.6)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3)))(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3))(vitest@5.1.0))(playwright@1.65.1)(supports-color@8.1.1)(vitest@5.1.0)':
     dependencies:
-      '@argos-ci/browser': 6.6.0
-      '@argos-ci/core': 6.8.8(@types/node@26.6.6)(supports-color@8.1.1)
-      '@argos-ci/playwright': 7.8.0(@types/node@26.6.6)(supports-color@8.1.1)
-      '@argos-ci/util': 4.2.3
+      '@argos-ci/browser': 6.6.1
+      '@argos-ci/core': 6.9.0(@types/node@26.6.6)(supports-color@8.1.1)
+      '@argos-ci/playwright': 7.9.0(@types/node@26.6.6)(supports-color@8.1.1)
+      '@argos-ci/util': 4.3.0
       '@vitest/browser': 5.1.0(msw@3.0.3(@types/node@26.6.6)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3)))(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3))(vitest@5.1.0)
       '@vitest/browser-playwright': 5.1.0(msw@3.0.3(@types/node@26.6.6)(graphql@16.13.2)(supports-color@8.1.1)(typescript@6.0.3)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3)))(playwright@1.65.1)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.106.1)(terser@5.46.1)(tsx@4.23.15)(yaml@2.8.3))(vitest@5.1.0)
       playwright: 1.65.1
@@ -18409,7 +18419,7 @@ snapshots:
 
   commander@14.0.3: {}
 
-  commander@15.0.0: {}
+  commander@15.1.0: {}
 
   commander@2.20.3: {}
 
@@ -19676,6 +19686,8 @@ snapshots:
       is-alphabetical: 2.0.1
       is-decimal: 2.0.1
 
+  is-animated@3.0.20: {}
+
   is-arrayish@0.2.1: {}
 
   is-binary-path@2.1.0:
@@ -19818,7 +19830,7 @@ snapshots:
 
   joycon@3.1.1: {}
 
-  js-md5@0.9.2: {}
+  js-md5@0.10.0: {}
 
   js-tokens@10.0.0: {}
 
@@ -19841,7 +19853,7 @@ snapshots:
       html-encoding-sniffer: 6.0.0(@noble/hashes@2.2.0)
       is-potential-custom-element-name: 1.0.1
       lru-cache: 11.5.3
-      parse5: 8.0.1
+      parse5: 8.1.1
       saxes: 6.0.0
       symbol-tree: 3.2.4
       tough-cookie: 6.0.2
@@ -19849,7 +19861,7 @@ snapshots:
       w3c-xmlserializer: 5.0.0
       webidl-conversions: 8.0.1
       whatwg-mimetype: 5.0.0
-      whatwg-url: 17.2.0(@noble/hashes@2.2.0)
+      whatwg-url: 17.3.0(@noble/hashes@2.2.0)
       xml-name-validator: 5.0.0
     transitivePeerDependencies:
       - '@noble/hashes'

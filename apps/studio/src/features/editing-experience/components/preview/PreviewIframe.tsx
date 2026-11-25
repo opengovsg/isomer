@@ -1,6 +1,7 @@
 import type { CSSProperties, PropsWithChildren } from "react"
 import type { IframeCallbackFnProps } from "~/types/dom"
 import { Flex } from "@chakra-ui/react"
+import { ImageRetryProvider } from "@opengovsg/isomer-components"
 import { useEffect, useMemo, useRef } from "react"
 import Frame, { useFrame } from "react-frame-component"
 
@@ -11,7 +12,12 @@ interface PreviewIframeProps {
   keyForRerender?: string
   style?: CSSProperties
   viewport?: ViewportOptions
-  callback?: (props: IframeCallbackFnProps) => void
+  // Exact size of the iframe's layout viewport, overriding `viewport`. The
+  // content's media queries see this width even if a CSS transform scales it.
+  widthPx?: number
+  heightPx?: number
+  // May return a cleanup function, which runs when the iframe effect ends.
+  callback?: (props: IframeCallbackFnProps) => void | (() => void)
 }
 
 export const PreviewIframe = ({
@@ -20,6 +26,8 @@ export const PreviewIframe = ({
   keyForRerender,
   style,
   viewport,
+  widthPx,
+  heightPx,
   callback,
 }: PropsWithChildren<PreviewIframeProps>): JSX.Element => {
   const extraProps = preventPointerEvents
@@ -30,41 +38,52 @@ export const PreviewIframe = ({
     : {}
 
   const containerStyles = useMemo(() => {
+    if (widthPx !== undefined) {
+      return {
+        width: `${widthPx}px`,
+        height: heightPx !== undefined ? `${heightPx}px` : "100%",
+        borderRadius: "8px",
+      }
+    }
     if (!viewport)
       return {
         width: "100%",
+        height: "100%",
       }
     switch (viewport) {
       case "tablet":
         return {
           width: "768px",
+          height: "100%",
           borderRadius: "8px",
         }
       case "mobile":
         return {
           width: "480px",
+          height: "100%",
           borderRadius: "8px",
         }
       case "responsive":
         return {
           width: "100%",
+          height: "100%",
           borderRadius: "8px",
         }
       case "fullscreen": {
         return {
           width: "100%",
+          height: "100%",
           borderRadius: 0,
         }
       }
     }
-  }, [viewport])
+  }, [viewport, widthPx, heightPx])
 
   return (
     <Flex
       bg="white"
       shadow="md"
       justify="center"
-      h="100%"
       mx="auto"
       userSelect="none"
       {...containerStyles}
@@ -142,19 +161,23 @@ const IframeInnerComponent = ({
       childList: true,
     })
 
-    if (callback) {
-      callback({ document: iframeDocument, window: iframeWindow })
-    }
+    const callbackCleanup = callback?.({
+      document: iframeDocument,
+      window: iframeWindow,
+    })
 
     return () => {
       observer.disconnect()
       portalObserver.disconnect()
+      // Some callers pass async callbacks, so this can be a Promise. `?.()`
+      // would throw on it.
+      if (typeof callbackCleanup === "function") callbackCleanup()
     }
   }, [callback, iframeDocument, iframeDocument?.documentElement, iframeWindow])
 
   return (
     <div ref={containerRef} style={style}>
-      {children}
+      <ImageRetryProvider>{children}</ImageRetryProvider>
     </div>
   )
 }

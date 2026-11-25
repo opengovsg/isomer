@@ -233,7 +233,8 @@ describe("getCollectionPages", () => {
       const result = getCollectionPages({ site: buildSite(), collectionParent })
 
       // Assert
-      expect(result[0]?.image).toEqual({
+      // getItemImage adds isContainNeeded and imageAdjustment to the item image.
+      expect(result[0]?.image).toMatchObject({
         src: "/item-image.jpg",
         alt: "Item image",
       })

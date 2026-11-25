@@ -30,6 +30,8 @@ type AppPropsWithAuthAndLayout = AppProps & {
   Component: NextPageWithLayout
 }
 
+datadogRum.setGlobalContextProperty("team", "isomer")
+datadogRum.setGlobalContextProperty("product", "isomer")
 datadogRum.init({
   applicationId: "32c64617-51e3-4a6e-a977-ad113021ffae",
   clientToken: "pub89baaf356268edcb9ed95847d7c5d679",

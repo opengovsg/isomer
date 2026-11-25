@@ -3,6 +3,7 @@ interface HandleUploadParams {
   presignedPutUrl: string
   contentType: string
   contentDisposition: string
+  signal?: AbortSignal
 }
 
 // Use server-signed Content-Type and Content-Disposition so upload metadata
@@ -12,6 +13,7 @@ export const handleAssetUpload = async ({
   presignedPutUrl,
   contentType,
   contentDisposition,
+  signal,
 }: HandleUploadParams) => {
   const response = await fetch(presignedPutUrl, {
     headers: {
@@ -20,6 +22,7 @@ export const handleAssetUpload = async ({
     },
     method: "PUT",
     body: file,
+    signal,
   })
 
   if (!response.ok) {
