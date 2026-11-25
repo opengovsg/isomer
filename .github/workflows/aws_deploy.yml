@@ -121,6 +121,10 @@ on:
         description: "Public Singpass FAPI 2.0 issuer URL."
         required: true
         type: string
+      polyglot-studio-url:
+        description: "Polyglot Studio URL for sidebar SSO. Leave unset to disable SSO; the /polyglot/sso-private-key secret is then not referenced."
+        required: false
+        type: string
     secrets:
       SLACK_BOT_TOKEN:
         description: "Slack bot token with permissions to post messages"
@@ -338,6 +342,8 @@ jobs:
           ECS_TASK_EXEC_ROLE: ${{ inputs.ecs-task-exec-role }}
           ECS_TASK_DEFINITION_PATH: ${{ inputs.ecs-task-definition-path }}
           SINGPASS_FAPI_ISSUER_ENDPOINT: ${{ inputs.singpass-fapi-issuer-endpoint }}
+          CONTAINER_NAME: ${{ inputs.ecs-container-name }}
+          POLYGLOT_STUDIO_URL: ${{ inputs.polyglot-studio-url }}
         run: |
           CPU=$([[ "$ENVIRONMENT" == "production" ]] && echo "2048" || echo "512")
           MEMORY=$([[ "$ENVIRONMENT" == "production" ]] && echo "16384" || echo "1024")
@@ -351,6 +357,17 @@ jobs:
           sed -i "s/<ECS_TASK_EXEC_ROLE>/$ECS_TASK_EXEC_ROLE/g" "$ECS_TASK_DEFINITION_PATH"
           # URL contains slashes, so this substitution cannot use / as the delimiter.
           sed -i "s|<SINGPASS_FAPI_ISSUER_ENDPOINT>|${SINGPASS_FAPI_ISSUER_ENDPOINT}|g" "$ECS_TASK_DEFINITION_PATH"
+          # Polyglot SSO is opt-in per environment. ECS won't start a task whose
+          # secret points at a missing SSM parameter, so only reference
+          # /polyglot/sso-private-key when the caller sets polyglot-studio-url.
+          if [[ -n "$POLYGLOT_STUDIO_URL" ]]; then
+            jq --arg name "$CONTAINER_NAME" --arg url "$POLYGLOT_STUDIO_URL" \
+              '(.containerDefinitions[] | select(.name == $name)) |= (
+                .environment += [{name: "POLYGLOT_STUDIO_URL", value: $url}]
+                | .secrets += [{name: "POLYGLOT_SSO_PRIVATE_KEY", valueFrom: "/polyglot/sso-private-key"}]
+              )' "$ECS_TASK_DEFINITION_PATH" > "$ECS_TASK_DEFINITION_PATH.tmp"
+            mv "$ECS_TASK_DEFINITION_PATH.tmp" "$ECS_TASK_DEFINITION_PATH"
+          fi
 
       - name: Replace variables in appspec
         env:

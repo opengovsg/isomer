@@ -54,6 +54,7 @@ jobs:
       posthog-assets-host: "https://us-assets.i.posthog.com"
       posthog-project-token: "phc_uZuYdUk5MvkoNAzxvh9TXdGXXjSL684XAHBjR5r74Ra8"
       singpass-fapi-issuer-endpoint: "https://stg-id.singpass.gov.sg/fapi"
+      polyglot-studio-url: "https://staging-studio.polyglot.gov.sg"
 
   build_components:
     name: Build and publish components

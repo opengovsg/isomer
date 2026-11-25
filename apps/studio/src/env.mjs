@@ -104,7 +104,8 @@ const server = z
     // Polyglot SSO: ES256 PKCS8 PEM; Polyglot holds the matching public key.
     // Unset → the sidebar link falls back to plain Polyglot Studio.
     POLYGLOT_SSO_PRIVATE_KEY: z.string().optional(),
-    POLYGLOT_STUDIO_URL: z.string().url().optional(),
+    // HTTPS only: the SSO redirect carries a live sign-in token
+    POLYGLOT_STUDIO_URL: z.url({ protocol: /^https$/ }).optional(),
   })
   .extend(s3Schema.shape)
   .extend(r2Schema.shape)

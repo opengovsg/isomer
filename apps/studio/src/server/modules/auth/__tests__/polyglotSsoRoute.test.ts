@@ -145,6 +145,40 @@ describe("GET /api/polyglot/sso", () => {
     )
   })
 
+  // A Studio cookie can outlive the account's access; never vouch for it
+  it.each([
+    {
+      name: "deleted",
+      setup: async () => {
+        const user = await setupUser({ isDeleted: true })
+        await setUpWhitelist({ email: user.email })
+        return user
+      },
+    },
+    {
+      name: "no longer whitelisted",
+      setup: async () => {
+        const user = await setupUser({})
+        await setUpWhitelist({
+          email: user.email,
+          expiry: new Date(Date.now() - 60_000),
+        })
+        return user
+      },
+    },
+  ])(
+    "redirects a Publisher whose account is $name to sign-in",
+    async ({ setup }) => {
+      const { site } = await setupSite()
+      const user = await setup()
+      await setupPublisherPermissions({ userId: user.id, siteId: site.id })
+
+      expect(await callRoute({ userId: user.id, siteId: site.id })).toBe(
+        "/sign-in",
+      )
+    },
+  )
+
   it("redirects to sign-in without a session", async () => {
     const { site } = await setupSite()
 
