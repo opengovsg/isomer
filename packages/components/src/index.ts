@@ -23,6 +23,7 @@ export {
   DGS_REQUEST_MAX_BYTES,
   getAskgovIdFromString,
   resolveCollectionSortOrder,
+  getFocalObjectPosition,
 } from "./utils"
 export * from "./schemas"
 export * from "./types"

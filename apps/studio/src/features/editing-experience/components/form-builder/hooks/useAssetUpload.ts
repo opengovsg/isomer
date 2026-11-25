@@ -24,6 +24,18 @@ export const getAssetUploadBackoffOptions = ({
   maxDelay: MAX_ASSET_UPLOAD_BACKOFF_DELAY_MS,
 })
 
+// Worst-case total wait across all retries, so callers can size timeouts that wrap this backoff.
+export const getAssetUploadBackoffBudgetMs = ({
+  numOfAttempts = DEFAULT_NUM_OF_ATTEMPTS,
+  baseTimeoutMs = DEFAULT_BASE_TIMEOUT_MS,
+}: UseAssetUploadProps = {}) => {
+  let total = 0
+  for (let i = 0; i < numOfAttempts; i++) {
+    total += Math.min(baseTimeoutMs * 2 ** i, MAX_ASSET_UPLOAD_BACKOFF_DELAY_MS)
+  }
+  return total
+}
+
 export const useAssetUpload = ({
   numOfAttempts = DEFAULT_NUM_OF_ATTEMPTS,
   baseTimeoutMs = DEFAULT_BASE_TIMEOUT_MS,
