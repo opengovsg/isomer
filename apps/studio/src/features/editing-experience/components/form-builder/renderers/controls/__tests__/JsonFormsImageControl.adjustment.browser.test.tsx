@@ -22,9 +22,6 @@ vi.mock("~/env.mjs", () => ({
 vi.mock("~/hooks/useQueryParse", () => ({
   useQueryParse: () => ({ siteId: 1, pageId: undefined, linkId: undefined }),
 }))
-vi.mock("~/hooks/useIsImageAdjustmentEnabled", () => ({
-  useIsImageAdjustmentEnabled: () => false,
-}))
 vi.mock("../../../hooks/useAdjustmentConfigForField", () => ({
   useAdjustmentConfigForField: () => ({
     fieldHost: { imageFit: "contain" },
