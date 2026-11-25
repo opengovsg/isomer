@@ -1,4 +1,5 @@
 import type { HeroLargeImageProps } from "~/interfaces/complex/Hero"
+import { getFocalObjectPosition } from "~/utils/getFocalObjectPosition"
 import { getHeadingTag } from "~/utils/getHeadingTag"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 
@@ -14,6 +15,7 @@ export const HeroLargeImage = ({
   secondaryButtonLabel,
   secondaryButtonUrl,
   backgroundUrl,
+  backgroundUrlImageAdjustment: imageAdjustment,
   site,
   headingLevel,
 }: HeroLargeImageProps) => {
@@ -70,6 +72,9 @@ export const HeroLargeImage = ({
         imageSrc={backgroundUrl}
         imageAlt=""
         assetsBaseUrl={site.assetsBaseUrl}
+        // Resolved here, on the server. ImageContainer is client code, so the
+        // full object would put `originalKey` in the page HTML.
+        objectPosition={getFocalObjectPosition(imageAdjustment)}
       />
     </section>
   )
