@@ -83,6 +83,9 @@ export const CmsContainerWrapper = ({
             // Mints a Polyglot SSO token server-side, then redirects
             href: `/api/polyglot/sso?siteId=${siteId}`,
             isExternal: true,
+            // Let Polyglot see the request came from Studio (origin only,
+            // per the global strict-origin-when-cross-origin policy)
+            rel: "noopener",
           },
         ]
       : []),

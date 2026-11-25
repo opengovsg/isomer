@@ -14,6 +14,8 @@ export type CmsSidebarItem = {
   {
     href: string
     isExternal?: boolean
+    // Defaults to "noopener noreferrer" for external links
+    rel?: string
   },
   {
     onClick: () => void
@@ -48,7 +50,7 @@ const generateSidebarItem = (
             href={item.href}
             {...(item.isExternal && {
               target: "_blank",
-              rel: "noopener noreferrer",
+              rel: item.rel ?? "noopener noreferrer",
             })}
           />
         ) : (

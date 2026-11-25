@@ -38,8 +38,6 @@ export default async function handler(
     return res.status(405).send("Method Not Allowed")
   }
 
-  // Keep the token out of Referer headers on Polyglot's side
-  res.setHeader("Referrer-Policy", "no-referrer")
   const polyglotStudioUrl =
     env.POLYGLOT_STUDIO_URL ?? DEFAULT_POLYGLOT_STUDIO_URL
   const fallback = () => res.redirect(302, polyglotStudioUrl)
