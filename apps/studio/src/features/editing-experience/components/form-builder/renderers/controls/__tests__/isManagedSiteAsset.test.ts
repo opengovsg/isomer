@@ -32,6 +32,7 @@ describe("isManagedSiteAsset", () => {
   // deriveBakeKey throws unless the key folder starts with `${siteId}/`.
   it("rejects another site's asset", () => {
     expect(isManagedSiteAsset(`/99/${UUID}/photo.png`, SITE_ID)).toBe(false)
+    expect(isManagedSiteAsset(`/420/${UUID}/photo.png`, SITE_ID)).toBe(false)
   })
 
   // No uuid folder, so parseAssetUrlToKey returns null and the save fails.
