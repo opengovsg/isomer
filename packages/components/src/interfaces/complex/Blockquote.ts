@@ -3,7 +3,7 @@ import type { IsomerPageLayoutType, IsomerSiteProps } from "~/types"
 import { Type } from "@sinclair/typebox"
 
 import { IsomerString } from "../primitives/IsomerString"
-import { AltTextSchema, ImageSrcSchema } from "./Image"
+import { AltTextSchema, generateAdjustableImageFields } from "./Image"
 
 export const BlockquoteSchema = Type.Object(
   {
@@ -18,8 +18,10 @@ export const BlockquoteSchema = Type.Object(
     }),
     // NOTE: We are making the image optional but the alt text required as a hack,
     // because the schema does not support having dependent properties. If no
-    // image is provided, the alt text will be ignored
-    imageSrc: Type.Optional(ImageSrcSchema),
+    // image is provided, the alt text will be ignored. `optional: true` wraps
+    // the src in Type.Optional while still emitting the imageSrcImageAdjustment
+    // sibling.
+    ...generateAdjustableImageFields("imageSrc", { optional: true }),
     // Setting as optional because the image is optional.
     // If no image is provided and this is required, the schema will throw an error,
     // making it impossible to create a blockquote without an image on Studio
