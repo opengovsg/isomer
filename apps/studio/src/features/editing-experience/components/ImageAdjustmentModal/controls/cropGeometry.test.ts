@@ -8,6 +8,7 @@ import {
   clampUnit,
   clientDeltaToNormalized,
   defaultCropRect,
+  getContainedImageBounds,
   moveRect,
   resizeRectByHandle,
 } from "./cropGeometry"
@@ -224,6 +225,32 @@ describe("cropGeometry", () => {
       expect(resized.x + resized.width).toBeLessThanOrEqual(1)
       expect(resized.y + resized.height).toBeLessThanOrEqual(1)
     })
+
+    it("compensates for a non-square source so the BAKED pixel ratio matches lockedRatio, not the normalized rect", () => {
+      // 3:2 source locked to a 1:1 crop.
+      const rect = { x: 0, y: 0, width: 0.2, height: 0.2 }
+      const ratio = { width: 1, height: 1 }
+      const imageAspect = 3 / 2
+      const resized = resizeRectByHandle(
+        rect,
+        "se",
+        0.8,
+        0.8,
+        ratio,
+        imageAspect,
+      )
+      const bakedRatio = (resized.width / resized.height) * imageAspect
+      expect(bakedRatio).toBeCloseTo(1)
+      expect(resized.width / resized.height).toBeCloseTo(1 / imageAspect)
+    })
+
+    it("defaults imageAspect to 1 (prior square-only behavior unchanged)", () => {
+      const rect = { x: 0, y: 0, width: 0.2, height: 0.2 }
+      const ratio = { width: 2, height: 1 }
+      const withDefault = resizeRectByHandle(rect, "se", 0.8, 0.6, ratio)
+      const withExplicitOne = resizeRectByHandle(rect, "se", 0.8, 0.6, ratio, 1)
+      expect(withDefault).toEqual(withExplicitOne)
+    })
   })
 
   describe("defaultCropRect", () => {
@@ -269,6 +296,23 @@ describe("cropGeometry", () => {
       expect(rect.x).toBeCloseTo(0)
       expect(rect.y).toBeCloseTo((1 - 9 / 16) / 2)
     })
+
+    it("compensates for a non-square source so the BAKED pixel ratio matches lockedRatio", () => {
+      // 3:2 source locked to a 1:1 crop.
+      const ratio = { width: 1, height: 1 }
+      const imageAspect = 3 / 2
+      const rect = defaultCropRect(ratio, imageAspect)
+      const bakedRatio = (rect.width / rect.height) * imageAspect
+      expect(bakedRatio).toBeCloseTo(1)
+      expect(rect.width / rect.height).toBeCloseTo(1 / imageAspect)
+    })
+
+    it("defaults imageAspect to 1 (prior square-only behavior unchanged)", () => {
+      const ratio = { width: 16, height: 9 }
+      const withDefault = defaultCropRect(ratio)
+      const withExplicitOne = defaultCropRect(ratio, 1)
+      expect(withDefault).toEqual(withExplicitOne)
+    })
   })
 
   describe("clientDeltaToNormalized", () => {
@@ -305,6 +349,40 @@ describe("cropGeometry", () => {
       const normalized = clientDeltaToNormalized(0, 0, boxRect)
       expect(normalized.dx).toBe(0)
       expect(normalized.dy).toBe(0)
+    })
+  })
+
+  describe("getContainedImageBounds", () => {
+    it("fills the box exactly when aspect ratios match", () => {
+      const bounds = getContainedImageBounds({ width: 400, height: 300 }, 4 / 3)
+      expect(bounds).toEqual({ x: 0, y: 0, width: 1, height: 1 })
+    })
+
+    it("pillarboxes (blank left/right) when the image is narrower than the box", () => {
+      // 2:1 box, 1:2 image.
+      const bounds = getContainedImageBounds({ width: 400, height: 200 }, 0.5)
+      expect(bounds.y).toBe(0)
+      expect(bounds.height).toBe(1)
+      expect(bounds.width).toBeCloseTo(0.25)
+      expect(bounds.x).toBeCloseTo(0.375)
+    })
+
+    it("letterboxes (blank top/bottom) when the image is wider than the box", () => {
+      // Square box, 4:1 image.
+      const bounds = getContainedImageBounds({ width: 300, height: 300 }, 4)
+      expect(bounds.x).toBe(0)
+      expect(bounds.width).toBe(1)
+      expect(bounds.height).toBeCloseTo(0.25)
+      expect(bounds.y).toBeCloseTo(0.375)
+    })
+
+    it("falls back to the full box when dimensions are unknown", () => {
+      expect(getContainedImageBounds({ width: 0, height: 0 }, 1)).toEqual({
+        x: 0,
+        y: 0,
+        width: 1,
+        height: 1,
+      })
     })
   })
 })

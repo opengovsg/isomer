@@ -3,7 +3,7 @@ import { useIsMobile } from "@opengovsg/design-system-react"
 import { format } from "date-fns"
 import { Suspense, useMemo } from "react"
 import collectionSitemap from "~/features/editing-experience/data/collectionSitemap.json"
-import { useSiteThemeCssVars } from "~/features/preview/hooks/useSiteThemeCssVars"
+import { useSiteThemeCssVars } from "~/hooks/useSiteThemeCssVars"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import { PreviewIframe } from "../preview/PreviewIframe"

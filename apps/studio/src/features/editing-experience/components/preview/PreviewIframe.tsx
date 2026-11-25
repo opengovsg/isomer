@@ -12,12 +12,12 @@ interface PreviewIframeProps {
   keyForRerender?: string
   style?: CSSProperties
   viewport?: ViewportOptions
-  // Exact pixel size for the iframe's own layout viewport, bypassing the `viewport`
-  // enum's fixed presets, so content's media queries evaluate against an arbitrary
-  // breakpoint width even if the caller then CSS-scales the iframe down to fit.
+  // Exact size of the iframe's layout viewport, overriding `viewport`. The
+  // content's media queries see this width even if a CSS transform scales it.
   widthPx?: number
   heightPx?: number
-  callback?: (props: IframeCallbackFnProps) => void
+  // May return a cleanup function, which runs when the iframe effect ends.
+  callback?: (props: IframeCallbackFnProps) => void | (() => void)
 }
 
 export const PreviewIframe = ({
@@ -161,13 +161,17 @@ const IframeInnerComponent = ({
       childList: true,
     })
 
-    if (callback) {
-      callback({ document: iframeDocument, window: iframeWindow })
-    }
+    const callbackCleanup = callback?.({
+      document: iframeDocument,
+      window: iframeWindow,
+    })
 
     return () => {
       observer.disconnect()
       portalObserver.disconnect()
+      // Some callers pass async callbacks, so this can be a Promise. `?.()`
+      // would throw on it.
+      if (typeof callbackCleanup === "function") callbackCleanup()
     }
   }, [callback, iframeDocument, iframeDocument?.documentElement, iframeWindow])
 

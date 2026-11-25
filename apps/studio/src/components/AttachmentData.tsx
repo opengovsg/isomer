@@ -5,7 +5,6 @@ import {
   Image,
   Skeleton,
   Text,
-  Tooltip,
   VStack,
 } from "@chakra-ui/react"
 import { IconButton } from "@opengovsg/design-system-react"
@@ -30,9 +29,6 @@ interface AttachmentDataProps {
   // Overrides the "Edit image" label shown/used alongside onEdit — e.g.
   // "Replace image" when onEdit opens the upload flow instead of the editor.
   editLabel?: string
-  // When provided (and onEdit is not), shows a disabled "Edit image" affordance
-  // with this text as a hover tooltip, keeping the row non-clickable.
-  editDisabledReason?: string
   // When provided, renders a small thumbnail at the start of the row. Must be a
   // loadable URL (resolve managed "/..." paths via generateAssetUrl first).
   imageSrc?: string
@@ -42,7 +38,6 @@ export const AttachmentData = ({
   onClick,
   onEdit,
   editLabel = "Edit image",
-  editDisabledReason,
   imageSrc,
 }: AttachmentDataProps) => {
   // Only self-heal managed CDN assets — an external URL's error is permanent and
@@ -178,23 +173,6 @@ export const AttachmentData = ({
             >
               {editLabel}
             </Text>
-          )}
-          {!onEdit && editDisabledReason && (
-            <Tooltip
-              label={editDisabledReason}
-              placement="bottom"
-              hasArrow
-              closeOnPointerDown
-            >
-              <Text
-                textStyle="body-2"
-                fontWeight="500"
-                color="interaction.support.disabled-content"
-                w="fit-content"
-              >
-                Edit image
-              </Text>
-            </Tooltip>
           )}
         </VStack>
       </HStack>

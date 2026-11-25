@@ -16,7 +16,7 @@ import {
 } from "../format"
 import { IconPicker } from "../primitives/IconPicker"
 import { IsomerString } from "../primitives/IsomerString"
-import { generateImageSrcSchema, imageAdjustmentSchema } from "./Image"
+import { generateAdjustableImageFields, generateImageSrcSchema } from "./Image"
 
 export const HERO_STYLE = {
   gradient: { key: "gradient", title: "Gradient (Default)" },
@@ -148,10 +148,13 @@ const BACKGROUND_IMAGE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING = omit(
   ".gif",
 )
 
-const BackgroundUrlSchema = generateImageSrcSchema({
+const BACKGROUND_IMAGE_OPTS = {
   title: "Hero image",
   allowedMimeTypeMappings: BACKGROUND_IMAGE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING,
-})
+}
+
+// Only the gradient variant is adjustable. The others use this bare src.
+const BackgroundUrlSchema = generateImageSrcSchema(BACKGROUND_IMAGE_OPTS)
 
 const GROUPINGS = {
   TEXT: {
@@ -198,8 +201,7 @@ const HeroGradientSharedSchema = Type.Composite(
       variant: Type.Literal(HERO_STYLE.gradient.key, {
         default: HERO_STYLE.gradient.key,
       }),
-      backgroundUrl: BackgroundUrlSchema,
-      imageAdjustment: Type.Optional(imageAdjustmentSchema),
+      ...generateAdjustableImageFields("backgroundUrl", BACKGROUND_IMAGE_OPTS),
     }),
     HeroBaseSchema,
   ],
@@ -281,7 +283,7 @@ const HeroGradientSchema = Type.Intersect(
   },
 )
 
-const HeroBlockSchema = Type.Composite(
+export const HeroBlockSchema = Type.Composite(
   [
     Type.Object({
       variant: Type.Literal(HERO_STYLE.block.key, {
@@ -325,7 +327,7 @@ const HeroBlockSchema = Type.Composite(
   },
 )
 
-const HeroLargeImageSchema = Type.Composite(
+export const HeroLargeImageSchema = Type.Composite(
   [
     Type.Object({
       variant: Type.Literal(HERO_STYLE.largeImage.key, {
@@ -346,7 +348,7 @@ const HeroLargeImageSchema = Type.Composite(
   },
 )
 
-const HeroFloatingSchema = Type.Composite(
+export const HeroFloatingSchema = Type.Composite(
   [
     Type.Object({
       variant: Type.Literal(HERO_STYLE.floating.key, {
