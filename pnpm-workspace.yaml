@@ -86,7 +86,7 @@ catalog:
   is-animated: ^3.0.20
   isomorphic-dompurify: ^4.5.0
   mockdate: ^3.0.5
-  msw: ^3.0.3
+  msw: ^3.0.7
   msw-storybook-addon: ^3.0.3
   msw-trpc: ^2.0.1
   node-mocks-http: ^1.18.1
