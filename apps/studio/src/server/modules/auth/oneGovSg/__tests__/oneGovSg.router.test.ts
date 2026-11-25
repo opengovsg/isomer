@@ -160,6 +160,49 @@ describe("auth.oneGovSg", () => {
     })
   })
 
+  describe("input validation", () => {
+    it.each([
+      ["a non-string iss", { iss: 1 }],
+      ["an empty iss", { iss: "" }],
+    ])("should reject a login with %s", async (_, input) => {
+      // Act
+      const result = caller.login(input as never)
+
+      // Assert
+      await expect(result).rejects.toMatchObject({ code: "BAD_REQUEST" })
+      expect(OneGovSgService.getAuthorizationUrl).not.toHaveBeenCalled()
+    })
+
+    it.each([
+      ["a missing state", { iss: env.ONE_GOV_SG_ISSUER, code: "code" }],
+      [
+        "an empty state",
+        { state: "", iss: env.ONE_GOV_SG_ISSUER, code: "code" },
+      ],
+      ["a missing iss", { state: "state", code: "code" }],
+      ["an empty iss", { state: "state", iss: "", code: "code" }],
+      [
+        "a non-string code",
+        { state: "state", iss: env.ONE_GOV_SG_ISSUER, code: 1 },
+      ],
+      [
+        "an empty code",
+        { state: "state", iss: env.ONE_GOV_SG_ISSUER, code: "" },
+      ],
+      [
+        "an array state",
+        { state: ["state"], iss: env.ONE_GOV_SG_ISSUER, code: "code" },
+      ],
+    ])("should reject a callback with %s", async (_, input) => {
+      // Act
+      const result = caller.callback(input as never)
+
+      // Assert
+      await expect(result).rejects.toMatchObject({ code: "BAD_REQUEST" })
+      expect(OneGovSgService.exchangeCode).not.toHaveBeenCalled()
+    })
+  })
+
   describe("callback", () => {
     const callbackInput = {
       code: "code",

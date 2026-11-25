@@ -152,6 +152,8 @@ export const consumePendingLogin = async (state: string): Promise<boolean> => {
   return consumed !== undefined
 }
 
+const ONE_GOV_SG_ERROR_PREFIX = "one.gov.sg "
+
 /**
  * A log-safe failure category. openid-client errors carry the raw id_token
  * (`jwt`) and IdP-controlled text, so only fixed values are kept.
@@ -163,8 +165,12 @@ export const describeOneGovSgError = (error: unknown): string => {
   if (error instanceof errors.RPError) {
     return "id_token_validation"
   }
+  // Our own errors carry fixed text; anything else (parsers, network) could
+  // echo response bodies, so only its name is kept.
   if (error instanceof Error) {
-    return error.message
+    return error.message.startsWith(ONE_GOV_SG_ERROR_PREFIX)
+      ? error.message
+      : error.name
   }
   return "unknown"
 }

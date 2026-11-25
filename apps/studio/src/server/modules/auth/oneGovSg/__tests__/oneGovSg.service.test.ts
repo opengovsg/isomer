@@ -272,4 +272,17 @@ describe("describeOneGovSgError", () => {
     // Assert
     expect(result).toBe("one.gov.sg discovery issuer mismatch")
   })
+
+  it("reduces any other error to its name", async () => {
+    // Arrange
+    const { describeOneGovSgError } = await import("../oneGovSg.service")
+
+    // Act
+    const result = describeOneGovSgError(
+      new SyntaxError("Unexpected token < in JSON: <html>IdP text</html>"),
+    )
+
+    // Assert
+    expect(result).toBe("SyntaxError")
+  })
 })
