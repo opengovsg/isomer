@@ -3,6 +3,7 @@ import { Badge, IconButton, Link } from "@opengovsg/design-system-react"
 import { useEffect, useRef, useState } from "react"
 import { BiPause, BiPlay } from "react-icons/bi"
 import { useHover } from "usehooks-ts"
+import { captureEvent } from "~/lib/posthogCapture"
 
 interface Spotlight {
   id: string
@@ -15,6 +16,9 @@ interface Spotlight {
   description: string
   learnMoreHref: string
 }
+
+// Shown in the badge and attached to every PostHog event so editions can be compared.
+const EDITION = "Nov 2026"
 
 // Hardcoded login spotlight. Replace these entries (up to 3) when the edition changes.
 const SPOTLIGHTS: Spotlight[] = [
@@ -76,6 +80,14 @@ export const FreshFromIsomerPanel = (): JSX.Element | null => {
   const isMediaHovered = useHover(mediaFrameRef)
   const active = SPOTLIGHTS[activeIndex]
 
+  // Once per mount, so "shown" counts page loads where the panel actually rendered (desktop only).
+  useEffect(() => {
+    captureEvent("fresh_from_isomer_shown", {
+      edition: EDITION,
+      spotlight_ids: SPOTLIGHTS.map((item) => item.id),
+    })
+  }, [])
+
   useEffect(() => {
     if (active?.media.type !== "video") return
 
@@ -128,6 +140,11 @@ export const FreshFromIsomerPanel = (): JSX.Element | null => {
     const video = videoRef.current
     if (!video) return
     pausedForHoverRef.current = false
+    captureEvent("fresh_from_isomer_playback_toggled", {
+      edition: EDITION,
+      spotlight_id: active.id,
+      action: video.paused ? "play" : "pause",
+    })
     if (video.paused) {
       void video.play()
     } else {
@@ -148,7 +165,7 @@ export const FreshFromIsomerPanel = (): JSX.Element | null => {
             borderRadius="full"
             flexShrink={0}
           >
-            Nov 2026 edition
+            {EDITION} edition
           </Badge>
         </Flex>
 
@@ -185,6 +202,11 @@ export const FreshFromIsomerPanel = (): JSX.Element | null => {
               cursor={isActive ? "default" : "pointer"}
               onClick={() => {
                 if (isActive) return
+                captureEvent("fresh_from_isomer_tab_selected", {
+                  edition: EDITION,
+                  spotlight_id: item.id,
+                  previous_spotlight_id: active.id,
+                })
                 selectSpotlight(index)
               }}
               _focusVisible={{ boxShadow: "outline", outline: "none" }}
@@ -321,6 +343,13 @@ export const FreshFromIsomerPanel = (): JSX.Element | null => {
           isExternal
           variant="inline"
           w="fit-content"
+          onClick={() =>
+            captureEvent("fresh_from_isomer_learn_more_clicked", {
+              edition: EDITION,
+              spotlight_id: active.id,
+              href: active.learnMoreHref,
+            })
+          }
         >
           Learn more
         </Link>
