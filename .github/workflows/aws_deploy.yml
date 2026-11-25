@@ -105,15 +105,15 @@ on:
         description: "Intercom app ID"
         required: false
         type: string
-      posthog-host: 
+      posthog-host:
         description: "Posthog host"
         required: false
         type: string
-      posthog-assets-host: 
+      posthog-assets-host:
         description: "Posthog assets host"
         required: false
         type: string
-      posthog-project-token: 
+      posthog-project-token:
         description: "Posthog project token"
         required: false
         type: string
@@ -339,8 +339,8 @@ jobs:
           ECS_TASK_DEFINITION_PATH: ${{ inputs.ecs-task-definition-path }}
           SINGPASS_FAPI_ISSUER_ENDPOINT: ${{ inputs.singpass-fapi-issuer-endpoint }}
         run: |
-          CPU=$([[ "$ENVIRONMENT" == "production" ]] && echo "2048" || echo "512")
-          MEMORY=$([[ "$ENVIRONMENT" == "production" ]] && echo "16384" || echo "1024")
+          CPU=$([[ "$ENVIRONMENT" == "production" ]] && echo "2048" || echo "2048")
+          MEMORY=$([[ "$ENVIRONMENT" == "production" ]] && echo "16384" || echo "16384")
           sed -i "s/<AWS_ACCOUNT_ID>/$AWS_ACCOUNT_ID/g" "$ECS_TASK_DEFINITION_PATH"
           sed -i "s/<ENV>/$ENVIRONMENT/g" "$ECS_TASK_DEFINITION_PATH"
           sed -i "s/<SHORT_ENV>/$SHORT_ENV/g" "$ECS_TASK_DEFINITION_PATH"
