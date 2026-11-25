@@ -79,7 +79,7 @@ const ORIGIN_PATH_PATTERN = /^\/(.+)\/(\d+)\/latest$/
 const toOriginPath = (siteName: string, buildNumber: number) =>
   `/${siteName}/${buildNumber}/latest`
 
-export const planRestore = (
+const planRestore = (
   siteName: string,
   currentPath: string,
   latestBuildNumber: number,
@@ -161,8 +161,9 @@ const getSites = async (
         continue
       }
 
-      // Under "all", non-site projects are expected; only flag ones asked for
-      if (names !== ALL_SITES) {
+      // Under "all", non-site projects are expected; flag only ones asked for
+      // or ones that look like a site publisher missing its config
+      if (names !== ALL_SITES || name) {
         missing.push({
           site: project.name ?? "",
           status: "failed",
@@ -181,12 +182,10 @@ const getLatestSuccessfulBuildNumber = async (
 ) => {
   let nextToken: string | undefined
   do {
+    // Defaults to descending build number; an explicit sortOrder errors on
+    // projects with more than 100 builds
     const { ids = [], nextToken: next } = await codebuild.send(
-      new ListBuildsForProjectCommand({
-        projectName,
-        sortOrder: "DESCENDING",
-        nextToken,
-      }),
+      new ListBuildsForProjectCommand({ projectName, nextToken }),
     )
     if (ids.length === 0) {
       return undefined
@@ -263,7 +262,11 @@ const restoreSiteOnce = async (
   if (plan.action === "none") {
     return result("unchanged", currentPath)
   }
-  if (plan.action === "skip") {
+  // A newer origin whose build is gone is broken, not mid-publish
+  if (
+    plan.action === "skip" &&
+    (await buildExists(aws, site.bucket, currentPath))
+  ) {
     return result("skipped", plan.reason)
   }
 
@@ -288,18 +291,26 @@ const restoreSiteOnce = async (
     }),
   )
 
-  // Cached error responses from the stale origin outlive the origin change
-  const { Invalidation } = await aws.cloudfront.send(
-    new CreateInvalidationCommand({
-      DistributionId: site.distributionId,
-      InvalidationBatch: {
-        CallerReference: `restore-origin-${site.name}-${Date.now()}`,
-        Paths: { Quantity: 1, Items: ["/*"] },
-      },
-    }),
-  )
-
-  return result("restored", `${change} (invalidation ${Invalidation?.Id})`)
+  // Cached error responses from the stale origin outlive the origin change.
+  // A re-run sees the origin as unchanged and won't invalidate, so say so.
+  try {
+    const { Invalidation } = await aws.cloudfront.send(
+      new CreateInvalidationCommand({
+        DistributionId: site.distributionId,
+        InvalidationBatch: {
+          CallerReference: `restore-origin-${site.name}-${Date.now()}`,
+          Paths: { Quantity: 1, Items: ["/*"] },
+        },
+      }),
+    )
+    return result("restored", `${change} (invalidation ${Invalidation?.Id})`)
+  } catch (error) {
+    const reason = error instanceof Error ? error.message : String(error)
+    return result(
+      "failed",
+      `${change} applied, but invalidation failed (${reason}); invalidate /* on ${site.distributionId} manually`,
+    )
+  }
 }
 
 const restoreSite = async (

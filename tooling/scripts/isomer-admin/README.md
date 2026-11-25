@@ -130,9 +130,10 @@ How it decides:
 - The site's distribution ID and bucket come from its CodeBuild project's env vars, which are the values `publisher.sh` uses. Decommissioned sites have no project, so `all` never reaches them.
 - The latest build is the highest build number whose CodeBuild run `SUCCEEDED`, not the highest build number in S3. A failed build can leave a partial upload in S3. `publisher.sh` updates the origin as its last step, so a successful run means its build was complete and live.
 - It selects the site origin by ID (the bucket name), because each distribution also has a `<bucket>-static` origin.
-- It skips an origin that points at a build newer than the last success, because that publish is still finishing.
+- It skips an origin that points at a build newer than the last success, because that publish is still finishing. If that newer build is missing from S3, it restores instead.
 - It fails a site, rather than restoring it, if the target build's `index.html` is missing from S3.
 - It retries on `PreconditionFailed`, which means a publish changed the same distribution at the same moment.
+- If the origin update succeeds but the invalidation fails, the site is `failed` with a note to invalidate `/*` by hand. A re-run sees that origin as `unchanged` and won't invalidate it.
 
 A site with no successful run left in CodeBuild's build history is `skipped`; fix it by hand or trigger a fresh build.
 

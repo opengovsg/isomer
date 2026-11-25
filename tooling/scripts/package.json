@@ -5,8 +5,7 @@
   "scripts": {
     "egazette": "dotenv -e egazette/.env -- tsx egazette/index.ts",
     "egazette:test": "tsx --test egazette/apps/create-static-page.test.ts",
-    "isomer-admin": "dotenv -e isomer-admin/.env -- tsx isomer-admin/index.ts",
-    "isomer-admin:test": "tsx --test isomer-admin/apps/*.test.ts"
+    "isomer-admin": "dotenv -e isomer-admin/.env -- tsx isomer-admin/index.ts"
   },
   "dependencies": {
     "@aws-sdk/client-cloudfront": "catalog:aws-sdk",
