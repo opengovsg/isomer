@@ -1,7 +1,11 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite"
+import { getRouter } from "@storybook/nextjs-vite/router.mock"
 import { expect, userEvent, waitFor, within } from "storybook/test"
 import { authEmailHandlers } from "tests/msw/handlers/auth/email"
-import { authOneGovSgHandlers } from "tests/msw/handlers/auth/oneGovSg"
+import {
+  authOneGovSgHandlers,
+  ONE_GOV_SG_AUTHORIZE_URL,
+} from "tests/msw/handlers/auth/oneGovSg"
 import { meHandlers } from "tests/msw/handlers/me"
 import { ISOMER_SUPPORT_LINK } from "~/constants/misc"
 import SignInPage from "~/pages/sign-in"
@@ -48,22 +52,31 @@ export const Default: Story = {
   },
 }
 
+// Set by the handler, so the play function can wait for the enabled check to
+// settle instead of asserting while the button is merely loading.
+const disabledCheck = { resolved: false }
+
 export const Disabled: Story = {
   parameters: {
     msw: {
       handlers: [
         meHandlers.unauthorized(),
-        authOneGovSgHandlers.isEnabled(false),
+        authOneGovSgHandlers.isEnabled(false, () => {
+          disabledCheck.resolved = true
+        }),
       ],
     },
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
 
+    await waitFor(() => expect(disabledCheck.resolved).toBe(true))
     await canvas.findByLabelText(/email/i)
-    await expect(
-      canvas.queryByRole("button", { name: "Login with one.gov.sg" }),
-    ).not.toBeInTheDocument()
+    await waitFor(() =>
+      expect(
+        canvas.queryByRole("button", { name: "Login with one.gov.sg" }),
+      ).not.toBeInTheDocument(),
+    )
   },
 }
 
@@ -208,5 +221,97 @@ export const LauncherFailureClearsStaleLoginFlag: Story = {
         "false",
       ),
     )
+  },
+}
+
+export const RetryAfterFailureShowsErrorAgain: Story = {
+  parameters: {
+    nextjs: {
+      router: {
+        query: { oneGovSgError: "failed" },
+      },
+    },
+    msw: {
+      handlers: [
+        meHandlers.unauthorized(),
+        authOneGovSgHandlers.isEnabled(true),
+        authOneGovSgHandlers.login.error(),
+      ],
+    },
+  },
+  play: async ({ canvasElement, step }) => {
+    const canvas = within(canvasElement)
+
+    await step("Retry one.gov.sg from an existing failure", async () => {
+      await canvas.findByText("We couldn’t log you in with one.gov.sg")
+      await userEvent.click(
+        await canvas.findByRole("button", { name: "Login with one.gov.sg" }),
+      )
+    })
+
+    await step("Show the error again when the retry fails", async () => {
+      await expect(
+        await canvas.findByText("We couldn’t log you in with one.gov.sg"),
+      ).toBeInTheDocument()
+    })
+  },
+}
+
+export const LauncherWhenDisabledKeepsLoginFlag: Story = {
+  decorators: [withLoginStateFlag],
+  parameters: {
+    loginState: true,
+    nextjs: {
+      router: {
+        query: { iss: "https://one.gov.sg/api/auth" },
+      },
+    },
+    msw: {
+      handlers: [
+        meHandlers.unauthorized(),
+        authOneGovSgHandlers.isEnabled(false),
+        authOneGovSgHandlers.login.notFound(),
+      ],
+    },
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+
+    await canvas.findByLabelText(/email/i)
+    await expect(
+      canvas.getByTestId(LOGIN_STATE_FLAG_TEST_ID),
+    ).toHaveTextContent("true")
+    await expect(
+      canvas.queryByText("We couldn’t log you in with one.gov.sg"),
+    ).not.toBeInTheDocument()
+  },
+}
+
+export const StartingLoginClearsStaleLoginFlag: Story = {
+  decorators: [withLoginStateFlag],
+  parameters: {
+    loginState: true,
+    nextjs: {
+      router: {
+        query: { iss: "https://one.gov.sg/api/auth" },
+      },
+    },
+    msw: {
+      handlers: [
+        meHandlers.unauthorized(),
+        authOneGovSgHandlers.isEnabled(true),
+        authOneGovSgHandlers.login.redirect(),
+      ],
+    },
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+
+    await waitFor(() =>
+      expect(getRouter().push).toHaveBeenCalledWith(ONE_GOV_SG_AUTHORIZE_URL),
+    )
+    await expect(
+      canvas.getByTestId(LOGIN_STATE_FLAG_TEST_ID),
+    ).toHaveTextContent("false")
   },
 }

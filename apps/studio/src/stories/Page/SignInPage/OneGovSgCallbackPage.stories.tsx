@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite"
+import { getRouter } from "@storybook/nextjs-vite/router.mock"
 import { expect, waitFor, within } from "storybook/test"
 import { authOneGovSgHandlers } from "tests/msw/handlers/auth/oneGovSg"
 import { meHandlers } from "tests/msw/handlers/me"
@@ -50,6 +51,12 @@ export const ContinuesToSingpass: Story = {
   },
   play: async ({ canvasElement }) => {
     await expectLoginStateFlagCleared(canvasElement)
+    // callbackUrlSchema resolves the path to an absolute same-origin URL.
+    await waitFor(() =>
+      expect(String(getRouter().replace.mock.lastCall?.[0])).toMatch(
+        /\/sign-in\/singpass$/,
+      ),
+    )
   },
 }
 
@@ -64,5 +71,10 @@ export const Failed: Story = {
   },
   play: async ({ canvasElement }) => {
     await expectLoginStateFlagCleared(canvasElement)
+    await waitFor(() =>
+      expect(getRouter().replace).toHaveBeenCalledWith(
+        "/sign-in?oneGovSgError=failed",
+      ),
+    )
   },
 }

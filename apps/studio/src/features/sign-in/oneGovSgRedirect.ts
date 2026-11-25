@@ -12,6 +12,11 @@ const FAILED = "failed"
 export const oneGovSgFailurePath = (code?: TRPC_ERROR_CODE_KEY): string =>
   `${SIGN_IN}?${ONE_GOV_SG_ERROR_QUERY_KEY}=${code === "UNAUTHORIZED" ? UNAUTHORIZED : FAILED}`
 
+export const oneGovSgErrorState = (
+  code?: TRPC_ERROR_CODE_KEY,
+): SignInErrorType =>
+  code === "UNAUTHORIZED" ? "unauthorized" : "oneGovSgFailed"
+
 export const oneGovSgSignInError = (
   value: string | string[] | undefined,
 ): SignInErrorType | undefined => {
