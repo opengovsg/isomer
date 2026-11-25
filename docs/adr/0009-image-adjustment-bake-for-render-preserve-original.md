@@ -4,7 +4,7 @@ status: proposed
 
 # Image adjustments render from a baked copy but keep the original upload as the source of truth
 
-For the "Adjust image" feature, a saved adjustment is stored as two S3 objects in one asset folder plus the params: the immutable original upload, a baked render copy (the original with crop applied), and the params `{crop, focal}`. Both objects live under the original's existing `{siteId}/{uuid}/` folder, so they map to one `Asset` and one `AssetLink` in the registry and share that Asset's folder-level visibility.
+For the "Adjust image" feature, a saved adjustment is stored as two S3 objects in one asset folder plus the params: the immutable original upload, a baked render copy (the original with crop, rotate and flip applied), and the params `{crop, focal, rotate, flipH, flipV}`. Both objects live under the original's existing `{siteId}/{uuid}/` folder, so they map to one `Asset` and one `AssetLink` in the registry and share that Asset's folder-level visibility.
 
 The page renders the baked copy with `object-position` set from the focal point. The editor always reloads the original plus the params, so every re-edit re-bakes from the original, never from a previous bake. The focal point is never baked. It stays live metadata applied in CSS.
 

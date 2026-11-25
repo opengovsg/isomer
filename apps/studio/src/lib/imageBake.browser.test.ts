@@ -1,57 +1,43 @@
-import type { ImageAdjustment } from "@opengovsg/isomer-components"
 import { describe, expect, it } from "vitest"
 
-import { bakeImage } from "./imageBake"
+import { bakeImage, bakeImageWithinSizeLimit } from "./imageBake"
 
-// bakeImage needs a real Canvas/createImageBitmap, so this runs in real
-// Chromium (Vitest Browser Mode) rather than the simulated "node" project —
-// see vitest.config.ts's BROWSER_TEST_PATTERN.
+type Rgb = [number, number, number]
 
-type Adjustment = Pick<ImageAdjustment, "crop">
+const RED: Rgb = [255, 0, 0]
+const GREEN: Rgb = [0, 255, 0]
+const BLUE: Rgb = [0, 0, 255]
+const WHITE: Rgb = [255, 255, 255]
 
-const baseAdjustment = (overrides: Partial<Adjustment> = {}): Adjustment => ({
-  crop: { x: 0, y: 0, width: 1, height: 1 },
-  ...overrides,
-})
-
-const blobFromCanvas = (canvas: HTMLCanvasElement): Promise<Blob> =>
-  new Promise((resolve, reject) => {
-    canvas.toBlob((blob) => {
-      if (!blob) reject(new Error("canvas.toBlob returned null"))
-      else resolve(blob)
-    }, "image/png")
-  })
-
-// 4x4 image, one solid color per 2x2 quadrant — lets crop be verified by
-// sampling a single pixel per quadrant, with no anti-aliasing since every
-// fill lands on exact pixel boundaries.
-const RED = [255, 0, 0, 255]
-const GREEN = [0, 255, 0, 255]
-const BLUE = [0, 0, 255, 255]
-const YELLOW = [255, 255, 0, 255]
-
-const createQuadrantImage = (): Promise<Blob> => {
+// Build a tiny lossless PNG blob from row-major pixels (index = y*width + x).
+const makeImageBlob = async (
+  width: number,
+  height: number,
+  pixels: Rgb[],
+): Promise<Blob> => {
   const canvas = document.createElement("canvas")
-  canvas.width = 4
-  canvas.height = 4
+  canvas.width = width
+  canvas.height = height
   const ctx = canvas.getContext("2d")
   if (!ctx) throw new Error("no 2d context")
-  ctx.fillStyle = `rgb(${RED.slice(0, 3).join(",")})`
-  ctx.fillRect(0, 0, 2, 2) // top-left
-  ctx.fillStyle = `rgb(${GREEN.slice(0, 3).join(",")})`
-  ctx.fillRect(2, 0, 2, 2) // top-right
-  ctx.fillStyle = `rgb(${BLUE.slice(0, 3).join(",")})`
-  ctx.fillRect(0, 2, 2, 2) // bottom-left
-  ctx.fillStyle = `rgb(${YELLOW.slice(0, 3).join(",")})`
-  ctx.fillRect(2, 2, 2, 2) // bottom-right
-  return blobFromCanvas(canvas)
+  const imageData = ctx.createImageData(width, height)
+  pixels.forEach(([r, g, b], i) => {
+    imageData.data[i * 4] = r
+    imageData.data[i * 4 + 1] = g
+    imageData.data[i * 4 + 2] = b
+    imageData.data[i * 4 + 3] = 255
+  })
+  ctx.putImageData(imageData, 0, 0)
+  return new Promise<Blob>((resolve, reject) =>
+    canvas.toBlob(
+      (blob) => (blob ? resolve(blob) : reject(new Error("toBlob null"))),
+      "image/png",
+    ),
+  )
 }
 
-const getPixel = async (
-  blob: Blob,
-  x: number,
-  y: number,
-): Promise<number[]> => {
+// Decode a baked blob back into addressable pixels.
+const readPixels = async (blob: Blob) => {
   const bitmap = await createImageBitmap(blob)
   const canvas = document.createElement("canvas")
   canvas.width = bitmap.width
@@ -59,28 +45,64 @@ const getPixel = async (
   const ctx = canvas.getContext("2d")
   if (!ctx) throw new Error("no 2d context")
   ctx.drawImage(bitmap, 0, 0)
-  return Array.from(ctx.getImageData(x, y, 1, 1).data)
+  const { data } = ctx.getImageData(0, 0, bitmap.width, bitmap.height)
+  return {
+    width: bitmap.width,
+    height: bitmap.height,
+    at: (x: number, y: number): Rgb => {
+      const i = (y * bitmap.width + x) * 4
+      return [data[i]!, data[i + 1]!, data[i + 2]!]
+    },
+  }
 }
 
-describe("bakeImage", () => {
+const FULL_CROP = { x: 0, y: 0, width: 1, height: 1 }
+const PNG = { mimeType: "image/png" }
+
+// Covers the canvas composition that bakeImage actually ships (crop, then a
+// full-image draw) — the pure helpers it used to lean on no longer reflect
+// the real output.
+describe("bakeImage composition", () => {
+  it("passes a full-crop image through unchanged", async () => {
+    const src = await makeImageBlob(2, 1, [RED, BLUE])
+    const baked = await bakeImage(src, { crop: FULL_CROP }, PNG)
+    const out = await readPixels(baked)
+    expect([out.width, out.height]).toEqual([2, 1])
+    expect(out.at(0, 0)).toEqual(RED)
+    expect(out.at(1, 0)).toEqual(BLUE)
+  })
+
+  it("crops: keeping the right half drops the left pixels", async () => {
+    const src = await makeImageBlob(4, 1, [RED, GREEN, BLUE, WHITE])
+    const baked = await bakeImage(
+      src,
+      { crop: { x: 0.5, y: 0, width: 0.5, height: 1 } },
+      PNG,
+    )
+    const out = await readPixels(baked)
+    expect([out.width, out.height]).toEqual([2, 1])
+    expect(out.at(0, 0)).toEqual(BLUE)
+    expect(out.at(1, 0)).toEqual(WHITE)
+  })
+
   it("throws for a non-bakeable MIME type before touching the canvas", async () => {
-    const original = await createQuadrantImage()
+    const src = await makeImageBlob(2, 1, [RED, BLUE])
     await expect(
-      bakeImage(original, baseAdjustment(), { mimeType: "image/avif" }),
+      bakeImage(src, { crop: FULL_CROP }, { mimeType: "image/avif" }),
     ).rejects.toThrow(/Cannot bake image format/)
   })
 
-  it("crops to the requested normalized region", async () => {
-    const original = await createQuadrantImage()
+  it("crops: keeping the bottom half drops the top pixels", async () => {
+    const src = await makeImageBlob(1, 4, [RED, GREEN, BLUE, WHITE]) // 1 wide, 4 tall
     const baked = await bakeImage(
-      original,
-      baseAdjustment({ crop: { x: 0, y: 0, width: 0.5, height: 0.5 } }),
-      { mimeType: "image/png" },
+      src,
+      { crop: { x: 0, y: 0.5, width: 1, height: 0.5 } },
+      PNG,
     )
-    const bitmap = await createImageBitmap(baked)
-    expect(bitmap.width).toBe(2)
-    expect(bitmap.height).toBe(2)
-    expect(await getPixel(baked, 0, 0)).toEqual(RED)
+    const out = await readPixels(baked)
+    expect([out.width, out.height]).toEqual([1, 2])
+    expect(out.at(0, 0)).toEqual(BLUE)
+    expect(out.at(0, 1)).toEqual(WHITE)
   })
 
   it("throws for an animated source, without relying on the caller to check first", () => {
@@ -88,7 +110,7 @@ describe("bakeImage", () => {
     // enough for isAnimatedImageBlob to detect, without needing a real
     // decodable image, since bakeImage must reject this before ever calling
     // createImageBitmap.
-    const header = new Uint8Array(21)
+    const header = new Uint8Array(30) // is-animated needs >= 30 bytes
     header.set([0x52, 0x49, 0x46, 0x46], 0) // "RIFF"
     header.set([0x57, 0x45, 0x42, 0x50], 8) // "WEBP"
     header.set([0x56, 0x50, 0x38, 0x58], 12) // "VP8X"
@@ -96,7 +118,86 @@ describe("bakeImage", () => {
     const animatedWebp = new Blob([header], { type: "image/webp" })
 
     return expect(
-      bakeImage(animatedWebp, baseAdjustment(), { mimeType: "image/webp" }),
+      bakeImage(animatedWebp, { crop: FULL_CROP }, { mimeType: "image/webp" }),
     ).rejects.toThrow(/animated/)
+  })
+})
+
+// Noisy (non-uniform) pixels so JPEG quality actually changes the encoded
+// byte count -- a flat-color image compresses to roughly the same tiny size
+// at every quality level, which would make the back-off assertions vacuous.
+const makeNoisyImageBlob = async (size: number): Promise<Blob> => {
+  const pixels: Rgb[] = Array.from({ length: size * size }, (_, i) => [
+    (i * 37) % 256,
+    (i * 91) % 256,
+    (i * 149) % 256,
+  ])
+  return makeImageBlob(size, size, pixels)
+}
+
+describe("bakeImageWithinSizeLimit", () => {
+  it("returns the full-quality bake unchanged when it already fits", async () => {
+    const src = await makeNoisyImageBlob(16)
+    const fullQuality = await bakeImage(
+      src,
+      { crop: FULL_CROP },
+      { mimeType: "image/jpeg" },
+    )
+    const result = await bakeImageWithinSizeLimit(
+      src,
+      { crop: FULL_CROP },
+      { mimeType: "image/jpeg", maxBytes: fullQuality.size },
+    )
+    expect(result.size).toBe(fullQuality.size)
+  })
+
+  it("backs off JPEG quality until the bake fits under maxBytes", async () => {
+    const src = await makeNoisyImageBlob(64)
+    const fullQuality = await bakeImage(
+      src,
+      { crop: FULL_CROP },
+      { mimeType: "image/jpeg" },
+    )
+    // A threshold between full quality and the lowest backoff step's size --
+    // only reachable by actually backing off, not by the full-quality bake.
+    const maxBytes = Math.floor(fullQuality.size * 0.7)
+    const result = await bakeImageWithinSizeLimit(
+      src,
+      { crop: FULL_CROP },
+      { mimeType: "image/jpeg", maxBytes },
+    )
+    expect(result.type).toBe("image/jpeg")
+    expect(result.size).toBeLessThanOrEqual(maxBytes)
+    expect(result.size).toBeLessThan(fullQuality.size)
+  })
+
+  it("returns the full-quality PNG unchanged when still oversize (no quality knob to back off)", async () => {
+    const src = await makeNoisyImageBlob(16)
+    const fullQuality = await bakeImage(
+      src,
+      { crop: FULL_CROP },
+      { mimeType: "image/png" },
+    )
+    const result = await bakeImageWithinSizeLimit(
+      src,
+      { crop: FULL_CROP },
+      { mimeType: "image/png", maxBytes: 1 },
+    )
+    expect(result.size).toBe(fullQuality.size)
+  })
+
+  it("returns its smallest attempt when even the lowest JPEG quality step is still oversize", async () => {
+    const src = await makeNoisyImageBlob(64)
+    const lowestQuality = await bakeImage(
+      src,
+      { crop: FULL_CROP },
+      { mimeType: "image/jpeg", quality: 0.4 },
+    )
+    const result = await bakeImageWithinSizeLimit(
+      src,
+      { crop: FULL_CROP },
+      { mimeType: "image/jpeg", maxBytes: 1 },
+    )
+    expect(result.size).toBe(lowestQuality.size)
   })
 })

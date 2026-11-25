@@ -10,6 +10,7 @@
  */
 
 import type { ImageAdjustment } from "@opengovsg/isomer-components"
+import isAnimated from "is-animated"
 
 export type CropRect = Pick<
   ImageAdjustment["crop"],
@@ -50,73 +51,39 @@ export const BAKEABLE_EXTENSIONS = Object.values(BAKEABLE_FORMAT_BY_MIME) as [
 export const canBakeImage = (mimeType: string): boolean =>
   Object.hasOwn(BAKEABLE_FORMAT_BY_MIME, mimeType)
 
-// --- Animation sniffing -----------------------------------------------------
-// Animated WebP and APNG share image/webp and image/png with their static
-// counterparts, so canBakeImage passes them. Baking rasterizes a single frame
-// and silently drops the animation, so we sniff the container bytes and reject.
-
-const matchesAscii = (
-  bytes: Uint8Array,
-  offset: number,
-  ascii: string,
-): boolean => {
-  for (let i = 0; i < ascii.length; i++) {
-    if (bytes[offset + i] !== ascii.charCodeAt(i)) return false
-  }
-  return true
+// Inverse of BAKEABLE_FORMAT_BY_MIME (plus the ".jpg" alias) for deriving a
+// trusted MIME from a server-validated key extension when the fetched blob's
+// HTTP Content-Type is missing or generic (e.g. a CDN serving
+// "binary/octet-stream").
+const BAKEABLE_MIME_BY_EXTENSION: Record<string, string> = {
+  jpg: "image/jpeg",
+  jpeg: "image/jpeg",
+  png: "image/png",
+  webp: "image/webp",
 }
 
-const readUint32BE = (bytes: Uint8Array, offset: number): number =>
-  new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength).getUint32(
-    offset,
-  )
-
 /**
- * Detect animated WebP via the VP8X extended-format animation flag.
- * Layout: "RIFF"(0) size(4) "WEBP"(8) "VP8X"(12) size(16) flags(20),
- * where flags bit 1 (0x02) marks animation. Non-extended WebP (VP8/VP8L)
- * can't be animated.
+ * Derive a bakeable MIME from a key/filename extension, or undefined if the
+ * extension isn't a bakeable image format.
+ * @param key - An asset key or filename (e.g. "1/uuid/photo.png")
  */
-export const isAnimatedWebp = (bytes: Uint8Array): boolean => {
-  if (bytes.length < 21) return false
-  if (!matchesAscii(bytes, 0, "RIFF") || !matchesAscii(bytes, 8, "WEBP")) {
+export const mimeFromKeyExtension = (key: string): string | undefined => {
+  const ext = key.split(".").pop()?.toLowerCase()
+  return ext ? BAKEABLE_MIME_BY_EXTENSION[ext] : undefined
+}
+
+// --- Animation sniffing -----------------------------------------------------
+// Animated WebP/APNG share image/webp and image/png with their static forms,
+// and a GIF can arrive under a .webp/.png name, so canBakeImage passes them.
+// Baking would flatten them to one frame, so sniff the bytes (not the MIME).
+export const isAnimatedImageBlob = async (blob: Blob): Promise<boolean> => {
+  try {
+    // Must be an ArrayBuffer: is-animated treats a Uint8Array as a Node Buffer.
+    return isAnimated(await blob.arrayBuffer())
+  } catch {
+    // is-animated throws on a truncated file; bakeImage's decode rejects those.
     return false
   }
-  if (!matchesAscii(bytes, 12, "VP8X")) return false
-  return ((bytes[20] ?? 0) & 0x02) !== 0
-}
-
-/**
- * Detect APNG via the "acTL" animation-control chunk, which a valid APNG
- * places before the first "IDAT". Walks the PNG chunk list until either.
- */
-export const isAnimatedPng = (bytes: Uint8Array): boolean => {
-  const SIGNATURE = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]
-  if (bytes.length < SIGNATURE.length) return false
-  if (SIGNATURE.some((b, i) => bytes[i] !== b)) return false
-
-  // Each chunk: 4-byte length, 4-byte type, length data bytes, 4-byte CRC.
-  let offset = SIGNATURE.length
-  while (offset + 8 <= bytes.length) {
-    if (matchesAscii(bytes, offset + 4, "acTL")) return true
-    if (matchesAscii(bytes, offset + 4, "IDAT")) return false
-    offset += 12 + readUint32BE(bytes, offset)
-  }
-  return false
-}
-
-/**
- * Whether a blob is an animated image that baking would flatten. Only WebP
- * and PNG need sniffing (JPEG, the other bakeable MIME, can't animate) --
- * checked against the MIME first so a JPEG never pays for reading its full
- * byte contents just to be told it isn't a container format at all.
- */
-export const isAnimatedImageBlob = async (blob: Blob): Promise<boolean> => {
-  if (blob.type !== "image/webp" && blob.type !== "image/png") return false
-  const bytes = new Uint8Array(await blob.arrayBuffer())
-  return blob.type === "image/webp"
-    ? isAnimatedWebp(bytes)
-    : isAnimatedPng(bytes)
 }
 
 const clamp = (n: number, lo: number, hi: number): number =>
@@ -277,4 +244,52 @@ export const bakeImage = async (
   } finally {
     bitmap.close()
   }
+}
+
+// Quality steps tried, in order, when the full-quality bake exceeds maxBytes.
+// Only applies to lossy formats (JPEG/WebP) -- PNG has no quality knob, so a
+// source that's already near the limit can still produce an oversize PNG
+// bake; bakeImageWithinSizeLimit returns its best (still-oversize) attempt in
+// that case and leaves surfacing the error to the caller.
+const QUALITY_BACKOFF_STEPS = [0.8, 0.6, 0.4]
+
+/**
+ * Bakes an image, retrying at progressively lower quality if the full-quality
+ * encode exceeds `maxBytes`. A crop/re-encode through canvas can end up
+ * LARGER than a well-optimized source JPEG even at the browser's default
+ * quality (canvas re-encoding loses the original encoder's specific
+ * optimization), so a source that passed the upload-time size check can still
+ * fail the save-time bake check with no warning at upload — this back-off
+ * closes most of that gap before it ever reaches the server.
+ * @param maxBytes - The server's size cap for the baked output
+ * @returns The smallest successful bake, or the smallest attempt tried if
+ * none got under maxBytes (e.g. PNG, which has no quality knob, or still
+ * oversize even at the lowest quality step) -- the caller is responsible for
+ * checking the result's size and surfacing a clear error if it's still too
+ * large.
+ */
+export const bakeImageWithinSizeLimit = async (
+  original: Blob,
+  adjustment: Pick<ImageAdjustment, "crop">,
+  opts: { mimeType: string; maxBytes: number },
+): Promise<Blob> => {
+  const fullQuality = await bakeImage(original, adjustment, {
+    mimeType: opts.mimeType,
+  })
+  if (fullQuality.size <= opts.maxBytes) return fullQuality
+
+  const isLossy =
+    opts.mimeType === "image/jpeg" || opts.mimeType === "image/webp"
+  if (!isLossy) return fullQuality
+
+  let smallest = fullQuality
+  for (const quality of QUALITY_BACKOFF_STEPS) {
+    const attempt = await bakeImage(original, adjustment, {
+      mimeType: opts.mimeType,
+      quality,
+    })
+    if (attempt.size <= opts.maxBytes) return attempt
+    if (attempt.size < smallest.size) smallest = attempt
+  }
+  return smallest
 }
