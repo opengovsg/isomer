@@ -122,8 +122,8 @@ const CompleteSingpassLogin = ({
               </Text>
 
               <Text textStyle="body-2" color="base.content.default">
-                From now on, you’ll need to use your email and Singpass to log
-                in to Isomer Studio.
+                From now on, you’ll verify with Singpass whenever you log in
+                with an email OTP.
               </Text>
             </Flex>
 

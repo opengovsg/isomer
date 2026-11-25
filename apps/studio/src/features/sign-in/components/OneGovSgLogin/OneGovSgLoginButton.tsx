@@ -23,15 +23,25 @@ export const OneGovSgLoginButton = (): JSX.Element | null => {
         <Divider />
       </HStack>
 
-      {/* Exact label required by the one.gov.sg integration guide. */}
-      <Button
-        size="sm"
-        height="2.75rem"
-        variant="outline"
-        onClick={proceedToOneGovSg}
-      >
-        Login with one.gov.sg
-      </Button>
+      <Stack spacing="0.5rem">
+        {/* Exact label required by the one.gov.sg integration guide. */}
+        <Button
+          size="sm"
+          height="2.75rem"
+          variant="outline"
+          onClick={proceedToOneGovSg}
+        >
+          Login with one.gov.sg
+        </Button>
+
+        <Text
+          textStyle="caption-1"
+          color="base.content.medium"
+          textAlign="center"
+        >
+          Select this option to log in using Singpass or WOG AD.
+        </Text>
+      </Stack>
     </Stack>
   )
 }

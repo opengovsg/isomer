@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite"
+import { expect, within } from "storybook/test"
 import { authSingpassHandlers } from "tests/msw/handlers/auth/singpass"
 import { meHandlers } from "tests/msw/handlers/me"
 import SingpassCallbackPage from "~/pages/sign-in/singpass/callback"
@@ -33,4 +34,14 @@ const meta: Meta<typeof SingpassCallbackPage> = {
 export default meta
 type Story = StoryObj<typeof SingpassCallbackPage>
 
-export const NewUser: Story = {}
+export const NewUser: Story = {
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+
+    await expect(
+      await canvas.findByText(
+        "From now on, you’ll verify with Singpass whenever you log in with an email OTP.",
+      ),
+    ).toBeInTheDocument()
+  },
+}

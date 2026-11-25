@@ -40,6 +40,11 @@ export const Default: Story = {
     await expect(
       await canvas.findByRole("button", { name: "Login with one.gov.sg" }),
     ).toBeInTheDocument()
+    await expect(
+      canvas.getByText(
+        "Select this option to log in using Singpass or WOG AD.",
+      ),
+    ).toBeInTheDocument()
   },
 }
 
