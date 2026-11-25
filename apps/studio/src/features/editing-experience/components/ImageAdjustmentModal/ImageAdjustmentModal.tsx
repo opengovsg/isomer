@@ -17,6 +17,7 @@ import {
   ModalHeader,
   ModalOverlay,
   Spacer,
+  Spinner,
   Text,
   Tooltip,
   VStack,
@@ -25,12 +26,13 @@ import {
 import {
   Button,
   Infobox,
+  Link,
   ModalCloseButton,
   useToast,
 } from "@opengovsg/design-system-react"
 import { isFocalApplicable } from "@opengovsg/isomer-components"
 import { useEffect, useMemo, useRef, useState } from "react"
-import { BiInfoCircle, BiReset } from "react-icons/bi"
+import { BiInfoCircle, BiRevision } from "react-icons/bi"
 import { captureSiteEvent } from "~/lib/posthogCapture"
 
 import type { AdjustmentConfig } from "./AdjustmentConfig"
@@ -46,6 +48,7 @@ import {
 import { computeLowResWarning } from "./resolutionWarning"
 import {
   resolveOriginalKey,
+  SaveImageAdjustmentError,
   useSaveImageAdjustment,
 } from "./useSaveImageAdjustment"
 
@@ -148,6 +151,9 @@ interface ImageAdjustmentModalProps {
   }) => void
 }
 
+const IMAGE_EDITING_GUIDE_URL =
+  "https://support.isomer.gov.sg/en/articles/18541169-preparing-images#h_9c22f08f46"
+
 export const ImageAdjustmentModal = ({
   isOpen,
   onClose,
@@ -204,14 +210,34 @@ export const ImageAdjustmentModal = ({
   // Track each tool once per modal session, not once per drag.
   const trackedToolsRef = useRef(new Set<string>())
   const previewRailRef = useRef<HTMLDivElement>(null)
-  const trackToolUsed = (tool: "crop" | "focal") => {
+  const track = (event: string, properties?: Record<string, unknown>) =>
+    captureSiteEvent(event, siteId, {
+      resource_id: resourceId,
+      component_type: config.componentType,
+      ...properties,
+    })
+  const trackToolUsed = (tool: "crop" | "focal" | "fit" | "reset") => {
     if (trackedToolsRef.current.has(tool)) return
     trackedToolsRef.current.add(tool)
-    captureSiteEvent("image_adjustment_tool_used", siteId, {
-      resource_id: resourceId,
-      tool,
-    })
+    track("image_adjustment_tool_used", { tool })
   }
+  // The modal stays mounted while closed, so end each opening with a clean set.
+  const takeToolsUsed = () => {
+    const tools = [...trackedToolsRef.current]
+    trackedToolsRef.current.clear()
+    return tools
+  }
+  const trackClosed = (outcome: "discarded" | "unchanged") =>
+    track("image_adjustment_modal_closed", {
+      outcome,
+      tools_used: takeToolsUsed(),
+    })
+  const trackSaved = (isBaked: boolean) =>
+    track("image_adjustment_saved", {
+      is_baked: isBaked,
+      tools_used: takeToolsUsed(),
+      had_low_res_warning: !!lowResWarning,
+    })
   // The hook bounds the real save to SAVE_TIMEOUT_MS itself, so isPending is
   // the single source of truth -- no separate local flag needed.
   const isSaving = saveMutation.isPending
@@ -254,6 +280,7 @@ export const ImageAdjustmentModal = ({
     if (isModified) {
       onDiscardChangesModalOpen()
     } else {
+      trackClosed("unchanged")
       onClose()
     }
   }
@@ -266,6 +293,7 @@ export const ImageAdjustmentModal = ({
 
   const handleSave = async () => {
     if (!isModified) {
+      trackClosed("unchanged")
       onClose()
       return
     }
@@ -276,6 +304,7 @@ export const ImageAdjustmentModal = ({
         imageAdjustment: value,
         imageFit: hasImageFitControl ? imageFit : undefined,
       })
+      trackSaved(false)
       onClose()
       return
     }
@@ -298,15 +327,18 @@ export const ImageAdjustmentModal = ({
         draft,
         originalFile,
       })
-      captureSiteEvent("image_adjustment_saved", siteId, {
-        resource_id: resourceId,
-      })
       onSave({
         ...result,
         imageFit: hasImageFitControl ? imageFit : undefined,
       })
       onClose()
+      // Last, so a throw above can't record both saved and save_failed.
+      trackSaved(true)
     } catch (err) {
+      // Never send err.message: it can contain file keys.
+      track("image_adjustment_save_failed", {
+        reason: err instanceof SaveImageAdjustmentError ? err.reason : "other",
+      })
       toast({
         title: "Failed to save image adjustment",
         description: err instanceof Error ? err.message : "An error occurred",
@@ -325,6 +357,7 @@ export const ImageAdjustmentModal = ({
   const isResetDisabled = isLockedRatioAspectPending
 
   const handleReset = () => {
+    trackToolUsed("reset")
     setDraft((d) => ({
       ...ensureAdjustment(d),
       crop: defaultCropRect(lockedRatio, imageAspect ?? 1),
@@ -338,6 +371,7 @@ export const ImageAdjustmentModal = ({
         isOpen={isDiscardChangesModalOpen}
         onClose={onDiscardChangesModalClose}
         onDiscard={() => {
+          trackClosed("discarded")
           handleDiscard()
           onClose()
         }}
@@ -362,21 +396,28 @@ export const ImageAdjustmentModal = ({
           h={{ md: "min(50rem, 90vh)" }}
           minH={{ md: "min(50rem, 90vh)" }}
         >
-          <ModalHeader pr="4.5rem">
+          {/* 6xl has no design-system padding, so match the body's 2rem edge. */}
+          <ModalHeader pl="2rem" pr="4.5rem">
             <Text as="span" textStyle="h4" fontWeight="semibold">
               Edit image
             </Text>
           </ModalHeader>
+          {/* Outside ModalHeader, which names the dialog for screen readers. */}
+          <Text textStyle="body-2" px="2rem">
+            Learn how to crop your image and set its focal point in our{" "}
+            <Link href={IMAGE_EDITING_GUIDE_URL} isExternal>
+              guide
+            </Link>
+          </Text>
 
-          <ModalCloseButton
-            size="lg"
-            onClick={handleClose}
-            isDisabled={isSaving}
-          />
+          {/* No onClick: Chakra's close button already calls Modal's onClose. */}
+          <ModalCloseButton size="lg" isDisabled={isSaving} />
 
           {/* On desktop each column scrolls. On mobile the body scrolls. */}
           <ModalBody
-            p="2rem"
+            px="2rem"
+            pt="1rem"
+            pb="2rem"
             flex="1"
             minH={0}
             overflow={{ base: "auto", md: "hidden" }}
@@ -450,7 +491,10 @@ export const ImageAdjustmentModal = ({
                         variant={imageFit === "cover" ? "solid" : "outline"}
                         aria-pressed={imageFit === "cover"}
                         isDisabled={isSaving}
-                        onClick={() => setImageFit("cover")}
+                        onClick={() => {
+                          trackToolUsed("fit")
+                          setImageFit("cover")
+                        }}
                       >
                         Fill
                       </Button>
@@ -458,7 +502,10 @@ export const ImageAdjustmentModal = ({
                         variant={imageFit === "contain" ? "solid" : "outline"}
                         aria-pressed={imageFit === "contain"}
                         isDisabled={isSaving}
-                        onClick={() => setImageFit("contain")}
+                        onClick={() => {
+                          trackToolUsed("fit")
+                          setImageFit("contain")
+                        }}
                       >
                         Fit
                       </Button>
@@ -567,12 +614,16 @@ export const ImageAdjustmentModal = ({
             </Flex>
           </ModalBody>
 
-          <ModalFooter borderTopWidth="1px" borderColor="base.divider.medium">
+          <ModalFooter
+            px="2rem"
+            borderTopWidth="1px"
+            borderColor="base.divider.medium"
+          >
             <HStack spacing="1rem" w="100%">
               <Button
-                variant="outline"
-                colorScheme="critical"
-                leftIcon={<BiReset />}
+                variant="clear"
+                colorScheme="neutral"
+                leftIcon={<BiRevision />}
                 onClick={handleReset}
                 isDisabled={isResetDisabled || isSaving}
               >
@@ -587,7 +638,14 @@ export const ImageAdjustmentModal = ({
               >
                 Cancel
               </Button>
-              <Button variant="solid" onClick={handleSave} isLoading={isSaving}>
+              {/* aria-disabled, not isLoading: a truly disabled button drops
+                  focus, and the focus trap then moves it into the preview. */}
+              <Button
+                variant="solid"
+                onClick={handleSave}
+                aria-disabled={isSaving}
+                leftIcon={isSaving ? <Spinner size="sm" /> : undefined}
+              >
                 Save changes
               </Button>
             </HStack>

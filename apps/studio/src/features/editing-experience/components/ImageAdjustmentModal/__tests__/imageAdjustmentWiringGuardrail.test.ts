@@ -77,6 +77,20 @@ const FOCAL_WIRING_CONFIGS: {
     ],
   },
   {
+    // HeroCarousel.tsx resolves each slide's adjustment to an object-position
+    // on the server. CarouselSlides.tsx is client code and only gets the string.
+    resolve: {
+      block: { type: "hero", variant: "carousel" },
+      fieldName: "backgroundUrl",
+    },
+    componentPaths: [
+      "packages/components/src/templates/next/components/complex/Hero/HeroCarousel/HeroCarousel.tsx",
+    ],
+    storyPaths: [
+      "packages/components/src/templates/next/components/complex/Hero/HeroCarousel.adjustment.stories.tsx",
+    ],
+  },
+  {
     resolve: { block: { type: "infopic" }, fieldName: "imageSrc" },
     componentPaths: [
       "packages/components/src/templates/next/components/complex/Infopic/components/BlockInfopic.tsx",

@@ -467,6 +467,10 @@ describe("resolveAdjustmentConfig", () => {
           block: { type: "hero", variant: "largeImage" },
           fieldName: "backgroundUrl",
         }, // square -> 2:1
+        {
+          block: { type: "hero", variant: "carousel" },
+          fieldName: "backgroundUrl",
+        }, // full-bleed band, 16:10 -> 5:2
         { block: { type: "infopic" }, fieldName: "imageSrc" }, // 5:4 -> 2:1 -> 3:1
         {
           block: { type: "infopic", variant: "full" },
@@ -477,6 +481,69 @@ describe("resolveAdjustmentConfig", () => {
         const config = resolveAdjustmentConfig({ block, fieldName })
         expect(config?.focalEnabled).toBe(true)
       }
+    })
+
+    it("hero carousel guidance, warning size and preview shapes follow the carousel layout", () => {
+      const resolve = (carousel?: { layout: string }) =>
+        resolveAdjustmentConfig({
+          block: { type: "hero", variant: "carousel", carousel },
+          fieldName: "backgroundUrl",
+        })
+      const heroBlock = resolveAdjustmentConfig({
+        block: { type: "hero", variant: "block" },
+        fieldName: "backgroundUrl",
+      })
+      const heroGradient = resolveAdjustmentConfig({
+        block: { type: "hero", variant: "gradient" },
+        fieldName: "backgroundUrl",
+      })
+      for (const [carousel, expected] of [
+        [{ layout: "block" }, heroBlock],
+        [{ layout: "gradient" }, heroGradient],
+        [undefined, heroGradient],
+      ] as const) {
+        const config = resolve(carousel)
+        expect(config?.preUploadCopy).toBe(expected?.preUploadCopy)
+        expect(config?.preUploadLinks).toEqual(expected?.preUploadLinks)
+        expect(config?.maxRenderedWidthPx).toBe(expected?.maxRenderedWidthPx)
+        expect(config?.maxRenderedHeightPx).toBe(expected?.maxRenderedHeightPx)
+        expect(config?.previewStates).toEqual(expected?.previewStates)
+      }
+    })
+
+    it("hero carousel preview shows the edited slide and keeps its siblings", () => {
+      const first = { title: "First", backgroundUrl: "/first.png" }
+      const second = { title: "Second", backgroundUrl: "/second.png" }
+      const third = { title: "Third", backgroundUrl: "/third.png" }
+      const block = {
+        type: "hero",
+        variant: "carousel",
+        carousel: { layout: "gradient" },
+        slides: [first, second, third],
+      }
+      const config = resolveAdjustmentConfig({
+        block,
+        fieldName: "backgroundUrl",
+      })
+
+      expect(config?.skipRealComponentPreview).toBeFalsy()
+      const built = buildPreview(config, {
+        block,
+        fieldHost: second,
+        itemIndex: 1,
+      })
+      expect(built?.component).toMatchObject({
+        slides: [
+          first,
+          { title: "Second", backgroundUrl: "/edited.png" },
+          third,
+        ],
+      })
+      // The carousel announces its current slide. Without the wrapper it
+      // would start on slide 1.
+      expect(previewHtml(built, "homepage")).toContain("Slide 2 of 3: Second")
+      // No index means the framed-image fallback.
+      expect(buildPreview(config, { block, fieldHost: second })).toBeUndefined()
     })
 
     it("fixed-crop (baked-once, same shape every breakpoint) components have focal disabled", () => {

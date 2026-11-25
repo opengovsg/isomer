@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest"
 
-import { HeroCarouselSlideSchema } from "../../interfaces/complex/Hero"
 import { IsomerComplexComponentsMap } from "../components"
 
 // Keep in sync with Studio's INTENTIONALLY_NOT_ADJUSTABLE in
@@ -61,8 +60,6 @@ describe("imageAdjustment schema guardrail", () => {
 
     it(`"${componentType}" pairs every image field with its ImageAdjustment sibling`, () => {
       for (const { properties, imageFieldName } of findImageFields(schema)) {
-        // Pending: wired in a later PR of this stack.
-        if (properties === HeroCarouselSlideSchema.properties) continue
         expect(properties).toHaveProperty(`${imageFieldName}ImageAdjustment`)
       }
     })

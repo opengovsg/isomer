@@ -3,6 +3,7 @@ import {
   HERO_CAROUSEL_LAYOUT,
   HERO_CAROUSEL_SLIDE_LIMITS,
 } from "~/interfaces/complex/Hero"
+import { getFocalObjectPosition } from "~/utils/getFocalObjectPosition"
 import { getHeadingTag } from "~/utils/getHeadingTag"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 
@@ -25,6 +26,9 @@ export const HeroCarousel = ({
 
   const slideViews = slides.map((slide) => ({
     backgroundUrl: slide.backgroundUrl,
+    // Resolve the imageAdjustment here, on the server. The slides are client
+    // props, so the full object would put `originalKey` in the page HTML.
+    objectPosition: getFocalObjectPosition(slide.backgroundUrlImageAdjustment),
     title: slide.title,
     subtitle: slide.subtitle,
     primaryLabel: slide.buttonLabel,

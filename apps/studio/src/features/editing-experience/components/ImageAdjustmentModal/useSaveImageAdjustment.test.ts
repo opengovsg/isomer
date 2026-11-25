@@ -89,6 +89,12 @@ describe("useSaveImageAdjustment pure helpers", () => {
       ).toThrow(/can't be adjusted/)
     })
 
+    it("tags its failure with a reason code for analytics", () => {
+      expect(() => chooseBakeMime("image/gif", "1/uuid/anim.gif")).toThrow(
+        expect.objectContaining({ reason: "unsupported_format" }),
+      )
+    })
+
     it("throws for a generic type with a non-image extension", () => {
       expect(() =>
         chooseBakeMime("binary/octet-stream", "1/uuid/doc.pdf"),

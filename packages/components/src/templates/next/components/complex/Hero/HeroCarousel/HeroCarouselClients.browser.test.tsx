@@ -5,9 +5,12 @@ import { userEvent } from "vitest/browser"
 import {
   HERO_BLOCK_IMAGE_POSITION,
   HERO_CAROUSEL_CONTENT_ALIGNMENT,
+  HERO_CAROUSEL_LAYOUT,
 } from "~/interfaces/complex/Hero"
+import { generateSiteConfig } from "~/stories/helpers"
 
 import { HERO_CAROUSEL_ROTATION_INTERVAL_MS } from "./constants"
+import { HeroCarousel } from "./HeroCarousel"
 import { HeroCarouselBlockClient } from "./HeroCarouselBlockClient"
 import { HeroCarouselGradientClient } from "./HeroCarouselGradientClient"
 import { HeroCarouselPreviewProvider } from "./HeroCarouselPreviewContext"
@@ -948,4 +951,56 @@ describe("hero carousel rotation", () => {
       "Alpha",
     )
   })
+})
+
+describe("hero carousel image adjustment", () => {
+  const adjustmentWithFocal = (x: number, y: number) => ({
+    crop: { x: 0, y: 0, width: 1, height: 1 },
+    focal: { x, y },
+    originalKey: "1/00000000-0000-0000-0000-000000000000/original.jpg",
+  })
+
+  it.each([
+    {
+      layout: HERO_CAROUSEL_LAYOUT.block,
+      imagePosition: HERO_BLOCK_IMAGE_POSITION.right,
+    },
+    {
+      layout: HERO_CAROUSEL_LAYOUT.gradient,
+      contentAlignment: HERO_CAROUSEL_CONTENT_ALIGNMENT.left,
+    },
+  ])(
+    "gives each slide its own focal point in the $layout layout",
+    (carousel) => {
+      // Arrange + Act
+      const view = render(
+        <HeroCarousel
+          type="hero"
+          variant="carousel"
+          headingLevel={1}
+          site={generateSiteConfig()}
+          carousel={carousel}
+          slides={[
+            {
+              backgroundUrl: "/a.png",
+              backgroundUrlImageAdjustment: adjustmentWithFocal(0, 0),
+              title: "Alpha",
+            },
+            { backgroundUrl: "/b.png", title: "Beta" },
+            {
+              backgroundUrl: "/c.png",
+              backgroundUrlImageAdjustment: adjustmentWithFocal(1, 1),
+              title: "Gamma",
+            },
+          ]}
+        />,
+      )
+
+      // Assert
+      const positions = Array.from(view.container.querySelectorAll("img")).map(
+        (img) => img.style.objectPosition,
+      )
+      expect(positions).toEqual(["0% 0%", "", "100% 100%"])
+    },
+  )
 })

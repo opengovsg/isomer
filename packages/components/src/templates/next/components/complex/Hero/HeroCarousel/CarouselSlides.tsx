@@ -6,6 +6,8 @@ import { LinkButton } from "../../../internal/LinkButton/LinkButton"
 
 export interface HeroCarouselSlideView {
   backgroundUrl: string
+  // The slide's focal point as a CSS object-position, resolved on the server.
+  objectPosition?: string
   title: string
   subtitle?: string
   primaryLabel?: string
@@ -75,6 +77,7 @@ export const CarouselSlideImages = ({
           alt=""
           width="100%"
           className="absolute inset-0 h-full w-full object-cover object-center"
+          objectPosition={slide.objectPosition}
           assetsBaseUrl={assetsBaseUrl}
           lazyLoading={index === 0 ? false : true}
         />

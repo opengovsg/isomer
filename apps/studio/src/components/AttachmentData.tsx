@@ -85,7 +85,6 @@ export const AttachmentData = ({
             }
           : undefined
       }
-      _hover={onEdit ? { background: "brand.primary.200" } : undefined}
     >
       <HStack spacing="0.75rem" minW={0} alignItems="stretch">
         {imageSrc && (
@@ -116,7 +115,6 @@ export const AttachmentData = ({
                     }
                   },
                   cursor: "pointer",
-                  _hover: { opacity: 0.8 },
                   _focusVisible: {
                     outline: "2px solid",
                     outlineColor: "utility.focus-default",
