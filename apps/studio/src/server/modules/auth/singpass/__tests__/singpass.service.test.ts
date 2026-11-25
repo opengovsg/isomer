@@ -1,7 +1,7 @@
 import type { AddressInfo } from "node:net"
 import { decodeJwt } from "jose"
 import http from "node:http"
-import { Issuer } from "openid-client"
+import { errors, Issuer } from "openid-client"
 import {
   afterAll,
   afterEach,
@@ -13,7 +13,7 @@ import {
   vi,
 } from "vitest"
 
-import { getAuthorizationUrl } from "../singpass.service"
+import { getAuthorizationUrl, login } from "../singpass.service"
 
 const REQUEST_URI = "urn:ietf:params:oauth:request_uri:integration-test"
 
@@ -81,4 +81,39 @@ describe("getAuthorizationUrl", () => {
       REQUEST_URI,
     )
   })
+})
+
+it("logs only safe fields when Singpass token validation fails", async () => {
+  const issuer = new Issuer({ issuer: "http://localhost" })
+  const error = new errors.RPError({
+    message: "Token validation failed",
+    jwt: "synthetic-id-token",
+  })
+  const logger = { info: vi.fn(), error: vi.fn(), warn: vi.fn() }
+  const discover = vi.spyOn(Issuer, "discover").mockResolvedValue(issuer)
+  vi.spyOn(issuer.Client.prototype, "callback").mockRejectedValue(error)
+
+  try {
+    const result = login({
+      code: "code",
+      codeVerifier: "verifier",
+      nonce: "nonce",
+      state: "state",
+      useFapi: false,
+      logger,
+    })
+
+    await expect(result).rejects.toBe(error)
+    expect(logger.error).toHaveBeenCalledExactlyOnceWith(
+      {
+        singpassFlow: "legacy",
+        singpassStage: "token_exchange",
+        singpassOutcome: "failure",
+        singpassError: "oidc_client_error",
+      },
+      "Singpass legacy: token exchange failed",
+    )
+  } finally {
+    discover.mockRestore()
+  }
 })

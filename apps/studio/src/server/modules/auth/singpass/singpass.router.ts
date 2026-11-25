@@ -21,6 +21,7 @@ import {
   singpassErrorCode,
   singpassLoginLogFields,
   singpassLogMessage,
+  singpassTokenExchangeErrorCategory,
 } from "./singpass.observability"
 import { getAuthorizationUrl, login } from "./singpass.service"
 
@@ -242,8 +243,7 @@ export const singpassRouter = router({
               outcome: "failure",
               reason: "token_exchange",
             }),
-            singpassError: singpassErrorCode(error),
-            err: error,
+            singpassError: singpassTokenExchangeErrorCategory(error),
           },
           singpassLogMessage({
             useFapi: useFapi === true,
@@ -253,7 +253,6 @@ export const singpassRouter = router({
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: "Singpass login failed",
-          cause: error,
         })
       }
 
