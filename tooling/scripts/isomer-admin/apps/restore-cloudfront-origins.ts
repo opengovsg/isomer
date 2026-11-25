@@ -262,11 +262,7 @@ const restoreSiteOnce = async (
   if (plan.action === "none") {
     return result("unchanged", currentPath)
   }
-  // A newer origin whose build is gone is broken, not mid-publish
-  if (
-    plan.action === "skip" &&
-    (await buildExists(aws, site.bucket, currentPath))
-  ) {
+  if (plan.action === "skip") {
     return result("skipped", plan.reason)
   }
 
