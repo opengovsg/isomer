@@ -17,6 +17,7 @@ export const ImageClient = forwardRef<
       assetsBaseUrl,
       lazyLoading = true, // next/image defaults to lazy loading true too
       onLoad,
+      objectPosition,
     },
     ref,
   ) => {
@@ -33,6 +34,7 @@ export const ImageClient = forwardRef<
         width={width}
         height="auto"
         className={className}
+        style={objectPosition ? { objectPosition } : undefined}
         onLoad={onLoad}
         onError={({ currentTarget }) => {
           currentTarget.onerror = null

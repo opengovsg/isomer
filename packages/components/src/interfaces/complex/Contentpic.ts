@@ -3,7 +3,7 @@ import type { IsomerSiteProps } from "~/types"
 import { Type } from "@sinclair/typebox"
 
 import { ContentpicProseSchema } from "../native/Prose"
-import { AltTextSchema, ImageSrcSchema } from "./Image"
+import { AltTextSchema, ImageSrcSchema, imageAdjustmentSchema } from "./Image"
 
 export const ContentpicSchema = Type.Object(
   {
@@ -11,6 +11,7 @@ export const ContentpicSchema = Type.Object(
     imageSrc: ImageSrcSchema,
     imageAlt: AltTextSchema,
     content: ContentpicProseSchema,
+    imageAdjustment: Type.Optional(imageAdjustmentSchema),
   },
   {
     title: "Image with text",
