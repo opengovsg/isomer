@@ -17,7 +17,11 @@ const SENSITIVE_KEYS = new Set([
 // Page and SVG bodies can run to megabytes; their size is enough to debug with
 const SIZE_ONLY_KEYS = new Set(["content", "blocks"])
 
-const redactValue = (key: string, value: unknown): unknown => {
+const redactValue = (
+  key: string,
+  value: unknown,
+  seen: WeakSet<object>,
+): unknown => {
   const normalisedKey = key.toLowerCase()
 
   if (SENSITIVE_KEYS.has(normalisedKey)) {
@@ -25,31 +29,38 @@ const redactValue = (key: string, value: unknown): unknown => {
   }
 
   if (SIZE_ONLY_KEYS.has(normalisedKey) && value != null) {
-    const length =
-      typeof value === "string" ? value.length : JSON.stringify(value).length
-    return `[OMITTED: ${length} chars]`
+    if (typeof value === "string") return `[OMITTED: ${value.length} chars]`
+    if (Array.isArray(value)) return `[OMITTED: ${value.length} items]`
+    return "[OMITTED]"
   }
 
-  return redactLogInput(value)
+  return redactLogInput(value, seen)
 }
 
-export const redactLogInput = (input: unknown): unknown => {
-  if (input === null || input === undefined) {
+const REPEATED = "[REPEATED]"
+
+// A repeated object (shared reference or cycle) is logged once, then as a
+// marker, so neither this walk nor pino's JSON.stringify expands it again.
+export const redactLogInput = (
+  input: unknown,
+  seen = new WeakSet<object>(),
+): unknown => {
+  if (input === null || typeof input !== "object") {
     return input
   }
+  if (seen.has(input)) {
+    return REPEATED
+  }
+  seen.add(input)
 
   if (Array.isArray(input)) {
-    return input.map(redactLogInput)
+    return input.map((value) => redactLogInput(value, seen))
   }
 
-  if (typeof input === "object") {
-    return Object.fromEntries(
-      Object.entries(input).map(([key, value]) => [
-        key,
-        redactValue(key, value),
-      ]),
-    )
-  }
-
-  return input
+  return Object.fromEntries(
+    Object.entries(input).map(([key, value]) => [
+      key,
+      redactValue(key, value, seen),
+    ]),
+  )
 }

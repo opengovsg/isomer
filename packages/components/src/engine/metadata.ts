@@ -1,8 +1,13 @@
 import type { DistributedOmit } from "type-fest"
 import type { IsomerPageSchemaType } from "~/types/schema"
-import type { IsomerSiteConfigProps } from "~/types/site"
+import type {
+  IsomerGeneratedSiteProps,
+  IsomerSiteConfigProps,
+} from "~/types/site"
 import type { IsomerSitemap } from "~/types/sitemap"
+import { HERO_STYLE } from "~/interfaces/complex/Hero"
 import { ISOMER_PAGE_LAYOUTS } from "~/types/constants"
+import { getBreadcrumbFromSiteMap } from "~/utils/getBreadcrumbFromSiteMap"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 import { getSitemapAsArray } from "~/utils/getSitemapAsArray"
 
@@ -29,7 +34,8 @@ type PageSchemaWithoutSite = DistributedOmit<IsomerPageSchemaType, "site">
 type GetPageJsonLdProps = PageSchemaWithoutSite & {
   // NOTE: `siteName` is the homepage's meta-description fallback, so it is
   // needed wherever that description is derived.
-  site: Pick<IsomerSiteConfigProps, "siteName" | "url">
+  site: Pick<IsomerSiteConfigProps, "siteName" | "url"> &
+    Pick<IsomerGeneratedSiteProps, "siteMap">
 }
 
 const getNonEmptyString = (value?: string) => {
@@ -60,6 +66,10 @@ const getAbsoluteHttpUrl = (
     return undefined
   }
 }
+
+// NOTE: Sites are exported with `trailingSlash: true`, so this is the URL
+// actually served
+const withTrailingSlash = (url: string) => (url.endsWith("/") ? url : `${url}/`)
 
 const getSiteUrl = (configuredUrl: string) => {
   const siteUrl = getNonEmptyString(configuredUrl) ?? DEFAULT_SITE_URL
@@ -179,11 +189,15 @@ const getMetaDescription = (props: GetPageJsonLdProps) => {
       return props.page.contentPageHeader.summary
     case ISOMER_PAGE_LAYOUTS.Collection:
       return props.page.subtitle
-    case ISOMER_PAGE_LAYOUTS.Homepage:
-      return (
-        props.content.find((item) => item.type === "hero")?.subtitle ||
-        props.site.siteName
-      )
+    case ISOMER_PAGE_LAYOUTS.Homepage: {
+      const hero = props.content.find((item) => item.type === "hero")
+      const heroSubtitle =
+        hero?.variant === HERO_STYLE.carousel.key
+          ? hero.slides[0]?.subtitle
+          : hero?.subtitle
+
+      return heroSubtitle || props.site.siteName
+    }
     case ISOMER_PAGE_LAYOUTS.Link:
     case ISOMER_PAGE_LAYOUTS.Search:
     case ISOMER_PAGE_LAYOUTS.NotFound:
@@ -205,11 +219,17 @@ const getMetaImage = (props: IsomerPageSchemaType) => {
     case ISOMER_PAGE_LAYOUTS.Index:
     case ISOMER_PAGE_LAYOUTS.Collection:
       return props.meta?.image
-    case ISOMER_PAGE_LAYOUTS.Homepage:
-      return (
-        props.meta?.image ||
-        props.content.find((item) => item.type === "hero")?.backgroundUrl
-      )
+    case ISOMER_PAGE_LAYOUTS.Homepage: {
+      const hero = props.content.find((item) => item.type === "hero")
+      const heroBackgroundUrl =
+        hero?.variant === HERO_STYLE.carousel.key
+          ? hero.slides[0]?.backgroundUrl
+          : hero && "backgroundUrl" in hero
+            ? hero.backgroundUrl
+            : undefined
+
+      return props.meta?.image || heroBackgroundUrl
+    }
     case ISOMER_PAGE_LAYOUTS.Link:
     case ISOMER_PAGE_LAYOUTS.Search:
     case ISOMER_PAGE_LAYOUTS.NotFound:
@@ -248,7 +268,13 @@ const getCanonicalUrl = (props: GetPageJsonLdProps) => {
 export const getPageJsonLd = (props: GetPageJsonLdProps) => {
   const canonicalUrl = getCanonicalUrl(props)
   const siteUrl = getSiteUrl(props.site.url)
-  const pageUrl = new URL(canonicalUrl, siteUrl).toString()
+  const pageUrl = withTrailingSlash(new URL(canonicalUrl, siteUrl).toString())
+  // NOTE: Emitted on every page, including layouts that do not display a
+  // breadcrumb, so search engines always get the page hierarchy
+  const breadcrumb = getBreadcrumbFromSiteMap(
+    props.site.siteMap,
+    props.page.permalink.split("/").slice(1),
+  )
 
   return {
     "@context": "https://schema.org",
@@ -264,6 +290,15 @@ export const getPageJsonLd = (props: GetPageJsonLdProps) => {
     },
     publisher: {
       "@id": new URL("#organization", siteUrl).toString(),
+    },
+    breadcrumb: {
+      "@type": "BreadcrumbList",
+      itemListElement: breadcrumb.links.map(({ title, url }, index) => ({
+        "@type": "ListItem",
+        position: index + 1,
+        name: title,
+        item: withTrailingSlash(new URL(url, siteUrl).toString()),
+      })),
     },
   }
 }
@@ -364,9 +399,7 @@ export const getSitemapXml = (sitemap: IsomerSitemap, siteUrl?: string) => {
   return getSitemapAsArray(sitemap)
     .filter((item) => item.layout !== ISOMER_PAGE_LAYOUTS.Link)
     .map(({ permalink, lastModified }) => {
-      const permalinkWithTrailingSlash = permalink.endsWith("/")
-        ? permalink
-        : `${permalink}/`
+      const permalinkWithTrailingSlash = withTrailingSlash(permalink)
 
       return {
         url:

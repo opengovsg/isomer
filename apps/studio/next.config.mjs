@@ -192,6 +192,8 @@ const config = {
           {
             protocol: /** @type {"https"} */ ("https"),
             hostname: env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME,
+            // Empty = default port only; omitted lets /_next/image probe any port.
+            port: "",
           },
         ]
       : [],

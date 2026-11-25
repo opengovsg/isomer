@@ -8,6 +8,10 @@ export const ENABLE_EMAILS_FOR_REGULAR_PUBLISHES_FEATURE_KEY =
   "enable-emails-for-regular-publishes"
 export const BANNER_FEATURE_KEY = "isomer-next-banner"
 export const IS_SINGPASS_ENABLED_FEATURE_KEY = "is-singpass-enabled"
+// FAPI 2.0 Singpass login. OFF by default so a GrowthBook outage keeps the
+// legacy flow. Target pilot users with the `email` attribute in GrowthBook;
+// do not allowlist emails in application code.
+export const IS_SINGPASS_FAPI2_ENABLED_FEATURE_KEY = "is-singpass-fapi2-enabled"
 export const EGAZETTE_INFO_FEATURE_KEY = "egazette-info"
 // Gates the audit-log export surface (settings sidenav entry + page). OFF by
 // default so the feature can ship dark and be enabled per-environment.
@@ -19,6 +23,14 @@ export const ENABLE_SEARCHSG_GAZETTE_INGESTION =
 // Targets users by `email` attribute to grant access to the central banner
 export const IS_CENTRAL_NOTIFICATION_BANNER_ENABLED_FEATURE_KEY =
   "is-central-notification-banner-enabled"
+
+// Gates the image-adjustment editor entry point (the "Adjust image" button and
+// modal in JsonFormsImageControl). A boolean On/Off flag, OFF by default; roll
+// out by user via GrowthBook targeting rules (e.g. `email`), same pattern as
+// is-audit-log-enabled / is-singpass-enabled.
+export const IS_IMAGE_ADJUSTMENT_ENABLED_FEATURE_KEY =
+  "is-image-adjustment-enabled"
+export const IS_IMAGE_ADJUSTMENT_ENABLED_FEATURE_KEY_FALLBACK_VALUE = false
 
 export const IS_SINGPASS_ENABLED_FEATURE_KEY_FALLBACK_VALUE = true
 
@@ -34,6 +46,12 @@ export const getIsSingpassEnabled = ({
     IS_SINGPASS_ENABLED_FEATURE_KEY,
     IS_SINGPASS_ENABLED_FEATURE_KEY_FALLBACK_VALUE,
   )
+}
+
+export const getIsSingpassFapi2Enabled = ({
+  gb,
+}: GetIsSingpassEnabledProps): boolean => {
+  return gb.getFeatureValue(IS_SINGPASS_FAPI2_ENABLED_FEATURE_KEY, false)
 }
 
 // Whether singpass-off side effects (e.g. login alert email) should activate.

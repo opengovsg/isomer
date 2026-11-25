@@ -118,8 +118,9 @@ export const bulkSendAccountDeactivationWarningEmails = async ({
         siteNames,
         inHowManyDays,
       })
-    } catch {
+    } catch (error) {
       logger.error(
+        { error },
         `Error sending account deactivation warning email for user ${userEmail}`,
       )
     }
@@ -314,8 +315,9 @@ export const bulkDeactivateInactiveUsers = async (): Promise<void> => {
         recipientEmail: user.email,
         sitesAndAdmins,
       })
-    } catch {
+    } catch (error) {
       logger.error(
+        { error },
         `Error sending account deactivation email for user ${user.email}`,
       )
     }

@@ -2,7 +2,7 @@ import { Box } from "@chakra-ui/react"
 import { type Meta, type StoryObj } from "@storybook/nextjs-vite"
 import { FilterTypeChoiceModal } from "~/features/editing-experience/components/form-builder/components/FilterTypeChoiceModal"
 
-import { withChromaticModes } from "@isomer/storybook-config"
+import { withArgosModes } from "@isomer/storybook-config"
 
 const meta: Meta<typeof FilterTypeChoiceModal> = {
   title: "Pages/Edit Page/FilterTypeChoiceModal",
@@ -16,9 +16,9 @@ const meta: Meta<typeof FilterTypeChoiceModal> = {
   ],
   parameters: {
     layout: "fullscreen",
-    chromatic: {
+    argos: {
       delay: 200,
-      ...withChromaticModes(["gsib", "desktop"]),
+      ...withArgosModes(["gsib", "desktop"]),
     },
   },
   args: {

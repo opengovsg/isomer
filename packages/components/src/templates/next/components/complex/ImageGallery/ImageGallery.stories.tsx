@@ -4,7 +4,7 @@ import { omit } from "lodash-es"
 import { expect, userEvent, waitFor, within } from "storybook/test"
 import { generateSiteConfig } from "~/stories/helpers"
 
-import { withChromaticModes } from "@isomer/storybook-config"
+import { withArgosModes } from "@isomer/storybook-config"
 
 import { ImageGallery } from "./ImageGallery"
 
@@ -76,7 +76,7 @@ const IMAGES = [
 export const Default: Story = {
   parameters: {
     layout: "fullscreen",
-    chromatic: withChromaticModes(["mobile", "tablet", "desktop"]),
+    argos: withArgosModes(["mobile", "tablet", "desktop"]),
   },
   args: {
     images: IMAGES,
@@ -86,7 +86,7 @@ export const Default: Story = {
 export const NoCaption: Story = {
   parameters: {
     layout: "fullscreen",
-    chromatic: withChromaticModes(["mobile", "tablet", "desktop"]),
+    argos: withArgosModes(["mobile", "tablet", "desktop"]),
   },
   args: {
     images: IMAGES.map((image, index) => {
@@ -102,7 +102,7 @@ export const NoCaption: Story = {
 export const OneImage: Story = {
   parameters: {
     layout: "fullscreen",
-    chromatic: withChromaticModes(["tablet", "desktop"]),
+    argos: withArgosModes(["tablet", "desktop"]),
   },
   args: {
     images: IMAGES.slice(0, 1),
@@ -112,7 +112,7 @@ export const OneImage: Story = {
 export const TwoImages: Story = {
   parameters: {
     layout: "fullscreen",
-    chromatic: withChromaticModes(["tablet", "desktop"]),
+    argos: withArgosModes(["tablet", "desktop"]),
   },
   args: {
     images: IMAGES.slice(0, 2),
@@ -122,7 +122,7 @@ export const TwoImages: Story = {
 export const ThreeImages: Story = {
   parameters: {
     layout: "fullscreen",
-    chromatic: withChromaticModes(["desktop"]),
+    argos: withArgosModes(["desktop"]),
   },
   args: {
     images: IMAGES.slice(0, 3),
@@ -132,7 +132,7 @@ export const ThreeImages: Story = {
 export const FourImages: Story = {
   parameters: {
     layout: "fullscreen",
-    chromatic: withChromaticModes(["desktop"]),
+    argos: withArgosModes(["desktop"]),
   },
   args: {
     images: IMAGES.slice(0, 4),
@@ -142,7 +142,7 @@ export const FourImages: Story = {
 export const NavigateByClickingPreview: Story = {
   parameters: {
     layout: "fullscreen",
-    chromatic: withChromaticModes(["desktop"]),
+    argos: withArgosModes(["desktop"]),
   },
   args: {
     images: IMAGES.slice(0, 3),
@@ -169,7 +169,7 @@ export const NavigateByClickingPreview: Story = {
 export const NavigateByRightArrow: Story = {
   parameters: {
     layout: "fullscreen",
-    chromatic: withChromaticModes(["desktop"]),
+    argos: withArgosModes(["desktop"]),
   },
   args: {
     images: IMAGES.slice(0, 3),
@@ -194,7 +194,7 @@ export const NavigateByRightArrow: Story = {
 export const NavigateByLeftArrow: Story = {
   parameters: {
     layout: "fullscreen",
-    chromatic: withChromaticModes(["desktop"]),
+    argos: withArgosModes(["desktop"]),
   },
   args: {
     images: IMAGES.slice(0, 3),
@@ -221,7 +221,7 @@ export const NavigateByLeftArrow: Story = {
 export const NavigateByRightArrowKeyboard: Story = {
   parameters: {
     layout: "fullscreen",
-    chromatic: withChromaticModes(["desktop"]),
+    argos: withArgosModes(["desktop"]),
   },
   args: {
     images: IMAGES.slice(0, 3),
@@ -247,7 +247,7 @@ export const NavigateByRightArrowKeyboard: Story = {
 export const NavigateByLeftArrowKeyboard: Story = {
   parameters: {
     layout: "fullscreen",
-    chromatic: withChromaticModes(["desktop"]),
+    argos: withArgosModes(["desktop"]),
   },
   args: {
     images: IMAGES.slice(0, 3),

@@ -48,7 +48,8 @@ export const generateTagsQueryString = (
   return entries.join("&")
 }
 
-const getFilenameFromKey = (key: string): string => key.split("/").pop() ?? ""
+export const getFilenameFromKey = (key: string): string =>
+  key.split("/").pop() ?? ""
 
 const getExtensionFromFilename = (filename: string): string =>
   filename.includes(".") ? filename.substring(filename.lastIndexOf(".")) : ""
@@ -153,6 +154,76 @@ export const getPresignedPutUrl = async ({
     Tagging: tags && generateTagsQueryString(tags),
   })
   return { presignedPutUrl, contentType, contentDisposition }
+}
+
+const BARE_UUID_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
+// Marks a key as server-generated (vs. uploader-provided). Referenced by
+// downstream bake logic that needs to recognise/strip it, so it's a shared
+// constant rather than a literal repeated at each call site.
+export const BAKED_FILE_PREFIX = "baked-"
+
+/**
+ * Derive a human-friendly base name for a bake leaf from the TRUE original key,
+ * so the baked file keeps the uploader's filename (e.g. "beach-photo") instead
+ * of an opaque "baked-<uuid>". Derived from the original (not a previous bake),
+ * so re-edits stay "beach-photo-<newuuid>" without accumulating. Legacy
+ * originals that are themselves baked keys — or have no recoverable name — fall
+ * back to "image".
+ */
+export const deriveBakeBaseName = (originalKey: string): string => {
+  const leaf = originalKey.split("/").pop() ?? ""
+  let base = leaf.replace(/\.[^.]+$/, "") // drop extension
+  if (base.startsWith(BAKED_FILE_PREFIX))
+    base = base.slice(BAKED_FILE_PREFIX.length) // legacy prefix
+  if (BARE_UUID_PATTERN.test(base)) return "image" // legacy baked key, no real name
+  // filenamify strips path separators and unsafe chars, so originalKey can't
+  // inject a path segment into the key.
+  return filenamify(base, { replacement: "-" }) || "image"
+}
+
+/**
+ * Derive a bake key from the source image's current location, keeping the
+ * uploader's filename in the leaf. Folder comes from the current `src`; the
+ * display base name comes from `originalKey` (the true original).
+ */
+export const deriveBakeKey = ({
+  src,
+  originalKey,
+  ext,
+  siteId,
+}: {
+  src: string
+  originalKey: string
+  ext: string
+  siteId: number
+}): string => {
+  // Bridge relative path to full URL
+  const fullUrl = `https://${env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME}${src}`
+  const key = parseAssetUrlToKey(fullUrl)
+
+  if (!key) {
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message: "Invalid image source URL",
+    })
+  }
+
+  // Extract folder: drop the leaf (last segment) from `${siteId}/${uuid}/${file}`
+  const folder = key.substring(0, key.lastIndexOf("/"))
+
+  // Defense-in-depth: assert folder belongs to this site
+  if (!doAllFileKeysBelongToSite({ fileKeys: [folder], siteId })) {
+    throw new TRPCError({
+      code: "FORBIDDEN",
+      message: "Image source does not belong to this site",
+    })
+  }
+
+  // Mint a server leaf that preserves the uploader's filename, with a fresh
+  // UUID for uniqueness (and to stay distinct from the original leaf).
+  return `${folder}/${deriveBakeBaseName(originalKey)}-${randomUUID()}.${ext}`
 }
 
 // Best-effort delete: the derived format may not exist for every asset
@@ -294,7 +365,6 @@ export const sanitizeSvg = (content: string): string => {
   // inside DOMParser.parseFromString — DOMPurify only sees the resulting DOM
   // and cannot intercept it. No sanitization library operates at this layer.
   if (/<!ENTITY/i.test(content)) {
-    logger.error("SVG rejected: contains disallowed XML entities")
     throw new TRPCError({
       code: "BAD_REQUEST",
       message: "SVG contains disallowed XML entities",
@@ -306,7 +376,6 @@ export const sanitizeSvg = (content: string): string => {
   const doc = new DOMParser().parseFromString(content, "image/svg+xml")
 
   if (doc.getElementsByTagName("parsererror").length > 0) {
-    logger.error("SVG rejected: failed to parse as valid XML")
     throw new TRPCError({
       code: "BAD_REQUEST",
       message: "SVG failed to parse as valid XML",
@@ -318,7 +387,7 @@ export const sanitizeSvg = (content: string): string => {
     root.localName !== "svg" ||
     root.namespaceURI !== "http://www.w3.org/2000/svg"
   ) {
-    logger.error(
+    logger.warn(
       { localName: root.localName, namespaceURI: root.namespaceURI },
       "SVG rejected: root element is not a valid SVG element",
     )

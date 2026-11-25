@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite"
 import type { IndexPageSchemaType } from "~/types"
 import { generateSiteConfig } from "~/stories/helpers"
 
-import { withChromaticModes } from "@isomer/storybook-config"
+import { withArgosModes } from "@isomer/storybook-config"
 
 import { IndexPageLayout } from "./IndexPage"
 
@@ -144,7 +144,7 @@ const meta: Meta<typeof IndexPageLayout> = {
   tags: ["!autodocs"],
   parameters: {
     layout: "fullscreen",
-    chromatic: withChromaticModes(["mobile", "tablet", "desktop"]),
+    argos: withArgosModes(["mobile", "tablet", "desktop"]),
     themes: {
       themeOverride: "Isomer Next",
     },

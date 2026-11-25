@@ -1,15 +1,16 @@
 import type { FlexProps } from "@chakra-ui/react"
 import type { IsomerSiteThemeProps } from "@opengovsg/isomer-components"
-import type { PropsWithChildren } from "react"
+import type { PropsWithChildren, ReactNode } from "react"
 import type { IframeCallbackFnProps } from "~/types/dom"
 import { Flex, Portal } from "@chakra-ui/react"
-import { useMemo, useState } from "react"
-import { useSiteThemeCssVars } from "~/features/preview/hooks/useSiteThemeCssVars"
+import { useEffect, useMemo, useState } from "react"
 import { convertThemeToCss } from "~/features/settings/utils"
+import { useSiteThemeCssVars } from "~/hooks/useSiteThemeCssVars"
 
 import type { ViewportOptions } from "./IframeToolbar"
 import { IframeToolbar } from "./IframeToolbar"
 import { PreviewIframe } from "./PreviewIframe"
+import { useViewport } from "./ViewportProvider"
 
 const PortalIfFullscreen = ({
   viewport,
@@ -27,6 +28,7 @@ interface ViewportContainerProps {
   callback?: (props: IframeCallbackFnProps) => void
   theme?: IsomerSiteThemeProps
   header?: React.ReactNode
+  banner?: ReactNode
 }
 export const ViewportContainer = ({
   children,
@@ -34,13 +36,33 @@ export const ViewportContainer = ({
   callback,
   theme,
   header,
+  banner,
 }: PropsWithChildren<ViewportContainerProps>) => {
   const themeCssVars = useSiteThemeCssVars({ siteId })
   const mergedTheme = theme
     ? { ...themeCssVars, ...convertThemeToCss(theme) }
     : themeCssVars
 
-  const [viewport, setViewport] = useState<ViewportOptions>("responsive")
+  const { viewport, setViewport } = useViewport()
+
+  // Measure the preview area's content width so the toolbar's "Fit to screen"
+  // label can report which device bucket the responsive pane is simulating —
+  // in responsive mode the iframe fills 100% of this box.
+  // State (not a ref) so the observer re-attaches when fullscreen remounts the element.
+  const [previewAreaEl, setPreviewAreaEl] = useState<HTMLDivElement | null>(
+    null,
+  )
+  const [previewAreaWidth, setPreviewAreaWidth] = useState(0)
+  useEffect(() => {
+    const el = previewAreaEl
+    if (!el) return
+    const observer = new ResizeObserver((entries) => {
+      const w = entries[0]?.contentRect.width
+      if (w) setPreviewAreaWidth(w)
+    })
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [previewAreaEl])
 
   const containerProps: Partial<FlexProps> = useMemo(() => {
     if (viewport === "fullscreen") {
@@ -76,8 +98,14 @@ export const ViewportContainer = ({
         {...containerProps}
       >
         {!!header && viewport !== "fullscreen" && header}
-        <IframeToolbar viewport={viewport} setViewport={setViewport} />
+        <IframeToolbar
+          viewport={viewport}
+          setViewport={setViewport}
+          responsiveWidthPx={previewAreaWidth}
+        />
+        {banner}
         <Flex
+          ref={setPreviewAreaEl}
           px="2rem"
           pb="2rem"
           pt="1rem"

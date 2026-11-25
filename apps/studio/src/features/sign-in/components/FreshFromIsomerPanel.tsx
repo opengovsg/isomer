@@ -14,24 +14,42 @@ interface Spotlight {
   title: string
   description: string
   learnMoreHref: string
+  // Link text. Feature spotlights use the default "See how it works"; set this
+  // only when the link goes somewhere else ("See all the winners").
+  learnMoreLabel?: string
 }
 
 // Hardcoded login spotlight. Replace these entries (up to 3) when the edition changes.
 const SPOTLIGHTS: Spotlight[] = [
   {
-    id: "unpublishing",
-    tabLabel: "Unpublishing",
+    id: "dsa-2026",
+    tabLabel: "DSA 2026",
     media: {
       type: "video",
-      src: "/assets/fresh-from-isomer/unpublishing.mp4",
+      src: "/assets/fresh-from-isomer/dsa-2026.mp4",
     },
-    aspectRatio: 1280 / 868,
+    aspectRatio: 1920 / 1080,
     badge: "New",
-    title: "Unpublish pages",
+    title: "🎉 Isomer winners at the Digital Services Awards 2026",
     description:
-      "Take a page off your live site without deleting it. You can publish it again at any time.",
+      "Congratulations to the 15 Isomer sites recognised at the GovTech Digital Services Awards 2026 for accessibility, usability and discoverability.",
+    learnMoreHref: "https://www.digitalservicesawards.gov.sg/winners/2026/",
+    learnMoreLabel: "See all the winners",
+  },
+  {
+    id: "table-editing",
+    tabLabel: "Table editing",
+    media: {
+      type: "video",
+      src: "/assets/fresh-from-isomer/table-editing.mp4",
+    },
+    aspectRatio: 1920 / 1080,
+    badge: "New",
+    title: "Tables just got easier to work with",
+    description:
+      "Pick a size, merge cells, add colours, resize or move columns and edit full screen.",
     learnMoreHref:
-      "https://support.isomer.gov.sg/en/articles/17125273-unpublishing",
+      "https://support.isomer.gov.sg/en/articles/10425930-text-block#h_6da533f62d",
   },
   {
     id: "page-history",
@@ -56,7 +74,7 @@ export const FreshFromIsomerPanel = (): JSX.Element | null => {
   const [isBuffering, setIsBuffering] = useState(true)
   const videoRef = useRef<HTMLVideoElement>(null)
   const mediaFrameRef = useRef<HTMLDivElement>(null)
-  const underlineRef = useRef<HTMLDivElement>(null)
+  const underlineRef = useRef<HTMLDivElement | null>(null)
   const pausedForHoverRef = useRef(false)
   const isMediaHovered = useHover(mediaFrameRef)
   const active = SPOTLIGHTS[activeIndex]
@@ -121,7 +139,7 @@ export const FreshFromIsomerPanel = (): JSX.Element | null => {
   }
 
   return (
-    <Stack spacing="1.25rem" w="100%" maxW="36rem">
+    <Stack spacing="1.25rem" w="100%" maxW="36rem" data-visual-test="blackout">
       <Flex align="center" justify="space-between" gap="1rem">
         <Flex align="center" gap="0.75rem" minW={0}>
           <Text as="h2" textStyle="h5" color="base.content.strong">
@@ -133,7 +151,7 @@ export const FreshFromIsomerPanel = (): JSX.Element | null => {
             borderRadius="full"
             flexShrink={0}
           >
-            Oct 2026 edition
+            Dec 2026 edition
           </Badge>
         </Flex>
 
@@ -152,10 +170,7 @@ export const FreshFromIsomerPanel = (): JSX.Element | null => {
       <Flex role="tablist" aria-label="Fresh from Isomer" gap="1.5rem">
         {SPOTLIGHTS.map((item, index) => {
           const isActive = index === activeIndex
-          const showLoadingBar =
-            isActive && item.media.type === "video" && isBuffering && isPlaying
-          const showProgressBar =
-            isActive && item.media.type === "video" && !showLoadingBar
+          const showProgressBar = isActive && item.media.type === "video"
 
           return (
             <Box
@@ -178,30 +193,12 @@ export const FreshFromIsomerPanel = (): JSX.Element | null => {
               _focusVisible={{ boxShadow: "outline", outline: "none" }}
             >
               {item.tabLabel}
-              {showLoadingBar && (
-                <Box
-                  aria-hidden
-                  position="absolute"
-                  left="0"
-                  bottom="0"
-                  h="2px"
-                  w="100%"
-                  bg="interaction.main.default"
-                  transformOrigin="left"
-                  sx={{
-                    animation:
-                      "freshFromIsomerLoading 1.2s ease-in-out infinite",
-                    "@keyframes freshFromIsomerLoading": {
-                      "0%": { transform: "scaleX(0.2)" },
-                      "50%": { transform: "scaleX(1)" },
-                      "100%": { transform: "scaleX(0.2)" },
-                    },
-                  }}
-                />
-              )}
               {showProgressBar && (
                 <Box
-                  ref={underlineRef}
+                  ref={(node: HTMLDivElement | null) => {
+                    // Ignore null: unmount of a later tab runs after mount of an earlier one and would clear the shared ref.
+                    if (node) underlineRef.current = node
+                  }}
                   aria-hidden
                   position="absolute"
                   left="0"
@@ -328,7 +325,7 @@ export const FreshFromIsomerPanel = (): JSX.Element | null => {
           variant="inline"
           w="fit-content"
         >
-          Learn more
+          {active.learnMoreLabel ?? "See how it works"}
         </Link>
       </Stack>
     </Stack>

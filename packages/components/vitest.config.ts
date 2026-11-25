@@ -1,3 +1,5 @@
+import { argosVitestPlugin } from "@argos-ci/storybook/vitest-plugin"
+import { storybookTest } from "@storybook/addon-vitest/vitest-plugin"
 import react from "@vitejs/plugin-react"
 import { playwright } from "@vitest/browser-playwright"
 import { fileURLToPath } from "url"
@@ -12,7 +14,18 @@ const alias = {
 // instead of a simulated DOM. Pattern is relative to `dir: "src"`.
 const BROWSER_TEST_PATTERN = "**/*.browser.test.{ts,tsx}"
 
+// Not VITEST_STORYBOOK alone: addon-a11y only fails on violations when that is
+// unset, but Storybook's UI runner still sets it.
+const isStorybookRun = !!(
+  process.env.STORYBOOK_TESTS || process.env.VITEST_STORYBOOK
+)
+
 export default defineConfig({
+  resolve: {
+    // usehooks-ts calls React. The browser tests load a second copy unless
+    // Vite is told to share this one, and those hooks then throw.
+    dedupe: ["react", "react-dom"],
+  },
   plugins: [react()],
   test: {
     coverage: {
@@ -26,39 +39,83 @@ export default defineConfig({
         "**/*.d.ts",
       ],
     },
-    projects: [
-      {
-        extends: true,
-        test: {
-          name: "node",
-          dir: "src",
-          globals: true,
-          exclude: [
-            ...configDefaults.exclude,
-            "**/playwright/**",
-            "tests/load/**",
-            BROWSER_TEST_PATTERN,
-          ],
-          alias,
-        },
-      },
-      {
-        extends: true,
-        test: {
-          name: "browser",
-          dir: "src",
-          globals: true,
-          include: [BROWSER_TEST_PATTERN],
-          alias,
-          setupFiles: ["src/__tests__/browserSetup.ts"],
-          browser: {
-            enabled: true,
-            provider: playwright(),
-            instances: [{ browser: "chromium" }],
-            headless: !!process.env.CI,
+    // Storybook runs separately (STORYBOOK_TESTS=true) so unit runs never load
+    // the Argos plugin, which uploads screenshots on CI.
+    projects: isStorybookRun
+      ? [
+          {
+            extends: true,
+            plugins: [
+              storybookTest({
+                configDir: fileURLToPath(
+                  new URL(".storybook", import.meta.url),
+                ),
+              }),
+              argosVitestPlugin({
+                uploadToArgos:
+                  !!process.env.CI && process.env.ARGOS_UPLOAD !== "false",
+                // Argos grows the iframe to the in-flow content height, but our
+                // viewports have no px height so it otherwise stays at the 150px
+                // iframe default. Fixed overlays (drawers, modals) add no in-flow
+                // height and get clipped, so give the body a viewport's worth.
+                // 720 matches the fallback height in viewport-size.mjs.
+                argosCSS: "body:has([role='dialog']) { min-height: 720px; }",
+              }),
+            ],
+            optimizeDeps: {
+              // Scan every story up front. Dependencies discovered mid-run make
+              // Vite re-optimize and reload, which fails in-flight story imports.
+              entries: ["src/**/*.stories.{ts,tsx}", ".storybook/preview.tsx"],
+            },
+            test: {
+              name: "storybook",
+              alias,
+              browser: {
+                enabled: true,
+                provider: playwright({
+                  launchOptions: {
+                    args: ["--disable-lcd-text", "--font-render-hinting=none"],
+                  },
+                }),
+                headless: true,
+                instances: [{ browser: "chromium" as const }],
+              },
+            },
           },
-        },
-      },
-    ],
+        ]
+      : [
+          {
+            extends: true,
+            test: {
+              name: "node",
+              dir: "src",
+              globals: true,
+              exclude: [
+                ...configDefaults.exclude,
+                "**/playwright/**",
+                "tests/load/**",
+                BROWSER_TEST_PATTERN,
+              ],
+              alias,
+            },
+          },
+          {
+            extends: true,
+            test: {
+              name: "browser",
+              dir: "src",
+              globals: true,
+              include: [BROWSER_TEST_PATTERN],
+              alias,
+              setupFiles: ["src/__tests__/browserSetup.ts"],
+              browser: {
+                enabled: true,
+                provider: playwright(),
+                instances: [{ browser: "chromium" }],
+                headless: !!process.env.CI,
+              },
+            },
+          },
+        ],
   },
 })

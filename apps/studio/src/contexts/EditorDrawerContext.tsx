@@ -103,8 +103,13 @@ export function EditorDrawerProvider({
   )
 }
 
+// Returns null outside a provider. JsonFormsImageControl also mounts in the
+// navbar, footer and logo settings forms, which have none.
+export const useOptionalEditorDrawerContext = () =>
+  useContext(EditorDrawerContext)
+
 export const useEditorDrawerContext = () => {
-  const editorDrawerContext = useContext(EditorDrawerContext)
+  const editorDrawerContext = useOptionalEditorDrawerContext()
 
   if (!editorDrawerContext) {
     throw new Error(

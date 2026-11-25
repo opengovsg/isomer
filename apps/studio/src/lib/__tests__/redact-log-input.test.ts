@@ -80,4 +80,55 @@ describe("redactLogInput", () => {
     expect(nullResult).toBeNull()
     expect(undefinedResult).toBeUndefined()
   })
+
+  it("omits content and blocks without serializing their values", () => {
+    const content = {
+      toJSON: () => {
+        throw new Error("Unexpected serialization")
+      },
+    }
+
+    expect(
+      redactLogInput({
+        content: "draft",
+        nested: { content },
+        blocks: [{ type: "prose", content }],
+        phone: "555-0100",
+        code: "authorization-code",
+      }),
+    ).toEqual({
+      content: "[OMITTED: 5 chars]",
+      nested: { content: "[OMITTED]" },
+      blocks: "[OMITTED: 1 items]",
+      phone: "[REDACTED]",
+      code: "[REDACTED]",
+    })
+  })
+
+  it("logs a repeated object once, so output stays linear", () => {
+    // Arrange: 30 levels, each referencing the level below twice (2^30 paths)
+    let node: unknown = { token: "secret" }
+    for (let i = 0; i < 30; i++) node = [node, node]
+
+    // Act
+    const start = performance.now()
+    const logged = JSON.stringify(redactLogInput(node))
+
+    // Assert
+    expect(performance.now() - start).toBeLessThan(100)
+    expect(logged.length).toBeLessThan(1_000)
+    expect(logged).toContain("[REPEATED]")
+  })
+
+  it("terminates on a cycle", () => {
+    // Arrange
+    const input: Record<string, unknown> = { password: "p" }
+    input.self = input
+
+    // Act
+    const result = redactLogInput(input)
+
+    // Assert
+    expect(result).toEqual({ password: "[REDACTED]", self: "[REPEATED]" })
+  })
 })

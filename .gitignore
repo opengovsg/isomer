@@ -6,6 +6,7 @@ node_modules/
 
 # testing
 coverage
+.vitest/
 
 # next.js
 .next/
@@ -69,3 +70,12 @@ apps/studio/public/assets/css/preview-tw.css
 
 # JSON generated when publishing from the local Studio to the local template
 apps/template/.local-publish*/
+
+# Argos screenshots
+screenshots/
+
+# Local agent scratch workspace
+.scratch/
+
+# Vitest failure-screenshot attachments
+.vitest/

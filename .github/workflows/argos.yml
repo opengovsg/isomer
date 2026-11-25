@@ -1,0 +1,333 @@
+name: "Argos"
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+
+  push:
+    branches:
+      - main
+
+jobs:
+  optimize_ci:
+    runs-on: ubuntu-latest
+    outputs:
+      skip: ${{ steps.check_skip.outputs.skip }}
+    steps:
+      - name: Optimize CI
+        id: check_skip
+        uses: withgraphite/graphite-ci-action@402a89bc8aa6db18ae1f9c61953d001d5f9d828f
+        with:
+          graphite_token: ${{ secrets.GRAPHITE_CI_OPTIMIZER_TOKEN }}
+
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      components: ${{ steps.filter.outputs.components }}
+      studio: ${{ steps.filter.outputs.studio }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d
+        id: filter
+        with:
+          filters: |
+            components:
+              - 'packages/components/**'
+            studio:
+              - 'apps/studio/**'
+              - 'packages/components/src/interfaces/**'
+              - 'packages/components/src/types/**'
+
+  # Each job always runs so Argos gets a build (or an explicit skip) for every
+  # commit; otherwise a required Argos check hangs on PRs that don't touch the
+  # project. On PRs only stories affected by the diff are captured and uploaded
+  # (see tooling/storybook/scope.mjs); main always uploads the full baseline.
+  # One Argos project, one build name per suite ("components", "studio"). Both
+  # Storybooks are built whenever either changes and deployed together as one
+  # site (/components/ and /studio/) by the `deploy` job.
+  # Components stories are split across shards that upload to one Argos build
+  # in parallel mode; `finalize-components` closes it once every shard is done.
+  components:
+    name: components (${{ matrix.shard }}/${{ matrix.total_shards }})
+    needs: [changes, optimize_ci]
+    if: ${{ !endsWith(github.actor , 'bot') && !endsWith(github.actor, '[bot]') && needs.optimize_ci.outputs.skip == 'false' && needs.changes.outputs.components == 'true' }}
+    runs-on: ubuntu-latest
+    environment: staging
+    strategy:
+      fail-fast: false # so the other shards still upload when one fails
+      matrix:
+        shard: [1, 2]
+        total_shards: [2]
+    env:
+      ARGOS_TOKEN: ${{ secrets.ARGOS_TOKEN }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0 # Required to find the merge base and the Argos baseline
+      - name: Setup
+        uses: ./.github/actions/setup
+        with:
+          job-index: ${{ matrix.shard }}
+      - name: Verify Storybook scope selection
+        if: ${{ matrix.shard == 1 }}
+        run: node --test tooling/storybook/scope.test.mjs tooling/storybook/test-viewport.test.mjs
+      - name: Select Storybook scope
+        id: scope
+        run: node tooling/storybook/scope.mjs
+        env:
+          STORYBOOK_PROJECT: packages/components
+          ARGOS_BASE_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || '' }}
+      - name: Install Playwright Chromium
+        run: pnpm --filter @opengovsg/isomer-components exec playwright install --with-deps chromium
+      - name: Test Storybook
+        working-directory: packages/components
+        # Affected-story runs can leave a shard with no files.
+        run: |
+          rm -rf screenshots
+          mkdir screenshots
+          if [[ -n "$AFFECTED_BASE" ]]; then
+            pnpm test-storybook --maxWorkers=75% --shard="$SHARD" --changed="$AFFECTED_BASE" --passWithNoTests
+          else
+            pnpm test-storybook --maxWorkers=75% --shard="$SHARD"
+          fi
+        env:
+          ARGOS_UPLOAD: "false"
+          AFFECTED_BASE: ${{ steps.scope.outputs.base }}
+          SHARD: ${{ matrix.shard }}/${{ matrix.total_shards }}
+      - name: Upload Storybook snapshots
+        working-directory: packages/components
+        # --parallel-total -1 keeps the build open until `argos finalize`, so a
+        # shard with nothing to upload doesn't leave Argos waiting for it.
+        run: |
+          if find screenshots -type f -name '*.png' -print -quit | grep -q .; then
+            # The CLI does not read ARGOS_SUBSET; --subset is what keeps
+            # uncaptured baseline screenshots from being reported as removed.
+            args=(--build-name components --parallel --parallel-nonce "$ARGOS_PARALLEL_NONCE" --parallel-total -1 --parallel-index "${{ matrix.shard }}")
+            if [[ "$ARGOS_SUBSET" == "true" ]]; then
+              args+=(--subset)
+            fi
+            pnpm exec argos upload ./screenshots "${args[@]}"
+          elif [[ "$ARGOS_SUBSET" != "true" ]]; then
+            echo "::error::Shard ${{ matrix.shard }} of the full Storybook suite produced no screenshots"
+            exit 1
+          fi
+        env:
+          ARGOS_SUBSET: ${{ steps.scope.outputs.base != '' }}
+          # The CLI requires an explicit nonce; it must match `finalize`.
+          ARGOS_PARALLEL_NONCE: ${{ github.run_id }}-${{ github.run_attempt }}-components
+
+  # Built apart from the test jobs so the deploy doesn't wait on, or rerun,
+  # either Storybook suite.
+  storybook-components:
+    needs: [changes, optimize_ci]
+    if: ${{ !endsWith(github.actor , 'bot') && !endsWith(github.actor, '[bot]') && needs.optimize_ci.outputs.skip == 'false' && (needs.changes.outputs.studio == 'true' || needs.changes.outputs.components == 'true') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Setup
+        uses: ./.github/actions/setup
+      - name: Build Storybook
+        run: pnpm --filter @opengovsg/isomer-components run build-storybook
+      - name: Upload Storybook build
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: storybook-components
+          path: packages/components/storybook-static
+          retention-days: 1
+
+  # Studio stories are split across shards that upload to one Argos build in
+  # parallel mode; `finalize-studio` closes it once every shard is done.
+  studio:
+    name: studio (${{ matrix.shard }}/${{ matrix.total_shards }})
+    needs: [changes, optimize_ci]
+    if: ${{ !endsWith(github.actor , 'bot') && !endsWith(github.actor, '[bot]') && needs.optimize_ci.outputs.skip == 'false' && needs.changes.outputs.studio == 'true' }}
+    runs-on: ubuntu-latest
+    environment: staging
+    strategy:
+      fail-fast: false # so the other shards still upload when one fails
+      matrix:
+        shard: [1, 2, 3, 4]
+        total_shards: [4]
+    env:
+      # @storybook/nextjs-vite loads next.config.mjs, which validates env vars.
+      SKIP_ENV_VALIDATION: "true"
+      ARGOS_TOKEN: ${{ secrets.ARGOS_TOKEN }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0 # Required to find the merge base and the Argos baseline
+      - name: Setup
+        uses: ./.github/actions/setup
+        with:
+          job-index: ${{ matrix.shard }}
+      - name: Verify Storybook scope selection
+        if: ${{ matrix.shard == 1 }}
+        run: node --test tooling/storybook/scope.test.mjs tooling/storybook/test-viewport.test.mjs
+      - name: Select Storybook scope
+        id: scope
+        run: node tooling/storybook/scope.mjs
+        env:
+          STORYBOOK_PROJECT: apps/studio
+          ARGOS_BASE_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || '' }}
+      - name: Build Isomer Components
+        run: pnpm --filter @opengovsg/isomer-components run build
+      # Storybook bundles @prisma/client; Prisma's browser shim requires a generated client (not created by pnpm install).
+      - name: Generate Prisma client
+        run: pnpm --filter @isomer/db generate
+      - name: Build preview-tw CSS
+        run: pnpm --filter isomer-studio run build:preview-tw
+      - name: Install Playwright Chromium
+        run: pnpm --filter isomer-studio exec playwright install --with-deps chromium
+      - name: Test Storybook
+        working-directory: apps/studio
+        # Studio stories each register the MSW service worker on one origin.
+        # Many parallel pages starve story loading, so stay below one per vCPU.
+        # Affected-story runs can leave a shard with no files.
+        run: |
+          rm -rf screenshots
+          mkdir screenshots
+          if [[ -n "$AFFECTED_BASE" ]]; then
+            pnpm test-storybook --maxWorkers=75% --shard="$SHARD" --changed="$AFFECTED_BASE" --passWithNoTests
+          else
+            pnpm test-storybook --maxWorkers=75% --shard="$SHARD"
+          fi
+        env:
+          ARGOS_UPLOAD: "false"
+          AFFECTED_BASE: ${{ steps.scope.outputs.base }}
+          SHARD: ${{ matrix.shard }}/${{ matrix.total_shards }}
+      - name: Upload Storybook snapshots
+        working-directory: apps/studio
+        # --parallel-total -1 keeps the build open until `argos finalize`, so a
+        # shard with nothing to upload doesn't leave Argos waiting for it.
+        run: |
+          if find screenshots -type f -name '*.png' -print -quit | grep -q .; then
+            # The CLI does not read ARGOS_SUBSET; --subset is what keeps
+            # uncaptured baseline screenshots from being reported as removed.
+            args=(--build-name studio --parallel --parallel-nonce "$ARGOS_PARALLEL_NONCE" --parallel-total -1 --parallel-index "${{ matrix.shard }}")
+            if [[ "$ARGOS_SUBSET" == "true" ]]; then
+              args+=(--subset)
+            fi
+            pnpm exec argos upload ./screenshots "${args[@]}"
+          elif [[ "$ARGOS_SUBSET" != "true" ]]; then
+            echo "::error::Shard ${{ matrix.shard }} of the full Storybook suite produced no screenshots"
+            exit 1
+          fi
+        env:
+          ARGOS_SUBSET: ${{ steps.scope.outputs.base != '' }}
+          # The CLI requires an explicit nonce; it must match `finalize`.
+          ARGOS_PARALLEL_NONCE: ${{ github.run_id }}-${{ github.run_attempt }}-studio
+
+  # Built apart from the shards so a components-only change still deploys the
+  # studio Storybook without running the studio suite.
+  storybook-studio:
+    needs: [changes, optimize_ci]
+    if: ${{ !endsWith(github.actor , 'bot') && !endsWith(github.actor, '[bot]') && needs.optimize_ci.outputs.skip == 'false' && (needs.changes.outputs.studio == 'true' || needs.changes.outputs.components == 'true') }}
+    runs-on: ubuntu-latest
+    env:
+      SKIP_ENV_VALIDATION: "true"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Setup
+        uses: ./.github/actions/setup
+      - name: Build Isomer Components
+        run: pnpm --filter @opengovsg/isomer-components run build
+      # Storybook bundles @prisma/client; Prisma's browser shim requires a generated client (not created by pnpm install).
+      - name: Generate Prisma client
+        run: pnpm --filter @isomer/db generate
+      - name: Build preview-tw CSS
+        run: pnpm --filter isomer-studio run build:preview-tw
+      - name: Build Storybook
+        run: pnpm --filter isomer-studio run build-storybook
+      - name: Upload Storybook build
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: storybook-studio
+          path: apps/studio/storybook-static
+          retention-days: 1
+
+  # Each suite's sharded Argos build is closed by its own job once that suite
+  # is done, whether or not it passed, so neither Argos check waits on the
+  # other suite (or stays pending when its suite is unchanged). Each suite has
+  # its own nonce because finalize closes every build sharing a nonce.
+  # --skip-if-empty: affected-story runs may capture nothing on any shard.
+  finalize-components:
+    needs: [changes, optimize_ci, components]
+    if: ${{ always() && !endsWith(github.actor , 'bot') && !endsWith(github.actor, '[bot]') && needs.optimize_ci.outputs.skip == 'false' }}
+    runs-on: ubuntu-latest
+    environment: staging
+    env:
+      ARGOS_TOKEN: ${{ secrets.ARGOS_TOKEN }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Setup
+        uses: ./.github/actions/setup
+      - name: Finalize components build
+        if: ${{ needs.changes.outputs.components == 'true' }}
+        run: pnpm --filter @opengovsg/isomer-components exec argos finalize --build-name components --skip-if-empty --parallel-nonce "${{ github.run_id }}-${{ github.run_attempt }}-components"
+      - name: Skip components build
+        if: ${{ needs.changes.outputs.components != 'true' }}
+        run: pnpm --filter @opengovsg/isomer-components exec argos skip --build-name components
+
+  finalize-studio:
+    needs: [changes, optimize_ci, studio]
+    if: ${{ always() && !endsWith(github.actor , 'bot') && !endsWith(github.actor, '[bot]') && needs.optimize_ci.outputs.skip == 'false' }}
+    runs-on: ubuntu-latest
+    environment: staging
+    env:
+      ARGOS_TOKEN: ${{ secrets.ARGOS_TOKEN }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Setup
+        uses: ./.github/actions/setup
+      - name: Finalize studio build
+        if: ${{ needs.changes.outputs.studio == 'true' }}
+        run: pnpm --filter isomer-studio exec argos finalize --build-name studio --skip-if-empty --parallel-nonce "${{ github.run_id }}-${{ github.run_attempt }}-studio"
+      - name: Skip studio build
+        if: ${{ needs.changes.outputs.studio != 'true' }}
+        run: pnpm --filter isomer-studio exec argos skip --build-name studio
+
+  # Deploys both Storybooks as one site (/components/, /studio/) once every
+  # suite passed. A suite's test shards are skipped when only the other
+  # project changed.
+  deploy:
+    needs:
+      [
+        changes,
+        optimize_ci,
+        components,
+        studio,
+        storybook-components,
+        storybook-studio,
+      ]
+    # Fork PRs have no access to secrets.
+    if: ${{ always() && !endsWith(github.actor , 'bot') && !endsWith(github.actor, '[bot]') && needs.optimize_ci.outputs.skip == 'false' && needs.storybook-components.result == 'success' && needs.storybook-studio.result == 'success' && contains(fromJSON('["success", "skipped"]'), needs.components.result) && contains(fromJSON('["success", "skipped"]'), needs.studio.result) && (needs.changes.outputs.components == 'true' || needs.changes.outputs.studio == 'true') && (github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository) }}
+    runs-on: ubuntu-latest
+    environment: staging
+    env:
+      ARGOS_TOKEN: ${{ secrets.ARGOS_TOKEN }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Setup
+        uses: ./.github/actions/setup
+      - name: Download Storybook builds
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: storybook-*
+          path: site
+      - name: Assemble site
+        run: |
+          mv site/storybook-components site/components
+          mv site/storybook-studio site/studio
+          cat > site/index.html <<'HTML'
+          <!doctype html>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1">
+          <title>Isomer Storybook</title>
+          <h1>Isomer Storybook</h1>
+          <ul>
+            <li><a href="./components/">Components</a></li>
+            <li><a href="./studio/">Studio</a></li>
+          </ul>
+          HTML
+      - name: Deploy Storybook to Argos
+        run: pnpm --filter isomer-studio exec argos deploy ../../site

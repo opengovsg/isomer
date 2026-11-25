@@ -3,7 +3,7 @@ import type { NavbarProps } from "~/interfaces"
 import { expect, userEvent, within } from "storybook/test"
 import { generateSiteConfig } from "~/stories/helpers"
 
-import { getViewportByMode, withChromaticModes } from "@isomer/storybook-config"
+import { getViewportByMode, withArgosModes } from "@isomer/storybook-config"
 
 import { Button } from "../Button"
 import { Masthead } from "../Masthead"
@@ -56,7 +56,7 @@ const meta: Meta<NavbarProps> = {
     themes: {
       themeOverride: "Isomer Next",
     },
-    chromatic: {
+    argos: {
       prefersReducedMotion: "reduce",
     },
   },
@@ -179,8 +179,8 @@ const generateNavbarArgs = (
 export const Default: Story = {
   args: generateNavbarArgs(),
   parameters: {
-    chromatic: {
-      ...withChromaticModes(["desktop", "mobile"]),
+    argos: {
+      ...withArgosModes(["desktop", "mobile"]),
     },
   },
 }
@@ -193,7 +193,7 @@ export const CallToAction: Story = {
     },
   }),
   parameters: {
-    chromatic: withChromaticModes(["desktop"]),
+    argos: withArgosModes(["desktop"]),
   },
 }
 
@@ -203,7 +203,7 @@ export const ExpandFirstItem: Story = {
     viewport: getViewportByMode("desktop"),
   },
   parameters: {
-    chromatic: withChromaticModes(["desktop"]),
+    argos: withArgosModes(["desktop"]),
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
@@ -220,7 +220,7 @@ export const ExpandNavbarItemWithLink: Story = {
     viewport: getViewportByMode("desktop"),
   },
   parameters: {
-    chromatic: withChromaticModes(["desktop"]),
+    argos: withArgosModes(["desktop"]),
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
@@ -255,7 +255,7 @@ export const Mobile: Story = {
     viewport: getViewportByMode("mobile"),
   },
   parameters: {
-    chromatic: withChromaticModes(["mobile"]),
+    argos: withArgosModes(["mobile"]),
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
@@ -271,7 +271,7 @@ export const ExpandMobile: Story = {
     viewport: getViewportByMode("mobile"),
   },
   parameters: {
-    chromatic: withChromaticModes(["mobile"]),
+    argos: withArgosModes(["mobile"]),
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
@@ -293,7 +293,7 @@ export const MobileCallToAction: Story = {
     viewport: getViewportByMode("mobile"),
   },
   parameters: {
-    chromatic: withChromaticModes(["mobile"]),
+    argos: withArgosModes(["mobile"]),
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
@@ -310,7 +310,7 @@ export const ExpandMobileWithLinkOneWord: Story = {
     viewport: getViewportByMode("mobile"),
   },
   parameters: {
-    chromatic: withChromaticModes(["mobileSmall", "mobile"]),
+    argos: withArgosModes(["mobileSmall", "mobile"]),
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
@@ -328,7 +328,7 @@ export const ExpandMobileWithLinkMultipleWords: Story = {
     viewport: getViewportByMode("mobile"),
   },
   parameters: {
-    chromatic: withChromaticModes(["mobileSmall", "mobile"]),
+    argos: withArgosModes(["mobileSmall", "mobile"]),
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
@@ -354,7 +354,7 @@ export const UtilityLinksDesktop: Story = {
     },
   }),
   parameters: {
-    chromatic: withChromaticModes(["desktop"]),
+    argos: withArgosModes(["desktop"]),
   },
 }
 
@@ -373,7 +373,7 @@ export const UtilityLinksMobile: Story = {
     viewport: getViewportByMode("mobile"),
   },
   parameters: {
-    chromatic: withChromaticModes(["mobileSmall", "mobile"]),
+    argos: withArgosModes(["mobileSmall", "mobile"]),
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
@@ -395,7 +395,7 @@ export const UtilityLinksNoLabelDesktop: Story = {
     },
   }),
   parameters: {
-    chromatic: withChromaticModes(["desktop"]),
+    argos: withArgosModes(["desktop"]),
   },
 }
 
@@ -413,7 +413,7 @@ export const UtilityLinksNoLabelMobile: Story = {
     viewport: getViewportByMode("mobile"),
   },
   parameters: {
-    chromatic: withChromaticModes(["mobileSmall", "mobile"]),
+    argos: withArgosModes(["mobileSmall", "mobile"]),
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
@@ -440,7 +440,7 @@ export const CTAAndUtilityLinksDesktop: Story = {
     },
   }),
   parameters: {
-    chromatic: withChromaticModes(["desktop"]),
+    argos: withArgosModes(["desktop"]),
   },
 }
 
@@ -463,7 +463,7 @@ export const CTAAndUtilityLinksMobile: Story = {
     viewport: getViewportByMode("mobile"),
   },
   parameters: {
-    chromatic: withChromaticModes(["mobileSmall", "mobile"]),
+    argos: withArgosModes(["mobileSmall", "mobile"]),
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
@@ -487,7 +487,7 @@ export const PinnedCTA: Story = {
     viewport: getViewportByMode("mobile"),
   },
   parameters: {
-    chromatic: withChromaticModes(["desktop", "mobile"]),
+    argos: withArgosModes(["desktop", "mobile"]),
   },
 }
 
@@ -511,7 +511,7 @@ export const PinnedCTAMobileExpanded: Story = {
     viewport: getViewportByMode("mobile"),
   },
   parameters: {
-    chromatic: withChromaticModes(["mobileSmall", "mobile"]),
+    argos: withArgosModes(["mobileSmall", "mobile"]),
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
@@ -534,7 +534,7 @@ export const PinnedCTATruncatedLabel: Story = {
     viewport: getViewportByMode("mobile"),
   },
   parameters: {
-    chromatic: withChromaticModes(["mobileSmall", "mobile"]),
+    argos: withArgosModes(["mobileSmall", "mobile"]),
   },
 }
 
@@ -548,7 +548,7 @@ const mobileRegressionBase: Story = {
     viewport: getViewportByMode("mobile"),
   },
   parameters: {
-    chromatic: withChromaticModes(["mobile"]),
+    argos: withArgosModes(["mobile"]),
   },
 }
 

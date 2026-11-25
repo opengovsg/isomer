@@ -3,6 +3,11 @@ import type { HeroProps } from "~/interfaces/complex/Hero"
 import type { HomePageSchemaType } from "~/types"
 import { http, HttpResponse } from "msw"
 import {
+  HERO_BLOCK_IMAGE_POSITION,
+  HERO_CAROUSEL_CONTENT_ALIGNMENT,
+  HERO_CAROUSEL_LAYOUT,
+} from "~/interfaces/complex/Hero"
+import {
   SEARCHSG_TEST_CLIENT_ID,
   withSearchSgSetup,
 } from "~/stories/decorators"
@@ -10,7 +15,7 @@ import { generateSiteConfig } from "~/stories/helpers"
 import { TAG_CATEGORY_DISPLAY_OPTIONS } from "~/types/constants"
 import { getSingaporeDateYYYYMMDD } from "~/utils/getSingaporeDate"
 
-import { withChromaticModes } from "@isomer/storybook-config"
+import { withArgosModes } from "@isomer/storybook-config"
 
 import { HomepageLayout } from "./Homepage"
 
@@ -22,12 +27,7 @@ const meta: Meta<typeof HomepageLayout> = {
   tags: ["!autodocs"],
   parameters: {
     layout: "fullscreen",
-    chromatic: withChromaticModes([
-      "mobileSmall",
-      "mobile",
-      "tablet",
-      "desktop",
-    ]),
+    argos: withArgosModes(["mobileSmall", "mobile", "tablet", "desktop"]),
     themes: {
       themeOverride: "Isomer Next",
     },
@@ -53,10 +53,10 @@ const meta: Meta<typeof HomepageLayout> = {
 export default meta
 type Story = StoryObj<typeof HomepageLayout>
 
-const chromaticWithoutMobileSmall = {
+const argosWithoutMobileSmall = {
   modes: {
-    // Chromatic stacks story modes with the modes inherited from meta.
-    mobileSmall: { disable: true },
+    // Argos stacks story modes with the modes inherited from meta.
+    mobileSmall: { disabled: true },
   },
 }
 
@@ -700,8 +700,8 @@ export const Dark: Story = {
 }
 
 export const HeroBlock: Story = {
-  // The full page exceeds Chromatic's capture pixel limit at 320px wide.
-  parameters: { chromatic: chromaticWithoutMobileSmall },
+  // The full page exceeds Argos's capture pixel limit at 320px wide.
+  parameters: { argos: argosWithoutMobileSmall },
   args: generateArgs({
     heroProps: {
       type: "hero",
@@ -734,8 +734,8 @@ const heroBlockCurvedHomepageProps = {
 
 export const HeroBlockLeftCurved: Story = {
   name: "Curve+Left",
-  // The full page exceeds Chromatic's capture pixel limit at 320px wide.
-  parameters: { chromatic: chromaticWithoutMobileSmall },
+  // The full page exceeds the capture pixel limit at 320px wide.
+  parameters: { argos: argosWithoutMobileSmall },
   args: generateArgs({
     heroProps: {
       ...heroBlockCurvedHomepageProps,
@@ -746,8 +746,8 @@ export const HeroBlockLeftCurved: Story = {
 
 export const HeroBlockRightCurved: Story = {
   name: "Curve+Right",
-  // The full page exceeds Chromatic's capture pixel limit at 320px wide.
-  parameters: { chromatic: chromaticWithoutMobileSmall },
+  // The full page exceeds the capture pixel limit at 320px wide.
+  parameters: { argos: argosWithoutMobileSmall },
   args: generateArgs({
     heroProps: {
       ...heroBlockCurvedHomepageProps,
@@ -757,8 +757,8 @@ export const HeroBlockRightCurved: Story = {
 }
 
 export const HeroLargeImage: Story = {
-  // The full page exceeds Chromatic's capture pixel limit at 320px wide.
-  parameters: { chromatic: chromaticWithoutMobileSmall },
+  // The full page exceeds Argos's capture pixel limit at 320px wide.
+  parameters: { argos: argosWithoutMobileSmall },
   args: generateArgs({
     heroProps: {
       type: "hero",
@@ -776,8 +776,8 @@ export const HeroLargeImage: Story = {
 }
 
 export const HeroFloating: Story = {
-  // The full page exceeds Chromatic's capture pixel limit at 320px wide.
-  parameters: { chromatic: chromaticWithoutMobileSmall },
+  // The full page exceeds Argos's capture pixel limit at 320px wide.
+  parameters: { argos: argosWithoutMobileSmall },
   args: generateArgs({
     heroProps: {
       type: "hero",
@@ -810,6 +810,144 @@ export const HeroFloatingShortText: Story = {
   }),
 }
 
+const homepageQuickLinksItems = [
+  {
+    icon: "stars" as const,
+    title: "Explore Isomer's features",
+    description:
+      "Isomer is a website builder that helps government agencies create and maintain official websites easily.",
+    buttonUrl: "/",
+  },
+  {
+    icon: "line-chart" as const,
+    title: "See how others use Isomer",
+    description:
+      "Browse websites built with Isomer across agencies and see what good government digital service looks like.",
+    buttonUrl: "/",
+  },
+  {
+    icon: "globe" as const,
+    title: "Start building your site",
+    description:
+      "Get guidance on setting up your agency site, from content planning to launch.",
+    buttonUrl: "/",
+  },
+  {
+    icon: "users" as const,
+    title: "Join the community",
+    description:
+      "Connect with other agencies using Isomer and learn from shared playbooks.",
+    buttonUrl: "/",
+  },
+]
+
+export const HeroGradientQuickLinks: Story = {
+  args: generateArgs({
+    heroProps: {
+      type: "hero",
+      variant: "gradient",
+      backgroundUrl: "/hero-banner.png",
+      title: "Set up a good government website, fast",
+      subtitle:
+        "Isomer is a website builder that helps government agencies create and maintain official websites easily.",
+      actions: {
+        layout: "quickLinks",
+        title: "Get started",
+        showIcon: true,
+        items: homepageQuickLinksItems,
+      },
+    },
+  }),
+}
+
+export const HeroGradientQuickLinksTwoItems: Story = {
+  args: generateArgs({
+    heroProps: {
+      type: "hero",
+      variant: "gradient",
+      backgroundUrl: "/hero-banner.png",
+      title: "Set up a good government website, fast",
+      subtitle:
+        "Isomer is a website builder that helps government agencies create and maintain official websites easily.",
+      actions: {
+        layout: "quickLinks",
+        title: "Get started",
+        showIcon: true,
+        items: homepageQuickLinksItems.slice(0, 2),
+      },
+    },
+  }),
+}
+
+// Minimal copy so tray width is driven by layout, not content length (see FloatingShortText).
+export const HeroGradientQuickLinksTwoItemsShortText: Story = {
+  args: generateArgs({
+    heroProps: {
+      type: "hero",
+      variant: "gradient",
+      backgroundUrl: "/hero-banner.png",
+      title: "Title",
+      subtitle: "Subtitle",
+      actions: {
+        layout: "quickLinks",
+        title: "Tray",
+        showIcon: true,
+        items: [
+          {
+            icon: "stars",
+            title: "One",
+            description: "A",
+            buttonUrl: "/",
+          },
+          {
+            icon: "line-chart",
+            title: "Two",
+            description: "B",
+            buttonUrl: "/",
+          },
+        ],
+      },
+    },
+  }),
+}
+
+export const HeroGradientQuickLinksThreeItems: Story = {
+  args: generateArgs({
+    heroProps: {
+      type: "hero",
+      variant: "gradient",
+      backgroundUrl: "/hero-banner.png",
+      title: "Set up a good government website, fast",
+      subtitle:
+        "Isomer is a website builder that helps government agencies create and maintain official websites easily.",
+      actions: {
+        layout: "quickLinks",
+        title: "Get started",
+        showIcon: true,
+        items: homepageQuickLinksItems.slice(0, 3),
+      },
+    },
+  }),
+}
+
+export const HeroGradientQuickLinksNoTitle: Story = {
+  args: generateArgs({
+    heroProps: {
+      type: "hero",
+      variant: "gradient",
+      backgroundUrl: "/hero-banner.png",
+      title: "Set up a good government website, fast",
+      subtitle:
+        "Isomer is a website builder that helps government agencies create and maintain official websites easily.",
+      actions: {
+        layout: "quickLinks",
+        showIcon: true,
+        items: homepageQuickLinksItems,
+      },
+    },
+  }),
+}
+
 export const HeroSearchbar: Story = {
   args: generateArgs({
     heroProps: {
@@ -831,6 +969,104 @@ export const HeroSearchbarWithImage: Story = {
       subtitle:
         "APEX connects agencies and the public through a single, secure hub for Singapore’s government APIs.",
       backgroundUrl: "/hero-banner.png",
+    },
+  }),
+}
+
+const heroCarouselHomepageProps = {
+  type: "hero" as const,
+  variant: "carousel" as const,
+  slides: [
+    {
+      backgroundUrl:
+        "https://images.unsplash.com/photo-1725652264563-9f8eea4e2995?q=80&w=1887&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      title: "Set up good government websites, fast",
+      subtitle:
+        "Isomer is a website builder made for government teams. Pick a template, add your content, and publish.",
+      buttonLabel: "Get started",
+      buttonUrl: "/",
+      secondaryButtonLabel: "Learn more",
+      secondaryButtonUrl: "/",
+    },
+    {
+      backgroundUrl:
+        "https://images.unsplash.com/photo-1560114928-40f1f1eb26a0?q=80&w=3870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      title: "Built for the public sector",
+      subtitle:
+        "Meet accessibility, security, and branding requirements out of the box.",
+    },
+    {
+      backgroundUrl:
+        "https://images.unsplash.com/photo-1594318142972-1e2ea7487a3e?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1740",
+      title: "Templates that already meet the bar",
+      subtitle:
+        "Start from a layout that handles accessibility, security, and branding.",
+      buttonLabel: "Browse all website templates",
+      buttonUrl: "/",
+      secondaryButtonLabel: "Contact the Isomer team",
+      secondaryButtonUrl: "/",
+    },
+    {
+      backgroundUrl:
+        "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      title: "Publish with confidence",
+      subtitle:
+        "Preview changes, collaborate with your team, and ship updates when you are ready.",
+      buttonLabel: "See how publishing works",
+      buttonUrl: "/",
+    },
+  ],
+}
+
+export const HeroCarouselBlockImageRight: Story = {
+  // The full page exceeds Argos's capture pixel limit at 320px wide.
+  parameters: { argos: argosWithoutMobileSmall },
+  args: generateArgs({
+    heroProps: {
+      ...heroCarouselHomepageProps,
+      carousel: {
+        layout: HERO_CAROUSEL_LAYOUT.block,
+        imagePosition: HERO_BLOCK_IMAGE_POSITION.right,
+      },
+    },
+  }),
+}
+
+export const HeroCarouselBlockImageLeft: Story = {
+  parameters: { argos: argosWithoutMobileSmall },
+  args: generateArgs({
+    heroProps: {
+      ...heroCarouselHomepageProps,
+      carousel: {
+        layout: HERO_CAROUSEL_LAYOUT.block,
+        imagePosition: HERO_BLOCK_IMAGE_POSITION.left,
+      },
+    },
+  }),
+}
+
+export const HeroCarouselGradient: Story = {
+  parameters: { argos: argosWithoutMobileSmall },
+  args: generateArgs({
+    heroProps: {
+      ...heroCarouselHomepageProps,
+      carousel: {
+        layout: HERO_CAROUSEL_LAYOUT.gradient,
+        contentAlignment: HERO_CAROUSEL_CONTENT_ALIGNMENT.left,
+      },
+    },
+  }),
+}
+
+export const HeroCarouselGradientCenter: Story = {
+  parameters: { argos: argosWithoutMobileSmall },
+  args: generateArgs({
+    heroProps: {
+      ...heroCarouselHomepageProps,
+      carousel: {
+        layout: HERO_CAROUSEL_LAYOUT.gradient,
+        contentAlignment: HERO_CAROUSEL_CONTENT_ALIGNMENT.center,
+      },
     },
   }),
 }

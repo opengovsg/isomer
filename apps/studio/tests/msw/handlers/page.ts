@@ -442,8 +442,7 @@ export const pageHandlers = {
                   "A leading global city of enterprise and talent, a vibrant nation of innovation and opportunity",
                 buttonUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
                 buttonLabel: "Main CTA",
-                backgroundUrl:
-                  "https://ohno.isomer.gov.sg/images/hero-banner.png",
+                backgroundUrl: "/hero-banner.png",
                 secondaryButtonUrl:
                   "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
                 secondaryButtonLabel: "Sub CTA",

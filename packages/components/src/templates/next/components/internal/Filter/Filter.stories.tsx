@@ -5,7 +5,7 @@ import { expect, userEvent, within } from "storybook/test"
 import { toggleAppliedFilterItem } from "~/templates/next/layouts/Collection/utils"
 import { DATE_FILTER_STATUS, TAG_CATEGORY_TYPE } from "~/types/constants"
 
-import { getViewportByMode, withChromaticModes } from "@isomer/storybook-config"
+import { getViewportByMode, withArgosModes } from "@isomer/storybook-config"
 
 import { Filter } from "./Filter"
 
@@ -87,13 +87,13 @@ type Story = StoryObj<typeof Filter>
 // Default scenario
 export const Default: Story = {
   parameters: {
-    chromatic: withChromaticModes(["desktop"]),
+    argos: withArgosModes(["desktop"]),
   },
 }
 
 export const WithSomeSelected: Story = {
   parameters: {
-    chromatic: withChromaticModes(["desktop"]),
+    argos: withArgosModes(["desktop"]),
   },
   args: {
     appliedFilters: [
@@ -106,12 +106,13 @@ export const WithSomeSelected: Story = {
 export const MobileFilterButton: Story = {
   globals: { viewport: getViewportByMode("mobile") },
   parameters: {
-    chromatic: withChromaticModes(["mobile"]),
+    argos: withArgosModes(["mobile"]),
   },
   args: WithSomeSelected.args,
 }
 
 export const MobileFilterDrawer: Story = {
+  globals: MobileFilterButton.globals,
   parameters: MobileFilterButton.parameters,
   args: MobileFilterButton.args,
   play: async ({ canvasElement }) => {
@@ -124,6 +125,7 @@ export const MobileFilterDrawer: Story = {
 }
 
 export const MobileFilterDrawerClearAll: Story = {
+  globals: MobileFilterButton.globals,
   parameters: MobileFilterButton.parameters,
   args: MobileFilterButton.args,
   play: async (context) => {
@@ -141,7 +143,7 @@ export const MobileFilterDrawerClearAll: Story = {
 
 export const NoFilters: Story = {
   parameters: {
-    chromatic: withChromaticModes(["desktop"]),
+    argos: withArgosModes(["desktop"]),
   },
   args: {
     filters: [],
@@ -174,7 +176,7 @@ const DATE_FILTER = {
 
 export const WithDateFilter: Story = {
   parameters: {
-    chromatic: withChromaticModes(["desktop"]),
+    argos: withArgosModes(["desktop"]),
   },
   args: {
     filters: [DATE_FILTER],
@@ -191,7 +193,7 @@ export const WithDateFilter: Story = {
 export const MobileDateFilterDrawer: Story = {
   globals: { viewport: getViewportByMode("mobile") },
   parameters: {
-    chromatic: withChromaticModes(["mobile"]),
+    argos: withArgosModes(["mobile"]),
   },
   args: WithDateFilter.args,
   play: async ({ canvasElement }) => {
@@ -203,9 +205,11 @@ export const MobileDateFilterDrawer: Story = {
   },
 }
 
+const dateFilterDesktopGlobals = {
+  viewport: getViewportByMode("desktop"),
+}
 const dateFilterDesktopParameters = {
-  chromatic: withChromaticModes(["desktop"]),
-  globals: { viewport: getViewportByMode("desktop") },
+  argos: withArgosModes(["desktop"]),
 }
 
 const createDateFilter = (visibility: {
@@ -245,6 +249,7 @@ const assertDateFilterControls = async (
 }
 
 export const DateFilterStatusLabelsOnly: Story = {
+  globals: dateFilterDesktopGlobals,
   parameters: dateFilterDesktopParameters,
   args: {
     filters: [
@@ -264,6 +269,7 @@ export const DateFilterStatusLabelsOnly: Story = {
 }
 
 export const DateFilterDateRangeOnly: Story = {
+  globals: dateFilterDesktopGlobals,
   parameters: dateFilterDesktopParameters,
   args: {
     filters: [
@@ -283,6 +289,7 @@ export const DateFilterDateRangeOnly: Story = {
 }
 
 export const DateFilterBothControls: Story = {
+  globals: dateFilterDesktopGlobals,
   parameters: dateFilterDesktopParameters,
   args: {
     filters: [
@@ -304,7 +311,7 @@ export const DateFilterBothControls: Story = {
 export const DateFilterDateRangeOnlyMobileDrawer: Story = {
   globals: { viewport: getViewportByMode("mobile") },
   parameters: {
-    chromatic: withChromaticModes(["mobile"]),
+    argos: withArgosModes(["mobile"]),
   },
   args: DateFilterDateRangeOnly.args,
   play: async ({ canvasElement }) => {

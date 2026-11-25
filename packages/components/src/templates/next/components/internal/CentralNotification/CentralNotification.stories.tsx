@@ -6,7 +6,7 @@ import type {
 import { http, HttpResponse } from "msw"
 import { generateSiteConfig } from "~/stories/helpers"
 
-import { withChromaticModes } from "@isomer/storybook-config"
+import { withArgosModes } from "@isomer/storybook-config"
 
 import { Notification } from "../Notification"
 import { CentralNotification } from "./CentralNotification"
@@ -64,7 +64,7 @@ type Story = StoryObj<typeof CentralNotification>
 
 export const Default: Story = {
   parameters: {
-    chromatic: withChromaticModes(["desktop", "mobile"]),
+    argos: withArgosModes(["desktop", "mobile"]),
   },
 }
 

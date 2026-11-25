@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite"
 import { userEvent, within } from "storybook/test"
 import { generateSiteConfig } from "~/stories/helpers"
 
-import { withChromaticModes } from "@isomer/storybook-config"
+import { withArgosModes } from "@isomer/storybook-config"
 
 import { Accordion } from "./Accordion"
 
@@ -21,7 +21,7 @@ const meta: Meta<typeof Accordion> = {
   argTypes: {},
   parameters: {
     layout: "fullscreen",
-    chromatic: withChromaticModes(["desktop", "mobile"]),
+    argos: withArgosModes(["desktop", "mobile"]),
     themes: {
       themeOverride: "Isomer Next",
     },

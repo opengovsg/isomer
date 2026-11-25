@@ -1,4 +1,5 @@
 import type { HeroLargeImageProps } from "~/interfaces/complex/Hero"
+import { getFocalObjectPosition } from "~/utils/getFocalObjectPosition"
 import { getHeadingTag } from "~/utils/getHeadingTag"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 
@@ -14,6 +15,7 @@ export const HeroLargeImage = ({
   secondaryButtonLabel,
   secondaryButtonUrl,
   backgroundUrl,
+  backgroundUrlImageAdjustment: imageAdjustment,
   site,
   headingLevel,
 }: HeroLargeImageProps) => {
@@ -26,14 +28,18 @@ export const HeroLargeImage = ({
       >
         {/* Text container */}
         <div className="flex flex-col items-center gap-5 text-base-content-strong sm:items-start md:gap-6 md:text-center lg:mx-auto lg:max-w-[66.67%]">
-          <Tag className="prose-display-xl w-full">{title}</Tag>
+          <Tag className="prose-display-xl w-full text-[2.25rem] leading-[1.2] md:text-[3rem] md:leading-[1.1] xl:text-[3rem] xl:leading-[1.1]">
+            {title}
+          </Tag>
           {subtitle && (
-            <p className="prose-title-lg-regular w-full">{subtitle}</p>
+            <p className="prose-title-lg-regular w-full text-[1.125rem] md:text-[1.5rem]">
+              {subtitle}
+            </p>
           )}
         </div>
         {/* Button container */}
         {buttonLabel && buttonUrl && (
-          <div className="flex flex-col items-start justify-center gap-x-5 gap-y-4 md:flex-row md:items-center">
+          <div className="flex flex-wrap items-start justify-start gap-x-5 gap-y-4 md:items-center md:justify-center [&>*]:h-auto">
             <LinkButton
               href={getReferenceLinkHref(
                 buttonUrl,
@@ -66,6 +72,9 @@ export const HeroLargeImage = ({
         imageSrc={backgroundUrl}
         imageAlt=""
         assetsBaseUrl={site.assetsBaseUrl}
+        // Resolved here, on the server. ImageContainer is client code, so the
+        // full object would put `originalKey` in the page HTML.
+        objectPosition={getFocalObjectPosition(imageAdjustment)}
       />
     </section>
   )

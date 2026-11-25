@@ -102,7 +102,7 @@ When the agent opens a PR, it must:
 ## Slack / notifications
 
 - Bug PRs → `#isomer-eng-reviews` channel
-- Design iterations → `#isomer-design-reviews` channel, with the Chromatic preview link inline
+- Design iterations → `#isomer-design-reviews` channel, with the Argos preview link inline
 - Incident diagnoses → the incident channel for the firing monitor (see runbooks)
 
 ## When the agent must stop and ask

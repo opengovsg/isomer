@@ -57,7 +57,6 @@ export function ComplexEditorNestedDrawer({
       <DrawerHeader
         label={`Edit ${label}`}
         onBackClick={() => setSelectedIndex()}
-        textStyle="subhead-1"
         backAriaLabel={`Return to ${label}`}
       />
       <Box w="100%" h="100%" px="1.5rem" py="1rem" flex={1} overflow="auto">

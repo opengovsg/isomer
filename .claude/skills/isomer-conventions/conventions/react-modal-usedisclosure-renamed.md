@@ -50,5 +50,5 @@ Look for `useState(false)` paired with a `setX(true)` / `setX(false)` that
 only toggles a modal/dialog — that should be `useDisclosure`. Also flag
 `useDisclosure()` destructured to the bare `isOpen` / `onOpen` / `onClose`
 when the component renders a modal (especially with more than one), since the
-names should be aliased. Good reference:
-`apps/studio/src/pages/sites/[siteId]/index.tsx:79`.
+names should be aliased. Good reference: the two aliased `useDisclosure()`
+calls in `apps/studio/src/pages/sites/[siteId]/index.tsx`.

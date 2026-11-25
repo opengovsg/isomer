@@ -74,6 +74,7 @@ export type { AttrsDirProps } from "./AttrsDir"
 export {
   AskgovSchema,
   type AskgovWidgetProps,
+  type AskgovWidgetClientProps,
   type AskgovProps,
 } from "./Askgov"
 export {
@@ -81,8 +82,8 @@ export {
   type ZendeskWidgetProps,
   type ZendeskProps,
 } from "./Zendesk"
-export type { ImageClientProps } from "./Image"
-export type { PolyglotProps } from "./Polyglot"
+export type { ImageClientProps, ImageClientWithAdjustmentProps } from "./Image"
+export type { PolyglotProps, PolyglotClientProps } from "./Polyglot"
 export {
   SearchableTableSchema,
   type SearchableTableProps,

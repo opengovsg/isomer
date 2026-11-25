@@ -4,7 +4,7 @@ import { expect, within } from "storybook/test"
 import { buildDateFilterStatusLabels } from "~/templates/next/layouts/Collection/utils/buildDateFilterStatusLabels"
 import { DATE_FILTER_STATUS } from "~/types/constants"
 
-import { withChromaticModes } from "@isomer/storybook-config"
+import { withArgosModes } from "@isomer/storybook-config"
 
 import { CollectionCard } from "./CollectionCard"
 
@@ -32,7 +32,7 @@ const meta: Meta<typeof CollectionCard> = {
     themes: {
       themeOverride: "Isomer Next",
     },
-    chromatic: withChromaticModes(["desktop", "mobile"]),
+    argos: withArgosModes(["desktop", "mobile"]),
   },
 }
 export default meta
@@ -108,6 +108,40 @@ export const HideDate: Story = {
 
 export const CardWithoutImage: Story = {
   args: generateArgs({ image: undefined }),
+}
+
+// A cover-fit thumbnail with a top-left focal point, so the subject sits
+// off-centre.
+export const WithFocalPoint: Story = {
+  args: generateArgs({
+    image: {
+      src: "https://placehold.co/500x500",
+      alt: "placeholder",
+      imageAdjustment: {
+        crop: { x: 0, y: 0, width: 1, height: 1 },
+        focal: { x: 0.2, y: 0.2 },
+        originalKey: "1/00000000-0000-0000-0000-000000000000/original.jpg",
+      },
+    },
+  }),
+}
+
+// Regression: a focal point saved under "cover" must not apply once the
+// thumbnail switches to "Resize image to fit". The letterboxed image stays
+// centred.
+export const ContainIgnoresFocalPoint: Story = {
+  args: generateArgs({
+    isContainNeeded: true,
+    image: {
+      src: "https://placehold.co/500x500",
+      alt: "placeholder",
+      imageAdjustment: {
+        crop: { x: 0, y: 0, width: 1, height: 1 },
+        focal: { x: 0.2, y: 0.2 },
+        originalKey: "1/00000000-0000-0000-0000-000000000000/original.jpg",
+      },
+    },
+  }),
 }
 
 export const CardWithoutPlaintextTags: Story = {

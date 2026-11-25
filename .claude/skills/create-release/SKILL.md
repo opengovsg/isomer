@@ -1,7 +1,7 @@
 ---
 name: create-release
 description: This creates a release for the given tag
-allowed-tools: gh
+allowed-tools: Bash(gh *)
 ---
 
 # Instructions
@@ -16,7 +16,9 @@ Instead of overriding the existing release notes, you should put the generated r
 
 # Template
 
-:rocket: Isomer Next release notes (v0.17.0) :rocket:
+Illustrative — match its shape, emoji, and mentions; the items below are from an old release.
+
+:rocket: Isomer Next release notes (v<version>) :rocket:
 
 **Features**
 
