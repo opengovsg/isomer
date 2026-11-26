@@ -15,12 +15,33 @@ export interface SessionVerificationToken {
   expires: number
 }
 
+export const ONE_GOV_SG_LOGIN_METHOD = "one.gov.sg"
+
+// Stands in for the OTP token when the first factor was one.gov.sg.
+// A type alias, not an interface, so it fits the audit log's JSON delta column.
+// oxlint-disable-next-line typescript/consistent-type-definitions
+export type OneGovSgLoginAttempt = {
+  identifier: `${string}|${string}`
+  method: typeof ONE_GOV_SG_LOGIN_METHOD
+  // one.gov.sg's `login_method` claim, recorded so the audit log shows why
+  // Singpass was or wasn't required.
+  loginMethod?: string
+}
+
 export interface SessionData {
   userId?: CurrentUserId
+  oneGovSg?: {
+    sessionState?: {
+      codeVerifier: string
+      nonce: string
+      state: string
+      expiresAt: number
+    }
+  }
   singpass?: {
     sessionState?: {
       userId: PotentialUserId
-      verificationToken: SessionVerificationToken
+      verificationToken: SessionVerificationToken | OneGovSgLoginAttempt
       codeVerifier: string
       nonce?: string
       state?: string

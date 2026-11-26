@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import { redactLogInput } from "../redact-log-input"
+import { getLoggableInput, redactLogInput } from "../redact-log-input"
 
 describe("redactLogInput", () => {
   it("redacts known sensitive keys at the top level", () => {
@@ -106,5 +106,29 @@ describe("redactLogInput", () => {
 
     // Assert
     expect(result).toEqual({ password: "[REDACTED]", self: "[REPEATED]" })
+  })
+})
+
+describe("getLoggableInput", () => {
+  it.each(["auth.oneGovSg.callback", "auth.singpass.callback"])(
+    "redacts the whole input of %s",
+    (path) => {
+      // Act
+      const result = getLoggableInput(path, { code: "code", state: "state" })
+
+      // Assert
+      expect(result).toBe("[REDACTED]")
+    },
+  )
+
+  it("redacts only sensitive keys on other paths", () => {
+    // Act
+    const result = getLoggableInput("page.updateSettings", {
+      state: "Draft",
+      token: "123456",
+    })
+
+    // Assert
+    expect(result).toEqual({ state: "Draft", token: "[REDACTED]" })
   })
 })

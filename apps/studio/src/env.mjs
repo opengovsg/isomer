@@ -66,6 +66,28 @@ const singpassSchema = z.object({
   SINGPASS_FAPI_ISSUER_ENDPOINT: z.string().url().min(1),
 })
 
+// one.gov.sg login is on only when both the client ID and private key are set.
+const oneGovSgSchema = z.object({
+  ONE_GOV_SG_CLIENT_ID: z.string().optional(),
+  ONE_GOV_SG_ISSUER: z
+    .string()
+    .url()
+    // Cleartext only for a local IdP during development.
+    .refine(
+      (url) =>
+        url.startsWith("https://") ||
+        /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?\//.test(url),
+      {
+        error:
+          "ONE_GOV_SG_ISSUER must use https:// (http:// only for localhost)",
+      },
+    )
+    .default("https://one.gov.sg/api/auth"),
+  // RS256 PKCS#8 PEM for private_key_jwt
+  ONE_GOV_SG_PRIVATE_KEY: z.string().optional(),
+  ONE_GOV_SG_REDIRECT_URI: z.string().url().optional(),
+})
+
 /**
  * Specify your server-side environment variables schema here. This way you can ensure the app isn't
  * built with invalid env vars.
@@ -105,6 +127,7 @@ const server = z
   .extend(s3Schema.shape)
   .extend(r2Schema.shape)
   .extend(singpassSchema.shape)
+  .extend(oneGovSgSchema.shape)
   .extend(client.shape)
   .superRefine((data, ctx) => {
     // Which storage backend to use is decided by whether R2 credentials are
@@ -197,6 +220,11 @@ const processEnv = {
   SINGPASS_SIGNING_PRIVATE_KEY: process.env.SINGPASS_SIGNING_PRIVATE_KEY,
   SINGPASS_SIGNING_KEY_ALG: process.env.SINGPASS_SIGNING_KEY_ALG,
   SINGPASS_FAPI_ISSUER_ENDPOINT: process.env.SINGPASS_FAPI_ISSUER_ENDPOINT,
+  ONE_GOV_SG_CLIENT_ID: process.env.ONE_GOV_SG_CLIENT_ID,
+  // Blank values fall back to the default / derived URL, like the PostHog vars.
+  ONE_GOV_SG_ISSUER: process.env.ONE_GOV_SG_ISSUER || undefined,
+  ONE_GOV_SG_PRIVATE_KEY: process.env.ONE_GOV_SG_PRIVATE_KEY,
+  ONE_GOV_SG_REDIRECT_URI: process.env.ONE_GOV_SG_REDIRECT_URI || undefined,
   STUDIO_SSM_WEBHOOK_API_KEY: process.env.STUDIO_SSM_WEBHOOK_API_KEY,
   DANGEROUSLY_SET_STATIC_OTP: process.env.DANGEROUSLY_SET_STATIC_OTP,
   // Client-side env vars

@@ -6,10 +6,12 @@ import { AuditLogEvent } from "~prisma/generated/generatedEnums"
 import { logAuthEvent } from "../audit/audit.service"
 import { db } from "../database"
 import { emailSessionRouter } from "./email/email.router"
+import { oneGovSgRouter } from "./oneGovSg/oneGovSg.router"
 import { singpassRouter } from "./singpass/singpass.router"
 
 export const authRouter = router({
   email: emailSessionRouter,
+  oneGovSg: oneGovSgRouter,
   singpass: singpassRouter,
   logout: publicProcedure.mutation(async ({ ctx }) => {
     const { userId } = ctx.session
