@@ -182,8 +182,8 @@ catalog:
 
 catalogs:
   argos:
-    "@argos-ci/cli": ^6.12.0
-    "@argos-ci/storybook": ^6.4.5
+    "@argos-ci/cli": ^6.14.0
+    "@argos-ci/storybook": ^6.5.0
   atlaskitPragmaticDnd:
     "@atlaskit/pragmatic-drag-and-drop": ^4.0.0
     "@atlaskit/pragmatic-drag-and-drop-hitbox": ^3.0.0
