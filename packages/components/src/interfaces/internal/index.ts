@@ -57,7 +57,11 @@ export {
 export type { SidePaneProps } from "./SidePane"
 export type { SiderailProps } from "./Siderail"
 export type { TableOfContentsProps } from "./TableOfContents"
-export type { WogaaProps } from "./Wogaa"
+export type {
+  WogaaProps,
+  WogaaSentimentTriggerProps,
+  WogaaSentimentTriggerClientProps,
+} from "./Wogaa"
 export {
   VicaSchema,
   type VicaWidgetClientProps,
