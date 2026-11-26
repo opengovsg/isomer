@@ -18,19 +18,20 @@ export const WogaaSentimentTrigger = ({
 }: WogaaSentimentTriggerProps) => {
   const { url, footerItems, siteMapArray, assetsBaseUrl } = site
 
-  const footerPageHrefs = [
-    footerItems.privacyStatementLink,
-    footerItems.termsOfUseLink,
-    footerItems.contactUsLink,
-    footerItems.feedbackFormLink,
-  ].map((link) => getReferenceLinkHref(link, siteMapArray, assetsBaseUrl))
+  const getFooterPageHrefs = () =>
+    [
+      footerItems.privacyStatementLink,
+      footerItems.termsOfUseLink,
+      footerItems.contactUsLink,
+      footerItems.feedbackFormLink,
+    ].map((link) => getReferenceLinkHref(link, siteMapArray, assetsBaseUrl))
 
   if (
     !isSentimentAutoTriggerEligible({
       siteUrl: url,
       layout,
       permalink,
-      footerPageHrefs,
+      getFooterPageHrefs,
     })
   ) {
     return null

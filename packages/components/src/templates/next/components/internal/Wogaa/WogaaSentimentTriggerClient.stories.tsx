@@ -22,18 +22,23 @@ const mockWogaa = () => {
   }
 }
 
+const removeMockPopups = () => {
+  document
+    .querySelectorAll("[data-testid='mock-wogaa-popup']")
+    .forEach((node) => node.remove())
+}
+
 const meta: Meta<typeof WogaaSentimentTriggerClient> = {
   title: "Next/Internal Components/WogaaSentimentTrigger",
   component: WogaaSentimentTriggerClient,
   beforeEach: () => {
     sessionStorage.removeItem(WOGAA_SENTIMENT_SHOWN_SESSION_KEY)
-    document
-      .querySelectorAll("[data-testid='mock-wogaa-popup']")
-      .forEach((node) => node.remove())
+    removeMockPopups()
     mockWogaa()
 
     return () => {
       delete window.wogaaCustom
+      removeMockPopups()
     }
   },
   args: {

@@ -72,8 +72,14 @@ export const WogaaSentimentTriggerClient = ({
 
         if (showRatingPopup) {
           clearInterval(pollIntervalId)
-          markShownThisSession()
-          showRatingPopup()
+          try {
+            showRatingPopup()
+            // Only mark as shown once WOGAA has opened the pop-up, so a failed
+            // call does not suppress the prompt on later pages this session
+            markShownThisSession()
+          } catch {
+            // Ignore errors from the third-party script
+          }
           return
         }
 

@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest"
+import { describe, expect, it, vi } from "vitest"
 
 import { isSentimentAutoTriggerEligible } from "../isSentimentAutoTriggerEligible"
 
@@ -21,7 +21,7 @@ describe("isSentimentAutoTriggerEligible", () => {
           siteUrl,
           layout: "content",
           permalink: "/about",
-          footerPageHrefs: FOOTER_PAGE_HREFS,
+          getFooterPageHrefs: () => FOOTER_PAGE_HREFS,
         })
 
         // Assert
@@ -40,7 +40,7 @@ describe("isSentimentAutoTriggerEligible", () => {
         siteUrl,
         layout: "content",
         permalink: "/about",
-        footerPageHrefs: FOOTER_PAGE_HREFS,
+        getFooterPageHrefs: () => FOOTER_PAGE_HREFS,
       })
 
       // Assert
@@ -57,7 +57,7 @@ describe("isSentimentAutoTriggerEligible", () => {
           siteUrl: ISOMER_SITE_URL,
           layout,
           permalink: "/news/some-article",
-          footerPageHrefs: FOOTER_PAGE_HREFS,
+          getFooterPageHrefs: () => FOOTER_PAGE_HREFS,
         })
 
         // Assert
@@ -78,11 +78,27 @@ describe("isSentimentAutoTriggerEligible", () => {
         siteUrl: ISOMER_SITE_URL,
         layout,
         permalink: "/some-page",
-        footerPageHrefs: FOOTER_PAGE_HREFS,
+        getFooterPageHrefs: () => FOOTER_PAGE_HREFS,
       })
 
       // Assert
       expect(result).toBe(false)
+    })
+
+    it("does not resolve footer links for layouts that are never eligible", () => {
+      // Arrange
+      const getFooterPageHrefs = vi.fn(() => FOOTER_PAGE_HREFS)
+
+      // Act
+      isSentimentAutoTriggerEligible({
+        siteUrl: ISOMER_SITE_URL,
+        layout: "homepage",
+        permalink: "/",
+        getFooterPageHrefs,
+      })
+
+      // Assert
+      expect(getFooterPageHrefs).not.toHaveBeenCalled()
     })
   })
 
@@ -95,7 +111,7 @@ describe("isSentimentAutoTriggerEligible", () => {
           siteUrl: ISOMER_SITE_URL,
           layout: "content",
           permalink,
-          footerPageHrefs: FOOTER_PAGE_HREFS,
+          getFooterPageHrefs: () => FOOTER_PAGE_HREFS,
         })
 
         // Assert
@@ -103,13 +119,13 @@ describe("isSentimentAutoTriggerEligible", () => {
       },
     )
 
-    it("ignores footer links with query strings or hashes", () => {
+    it("matches footer links that have query strings or hashes", () => {
       // Arrange / Act
       const result = isSentimentAutoTriggerEligible({
         siteUrl: ISOMER_SITE_URL,
         layout: "content",
         permalink: "/contact-us",
-        footerPageHrefs: ["/contact-us?ref=footer#form"],
+        getFooterPageHrefs: () => ["/contact-us?ref=footer#form"],
       })
 
       // Assert
@@ -122,11 +138,31 @@ describe("isSentimentAutoTriggerEligible", () => {
         siteUrl: ISOMER_SITE_URL,
         layout: "content",
         permalink: "/abc123",
-        footerPageHrefs: ["https://form.gov.sg/abc123", undefined],
+        getFooterPageHrefs: () => ["https://form.gov.sg/abc123", undefined],
       })
 
       // Assert
       expect(result).toBe(true)
     })
+
+    it.each([
+      "https://www.isomer.gov.sg/privacy",
+      "https://isomer.gov.sg/privacy/",
+      "https://www.isomer.gov.sg/privacy?ref=footer",
+    ])(
+      "returns false when a full same-site footer URL points at the page (%s)",
+      (footerHref) => {
+        // Arrange / Act
+        const result = isSentimentAutoTriggerEligible({
+          siteUrl: ISOMER_SITE_URL,
+          layout: "content",
+          permalink: "/privacy",
+          getFooterPageHrefs: () => [footerHref],
+        })
+
+        // Assert
+        expect(result).toBe(false)
+      },
+    )
   })
 })
