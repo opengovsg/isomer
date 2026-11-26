@@ -22,6 +22,11 @@ export const singpassErrorCode = (error: unknown): string | undefined => {
 
 // openid-client errors can carry tokens or nonce values in fields and messages.
 export const singpassTokenExchangeErrorCategory = (error: unknown): string => {
+  const code = singpassErrorCode(error)
+  if (code) {
+    return code
+  }
+
   if (error instanceof errors.RPError) return "oidc_client_error"
   if (error instanceof errors.OPError) return "oauth_provider_error"
   return "unexpected_error"

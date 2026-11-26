@@ -83,37 +83,57 @@ describe("getAuthorizationUrl", () => {
   })
 })
 
-it("logs only safe fields when Singpass token validation fails", async () => {
+describe("login", () => {
+  // login caches its client, so every case must spy on the same issuer
   const issuer = new Issuer({ issuer: "http://localhost" })
-  const error = new errors.RPError({
-    message: "Token validation failed",
-    jwt: "synthetic-id-token",
+
+  afterEach(() => {
+    vi.restoreAllMocks()
   })
-  const logger = { info: vi.fn(), error: vi.fn(), warn: vi.fn() }
-  const discover = vi.spyOn(Issuer, "discover").mockResolvedValue(issuer)
-  vi.spyOn(issuer.Client.prototype, "callback").mockRejectedValue(error)
 
-  try {
-    const result = login({
-      code: "code",
-      codeVerifier: "verifier",
-      nonce: "nonce",
-      state: "state",
-      useFapi: false,
-      logger,
-    })
+  it.each([
+    {
+      name: "token validation",
+      error: new errors.RPError({
+        message: "Token validation failed",
+        jwt: "synthetic-id-token",
+      }),
+      singpassError: "oidc_client_error",
+    },
+    {
+      name: "the OAuth provider",
+      error: new errors.OPError({
+        error: "use_dpop_nonce",
+        error_description: "synthetic-nonce",
+      }),
+      singpassError: "use_dpop_nonce",
+    },
+  ])(
+    "logs only safe fields when $name fails",
+    async ({ error, singpassError }) => {
+      const logger = { info: vi.fn(), error: vi.fn(), warn: vi.fn() }
+      vi.spyOn(Issuer, "discover").mockResolvedValue(issuer)
+      vi.spyOn(issuer.Client.prototype, "callback").mockRejectedValue(error)
 
-    await expect(result).rejects.toBe(error)
-    expect(logger.error).toHaveBeenCalledExactlyOnceWith(
-      {
-        singpassFlow: "legacy",
-        singpassStage: "token_exchange",
-        singpassOutcome: "failure",
-        singpassError: "oidc_client_error",
-      },
-      "Singpass legacy: token exchange failed",
-    )
-  } finally {
-    discover.mockRestore()
-  }
+      const result = login({
+        code: "code",
+        codeVerifier: "verifier",
+        nonce: "nonce",
+        state: "state",
+        useFapi: false,
+        logger,
+      })
+
+      await expect(result).rejects.toBe(error)
+      expect(logger.error).toHaveBeenCalledExactlyOnceWith(
+        {
+          singpassFlow: "legacy",
+          singpassStage: "token_exchange",
+          singpassOutcome: "failure",
+          singpassError,
+        },
+        "Singpass legacy: token exchange failed",
+      )
+    },
+  )
 })
