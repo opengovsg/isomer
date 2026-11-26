@@ -117,6 +117,27 @@ How these were measured:
 - Third-party scripts are excluded and identical in both builds.
 - Lazy JS (`visible`/`idle` islands) is about 3.5 KB on the content page and 0 elsewhere.
 
+### Mobile Lighthouse (performance)
+
+Lab scores on the same 60-page coverage fixture, served locally (`http://127.0.0.1`, harness `serve.mjs`). Next is a static export of `apps/template` built from `main` (`1a02132bc`); Astro is `apps/template-astro` on this branch (`0ef913f3e`). Lighthouse 13.6.0, mobile emulation, performance category only. Each cell is the **mean of 3 runs**; a parenthetical is the min–max when the runs differ. FCP, LCP and SI are seconds; TBT is milliseconds. A bare number means all three runs matched.
+
+| Page                       | Variant                  | Score        |  FCP |           LCP |       TBT |             CLS |   SI |
+| -------------------------- | ------------------------ | -----------: | ---: | ------------: | --------: | --------------: | ---: |
+| `/`                        | Next.js                  | 66.7 (66–67) | 3.60 | 8.04 (7.76–8.40) | 117 (98–138) |           0.000 | 3.60 |
+| `/`                        | Astro + Preact islands   | **84.0 (82–87)** | **2.10** | **4.20 (3.75–4.50)** |         **0** |           0.000 | **2.10** |
+| `/content/`                | Next.js                  | 80.3 (78–82) | 3.60 |          3.60 | 149 (94–235) |           0.000 | 3.60 |
+| `/content/`                | Astro + Preact islands   |       **97.0** | **2.10** |        **2.10** |    **9 (0–19)** |           0.000 | **2.10** |
+| `/collection-1/`           | Next.js                  | 79.3 (79–80) | 3.60 |          3.60 | 175 (150–195) |           0.000 | 3.60 |
+| `/collection-1/`           | Astro + Preact islands   |       **95.0** | **2.40** |        **2.40** | **43 (36–47)** |           0.000 | **2.40** |
+| `/collection-1/article-1/` | Next.js                  | 83.3 (82–84) | 3.30 |          3.30 | 164 (145–192) | 0.004 (0–0.011) | 3.30 |
+| `/collection-1/article-1/` | Astro + Preact islands   |       **98.0** | **1.95** |        **1.95** |         **0** |           0.000 | **1.95** |
+| `/database/`               | Next.js                  | 82.0 (81–83) | 3.45 |          3.45 | 160 (132–191) |           0.000 | 3.45 |
+| `/database/`               | Astro + Preact islands   |       **97.0** | **2.10** |        **2.10** | **44 (6–87)** |           0.000 | **2.10** |
+
+Astro scores higher on every page (means **84–98** vs **67–83**). The largest gaps are homepage LCP (**8.04 s → 4.20 s**) and TBT (about **117–175 ms** on Next vs **0–44 ms** on Astro). Homepage LCP is worse than the other pages on both builds because the fixture's hero carousel auto-rotates every 7 s, so Lighthouse's largest paint lands well after first contentful paint. Inner pages' LCP is the static H1 and lines up with FCP. CLS is 0 except one Next article run at 0.011.
+
+These are local static hosts, not a production CDN. The fixture can load WOGAA (`wogaa.js`); fonts are the template's Inter preload. Absolute scores will move in the wild; the Next vs Astro gap is what this measures.
+
 ### Build time and peak memory
 
 Cold builds on an Apple Silicon laptop with default cores. Peak RSS is summed across the whole process tree, so Next's worker processes count. Medians of 3 runs, except 10k pages, which is a single run. Measured with the earlier plugin-based islands; the islands change doesn't affect server rendering cost.
