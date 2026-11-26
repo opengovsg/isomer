@@ -1,0 +1,42 @@
+{
+  "name": "isomer-tanstack-start-template",
+  "version": "0.0.0-poc",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build:template-start": "vite build",
+    "clean": "git clean -xdf .turbo node_modules dist",
+    "dev": "vite dev --port 3002",
+    "format": "oxfmt --check . --ignore-path ../../.gitignore",
+    "format:fix": "oxfmt --write . --ignore-path ../../.gitignore",
+    "lint": "oxlint --type-aware .",
+    "lint:fix": "oxlint --type-aware --fix .",
+    "preview": "vite preview --port 3002",
+    "typecheck": "tsgo --noEmit"
+  },
+  "dependencies": {
+    "@isomer/validators": "workspace:*",
+    "@opengovsg/isomer-components": "workspace:*",
+    "@tanstack/react-router": "1.170.46",
+    "@tanstack/react-start": "1.169.7",
+    "isomorphic-dompurify": "catalog:",
+    "jsdom": "catalog:",
+    "postcss": "catalog:",
+    "postcss-preset-env": "catalog:",
+    "react": "catalog:react",
+    "react-dom": "catalog:react",
+    "tailwindcss": "catalog:",
+    "typescript": "catalog:"
+  },
+  "devDependencies": {
+    "@isomer/oxlint-config": "workspace:*",
+    "@isomer/tsconfig": "workspace:*",
+    "@types/node": "catalog:",
+    "@types/react": "catalog:react",
+    "@types/react-dom": "catalog:react",
+    "@typescript/native-preview": "catalog:",
+    "@vitejs/plugin-react": "catalog:vitest",
+    "vite": "catalog:vitest",
+    "vite-tsconfig-paths": "^5.1.4"
+  }
+}

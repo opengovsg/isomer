@@ -1,0 +1,10 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "extends": ["//"],
+  "tasks": {
+    "build:template-start": {
+      "dependsOn": ["@opengovsg/isomer-components#build:module"],
+      "outputs": ["dist/**"]
+    }
+  }
+}
