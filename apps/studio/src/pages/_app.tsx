@@ -30,33 +30,36 @@ type AppPropsWithAuthAndLayout = AppProps & {
   Component: NextPageWithLayout
 }
 
-datadogRum.setGlobalContextProperty("team", "isomer")
-datadogRum.setGlobalContextProperty("product", "isomer")
-datadogRum.init({
-  applicationId: "32c64617-51e3-4a6e-a977-ad113021ffae",
-  clientToken: "pub89baaf356268edcb9ed95847d7c5d679",
-  // `site` refers to the Datadog site parameter of your organization
-  // see https://docs.datadoghq.com/getting_started/site/
-  site: "datadoghq.com",
-  service: "isomer-next",
-  env: env.NEXT_PUBLIC_APP_ENV,
-  version: env.NEXT_PUBLIC_APP_VERSION,
-  sessionSampleRate: 100,
-  sessionReplaySampleRate: 100,
-  trackUserInteractions: true,
-  trackResources: true,
-  trackLongTasks: true,
-  defaultPrivacyLevel: "mask-user-input",
-  // inject tracing information inside headers, to correlate RUM with backend traces
-  allowedTracingUrls: [
-    (url) => {
-      if (!env.NEXT_PUBLIC_APP_URL) {
-        return false
-      }
-      return url.includes(env.NEXT_PUBLIC_APP_URL)
-    },
-  ],
-})
+// E2E sessions would otherwise be billed as real RUM sessions.
+if (env.NEXT_PUBLIC_APP_ENV !== "test") {
+  datadogRum.setGlobalContextProperty("team", "isomer")
+  datadogRum.setGlobalContextProperty("product", "isomer")
+  datadogRum.init({
+    applicationId: "32c64617-51e3-4a6e-a977-ad113021ffae",
+    clientToken: "pub89baaf356268edcb9ed95847d7c5d679",
+    // `site` refers to the Datadog site parameter of your organization
+    // see https://docs.datadoghq.com/getting_started/site/
+    site: "datadoghq.com",
+    service: "isomer-next",
+    env: env.NEXT_PUBLIC_APP_ENV,
+    version: env.NEXT_PUBLIC_APP_VERSION,
+    sessionSampleRate: 100,
+    sessionReplaySampleRate: 100,
+    trackUserInteractions: true,
+    trackResources: true,
+    trackLongTasks: true,
+    defaultPrivacyLevel: "mask-user-input",
+    // inject tracing information inside headers, to correlate RUM with backend traces
+    allowedTracingUrls: [
+      (url) => {
+        if (!env.NEXT_PUBLIC_APP_URL) {
+          return false
+        }
+        return url.includes(env.NEXT_PUBLIC_APP_URL)
+      },
+    ],
+  })
+}
 
 // Next inlines NEXT_PUBLIC_APP_ENV at build time. E2E builds with .env.test.
 const gb =
