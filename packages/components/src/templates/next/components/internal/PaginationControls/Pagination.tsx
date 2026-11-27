@@ -5,7 +5,7 @@ import {
   BiChevronLeft,
   BiChevronRight,
   BiDotsHorizontalRounded,
-} from "react-icons/bi"
+} from "~/common/clientBoxicons"
 import { tv } from "~/lib/tv"
 import { twMerge } from "~/lib/twMerge"
 import { dataAttr } from "~/utils/rac"

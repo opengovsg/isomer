@@ -1,4 +1,6 @@
 import type { IconType } from "react-icons"
+
+import type { SupportedIconName } from "./icon-names"
 import {
   BiBarChartAlt2,
   BiBookOpen,
@@ -8,47 +10,21 @@ import {
   BiChart,
   BiChat,
   BiCheckShield,
+  BiClipboardCheck,
   BiFile,
   BiGlobe,
   BiGroup,
   BiHelpCircle,
   BiIdCard,
   BiMapPin,
+  BiMegaphone,
   BiNews,
   BiPhone,
   BiRightArrowAlt,
   BiStar,
   BiVideo,
-} from "react-icons/bi"
+} from "./clientBoxicons"
 
-import { BiClipboardCheck } from "./custom-icons/BiClipboardCheck"
-import { BiMegaphone } from "./custom-icons/BiMegaphone"
-
-export const SUPPORTED_ICON_NAMES = [
-  "right-arrow",
-  "bar-chart",
-  "line-chart",
-  "users",
-  "office-building",
-  "stars",
-  "globe",
-  "calendar",
-  "book-open",
-  "news",
-  "file",
-  "help-circle",
-  "phone",
-  "id-card",
-  "map-pin",
-  "chat",
-  "megaphone",
-  "clipboard-check",
-  "bulb",
-  "video",
-  "check-shield",
-] as const
-
-export type SupportedIconName = (typeof SUPPORTED_ICON_NAMES)[number]
 // TODO: use union types to support more icon libraries apart from react-icons
 type SupportedIconType = IconType
 export const SUPPORTED_ICONS_MAP: Record<SupportedIconName, SupportedIconType> =

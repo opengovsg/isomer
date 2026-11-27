@@ -1,5 +1,5 @@
 import { Type } from "@sinclair/typebox"
-import { SUPPORTED_ICON_NAMES } from "~/common/icons"
+import { SUPPORTED_ICON_NAMES } from "~/common/icon-names"
 
 import { ICON_PICKER_FORMAT } from "../format"
 

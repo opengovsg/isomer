@@ -9,7 +9,7 @@ import {
   BiPrinter,
   BiTimeFive,
   BiUser,
-} from "react-icons/bi"
+} from "~/common/clientBoxicons"
 
 type MethodMapping = Record<
   (typeof CONTACT_INFORMATION_SUPPORT_METHODS)[number],

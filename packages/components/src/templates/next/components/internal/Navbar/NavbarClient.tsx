@@ -8,8 +8,8 @@ import {
   useRef,
   useState,
 } from "react"
-import { BiMenu, BiSearch, BiX } from "react-icons/bi"
 import { useResizeObserver } from "usehooks-ts"
+import { BiMenu, BiSearch, BiX } from "~/common/clientBoxicons"
 import { tv } from "~/lib/tv"
 import { isExternalUrl } from "~/utils/isExternalUrl"
 import { focusVisibleHighlight } from "~/utils/tailwind"

@@ -1,5 +1,5 @@
 import type { SingleCardWithImageProps } from "~/interfaces/complex/InfoCards"
-import { BiRightArrowAlt } from "react-icons/bi"
+import { BiRightArrowAlt } from "~/common/clientBoxicons"
 import { getHeadingTag } from "~/utils/getHeadingTag"
 
 import { compoundStyles, infoCardTitleStyle } from "../common"

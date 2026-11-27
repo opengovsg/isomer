@@ -2,8 +2,8 @@
 
 import type { SupportedBrowserBannerProps } from "~/utils/isSupportedBrowser"
 import { useEffect, useState } from "react"
-import { BiInfoCircle, BiX } from "react-icons/bi"
 import { useSessionStorage } from "usehooks-ts"
+import { BiInfoCircle, BiX } from "~/common/clientBoxicons"
 import { isSupportedBrowser } from "~/utils/isSupportedBrowser"
 
 import { IconButton } from "../IconButton"

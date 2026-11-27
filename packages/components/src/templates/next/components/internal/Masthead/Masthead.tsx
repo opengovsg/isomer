@@ -1,5 +1,5 @@
 import type { MastheadProps } from "~/interfaces"
-import { BiChevronDown } from "react-icons/bi"
+import { BiChevronDown } from "~/common/clientBoxicons"
 
 import { Link } from "../Link"
 

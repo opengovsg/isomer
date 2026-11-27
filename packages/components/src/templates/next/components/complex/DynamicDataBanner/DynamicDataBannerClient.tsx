@@ -2,7 +2,7 @@
 
 import type { DynamicDataBannerProps } from "~/interfaces"
 import { useEffect, useState } from "react"
-import { BiError } from "react-icons/bi"
+import { BiError } from "~/common/clientBoxicons"
 import { DYNAMIC_DATA_BANNER_NUMBER_OF_DATA } from "~/interfaces/complex/DynamicDataBanner/constants"
 import { tv } from "~/lib/tv"
 import { twMerge } from "~/lib/twMerge"

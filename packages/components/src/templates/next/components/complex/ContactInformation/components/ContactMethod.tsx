@@ -1,5 +1,5 @@
 import type { ContactInformationUIProps } from "~/interfaces"
-import { BiEnvelope } from "react-icons/bi"
+import { BiEnvelope } from "~/common/clientBoxicons"
 import { twMerge } from "~/lib/twMerge"
 import { Link } from "~/templates/next/components/internal/Link"
 import { isEmail } from "~/utils/isEmail"

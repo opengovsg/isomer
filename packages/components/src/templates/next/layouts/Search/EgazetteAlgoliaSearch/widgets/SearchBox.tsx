@@ -1,7 +1,7 @@
 import type { UseSearchBoxProps } from "react-instantsearch"
 import { useEffect, useRef, useState } from "react"
-import { BiSearch } from "react-icons/bi"
 import { useSearchBox } from "react-instantsearch"
+import { BiSearch } from "~/common/clientBoxicons"
 
 const DEBOUNCE_MS = 250
 

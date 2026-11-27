@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
-import { BiSearch } from "react-icons/bi"
+import { BiSearch } from "~/common/clientBoxicons"
 
 import { IconButton } from "./IconButton"
 

@@ -4,7 +4,7 @@ import { useButton } from "@react-aria/button"
 import { useFocusRing } from "@react-aria/focus"
 import { mergeProps } from "@react-aria/utils"
 import { useRef, useState } from "react"
-import { BiChevronDown, BiChevronRight } from "react-icons/bi"
+import { BiChevronDown, BiChevronRight } from "~/common/clientBoxicons"
 import { tv } from "~/lib/tv"
 import { updateAppliedFilterDateRange } from "~/templates/next/layouts/Collection/utils"
 import {
