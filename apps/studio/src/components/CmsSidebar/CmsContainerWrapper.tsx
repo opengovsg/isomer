@@ -6,6 +6,7 @@ import { useRouter } from "next/router"
 import { BiCog, BiFolder, BiGroup, BiHelpCircle, BiStar } from "react-icons/bi"
 import { CmsContainer, CmsSidebar } from "~/components/CmsSidebar"
 import { SearchableHeader } from "~/components/SearchableHeader"
+import { useCanUsePolyglot } from "~/hooks/useCanUsePolyglot"
 import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
 import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
@@ -31,6 +32,7 @@ export const CmsContainerWrapper = ({
   const { isAdmin: isUserIsomerAdmin } = useIsUserIsomerAdmin({
     roles: [IsomerAdminRole.Core, IsomerAdminRole.Migrator],
   })
+  const canUsePolyglot = useCanUsePolyglot(Number(siteId))
 
   const pageNavItems: CmsSidebarItem[] = [
     {
@@ -73,12 +75,20 @@ export const CmsContainerWrapper = ({
           },
         ]
       : []),
-    {
-      icon: PolyglotIcon,
-      label: "Polyglot Studio",
-      href: "https://studio.polyglot.gov.sg",
-      isExternal: true,
-    },
+    ...(canUsePolyglot
+      ? [
+          {
+            icon: PolyglotIcon,
+            label: "Polyglot Studio",
+            // Mints a Polyglot SSO token server-side, then redirects
+            href: `/api/polyglot/sso?siteId=${siteId}`,
+            isExternal: true,
+            // Let Polyglot see the request came from Studio (origin only,
+            // per the global strict-origin-when-cross-origin policy)
+            rel: "noopener",
+          },
+        ]
+      : []),
     {
       icon: BiHelpCircle,
       label: "Get support",

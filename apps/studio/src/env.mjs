@@ -101,6 +101,11 @@ const server = z
     ALGOLIA_API_KEY: z.string(),
     ALGOLIA_INDEX_NAME: z.string(),
     SYSTEM_USER_EMAIL: z.email().optional().default(SYSTEM_USER_EMAIL),
+    // Polyglot SSO: ES256 PKCS8 PEM; Polyglot holds the matching public key.
+    // Unset → the sidebar link falls back to plain Polyglot Studio.
+    POLYGLOT_SSO_PRIVATE_KEY: z.string().optional(),
+    // HTTPS only: the SSO redirect carries a live sign-in token
+    POLYGLOT_STUDIO_URL: z.url({ protocol: /^https$/ }).optional(),
   })
   .extend(s3Schema.shape)
   .extend(r2Schema.shape)
@@ -199,6 +204,8 @@ const processEnv = {
   SINGPASS_FAPI_ISSUER_ENDPOINT: process.env.SINGPASS_FAPI_ISSUER_ENDPOINT,
   STUDIO_SSM_WEBHOOK_API_KEY: process.env.STUDIO_SSM_WEBHOOK_API_KEY,
   DANGEROUSLY_SET_STATIC_OTP: process.env.DANGEROUSLY_SET_STATIC_OTP,
+  POLYGLOT_SSO_PRIVATE_KEY: process.env.POLYGLOT_SSO_PRIVATE_KEY,
+  POLYGLOT_STUDIO_URL: process.env.POLYGLOT_STUDIO_URL,
   // Client-side env vars
   NEXT_PUBLIC_APP_ENV:
     process.env.NEXT_PUBLIC_APP_ENV ??
