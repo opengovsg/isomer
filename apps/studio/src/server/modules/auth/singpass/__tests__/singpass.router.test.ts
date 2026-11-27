@@ -1,5 +1,6 @@
 import type { SessionData, SessionVerificationToken } from "~/lib/types/session"
 import { TRPCError } from "@trpc/server"
+import { errors } from "openid-client"
 import { resetTables } from "tests/integration/helpers/db"
 import { mockGrowthBook } from "tests/integration/helpers/growthbook/mockInstance"
 import {
@@ -11,6 +12,7 @@ import { expect, vi } from "vitest"
 import { env } from "~/env.mjs"
 import { IS_SINGPASS_FAPI2_ENABLED_FEATURE_KEY } from "~/lib/growthbook"
 import { mockFeatureFlags } from "~/lib/growthbookOffline"
+import * as LoggerModule from "~/lib/logger"
 import { AuditLogEvent, db } from "~/server/modules/database"
 import { createCallerFactory } from "~/server/trpc"
 
@@ -285,6 +287,48 @@ describe("auth.singpass", () => {
           code: "BAD_REQUEST",
           message: "Invalid login flow",
         }),
+      )
+    })
+
+    it("keeps token validation errors out of callback logs and the tRPC cause", async () => {
+      session.singpass = {
+        sessionState: {
+          userId: "user-id" as NonNullable<
+            NonNullable<SessionData["singpass"]>["sessionState"]
+          >["userId"],
+          verificationToken: MOCK_SESSION_VERIFICATION_TOKEN,
+          codeVerifier: "code-verifier",
+          nonce: "nonce",
+          state: CALLBACK_STATE,
+        },
+      }
+      await session.save()
+      vi.spyOn(SingpassService, "login").mockRejectedValue(
+        new errors.RPError({
+          message: "Token validation failed",
+          jwt: "synthetic-id-token",
+        }),
+      )
+      const logger = LoggerModule.createBaseLogger({ path: "callback-test" })
+      const logError = vi.spyOn(logger, "error").mockImplementation(() => {})
+      vi.spyOn(LoggerModule, "createBaseLogger").mockReturnValue(logger)
+
+      await expect(
+        caller.callback({ state: CALLBACK_STATE, code: "code" }),
+      ).rejects.toMatchObject({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Singpass login failed",
+        cause: undefined,
+      })
+      expect(logError).toHaveBeenCalledWith(
+        {
+          singpassFlow: "legacy",
+          singpassStage: "callback",
+          singpassOutcome: "failure",
+          reason: "token_exchange",
+          singpassError: "oidc_client_error",
+        },
+        "Singpass legacy: login failed",
       )
     })
 

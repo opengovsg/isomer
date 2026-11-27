@@ -19,6 +19,7 @@ import {
   singpassErrorCode,
   singpassLoginLogFields,
   singpassLogMessage,
+  singpassTokenExchangeErrorCategory,
 } from "./singpass.observability"
 import { extractUuid } from "./singpass.utils"
 
@@ -280,8 +281,7 @@ export const login = async ({
           stage: "token_exchange",
           outcome: "failure",
         }),
-        singpassError: singpassErrorCode(error),
-        err: error,
+        singpassError: singpassTokenExchangeErrorCategory(error),
       },
       singpassLogMessage({
         useFapi,

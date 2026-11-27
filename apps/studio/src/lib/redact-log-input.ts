@@ -9,9 +9,33 @@ const SENSITIVE_KEYS = new Set([
   "authorization",
   "accesstoken",
   "refreshtoken",
+  "phone",
+  // Singpass authorisation code
+  "code",
 ])
 
-const isSensitiveKey = (key: string) => SENSITIVE_KEYS.has(key.toLowerCase())
+// Page and SVG bodies can run to megabytes; their size is enough to debug with
+const SIZE_ONLY_KEYS = new Set(["content", "blocks"])
+
+const redactValue = (
+  key: string,
+  value: unknown,
+  seen: WeakSet<object>,
+): unknown => {
+  const normalisedKey = key.toLowerCase()
+
+  if (SENSITIVE_KEYS.has(normalisedKey)) {
+    return REDACTED
+  }
+
+  if (SIZE_ONLY_KEYS.has(normalisedKey) && value != null) {
+    if (typeof value === "string") return `[OMITTED: ${value.length} chars]`
+    if (Array.isArray(value)) return `[OMITTED: ${value.length} items]`
+    return "[OMITTED]"
+  }
+
+  return redactLogInput(value, seen)
+}
 
 const REPEATED = "[REPEATED]"
 
@@ -36,7 +60,7 @@ export const redactLogInput = (
   return Object.fromEntries(
     Object.entries(input).map(([key, value]) => [
       key,
-      isSensitiveKey(key) ? REDACTED : redactLogInput(value, seen),
+      redactValue(key, value, seen),
     ]),
   )
 }

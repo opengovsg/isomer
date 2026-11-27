@@ -38,6 +38,10 @@ export const generateDocumentId = (url: string, resourceId: string): string =>
 
 const { S3_GAZETTE_BUCKET_NAME } = env
 const logger = createBaseLogger({ path: "gazette.service" })
+
+// SearchSG error bodies are unbounded and may echo submitted documents
+const MAX_SEARCHSG_ERROR_LENGTH = 500
+
 /**
  * Throws FORBIDDEN unless the user is from Toppan or a Core IsomerAdmin.
  *
@@ -340,9 +344,16 @@ export const pushDocumentsForIngestion = async (documents: PushDocument[]) => {
   )
 
   if (!response.ok) {
-    const errorText = await response.text()
+    const errorText = (await response.text()).slice(
+      0,
+      MAX_SEARCHSG_ERROR_LENGTH,
+    )
     logger.error(
-      { status: response.status, error: errorText, documents },
+      {
+        status: response.status,
+        error: errorText,
+        documentIds: documents.map(({ documentId }) => documentId),
+      },
       "Failed to push documents for ingestion",
     )
     throw new Error(

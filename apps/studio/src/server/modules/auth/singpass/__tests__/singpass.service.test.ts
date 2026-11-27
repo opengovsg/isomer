@@ -1,7 +1,7 @@
 import type { AddressInfo } from "node:net"
 import { decodeJwt } from "jose"
 import http from "node:http"
-import { Issuer } from "openid-client"
+import { errors, Issuer } from "openid-client"
 import {
   afterAll,
   afterEach,
@@ -13,7 +13,7 @@ import {
   vi,
 } from "vitest"
 
-import { getAuthorizationUrl } from "../singpass.service"
+import { getAuthorizationUrl, login } from "../singpass.service"
 
 const REQUEST_URI = "urn:ietf:params:oauth:request_uri:integration-test"
 
@@ -81,4 +81,59 @@ describe("getAuthorizationUrl", () => {
       REQUEST_URI,
     )
   })
+})
+
+describe("login", () => {
+  // login caches its client, so every case must spy on the same issuer
+  const issuer = new Issuer({ issuer: "http://localhost" })
+
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  it.each([
+    {
+      name: "token validation",
+      error: new errors.RPError({
+        message: "Token validation failed",
+        jwt: "synthetic-id-token",
+      }),
+      singpassError: "oidc_client_error",
+    },
+    {
+      name: "the OAuth provider",
+      error: new errors.OPError({
+        error: "use_dpop_nonce",
+        error_description: "synthetic-nonce",
+      }),
+      singpassError: "use_dpop_nonce",
+    },
+  ])(
+    "logs only safe fields when $name fails",
+    async ({ error, singpassError }) => {
+      const logger = { info: vi.fn(), error: vi.fn(), warn: vi.fn() }
+      vi.spyOn(Issuer, "discover").mockResolvedValue(issuer)
+      vi.spyOn(issuer.Client.prototype, "callback").mockRejectedValue(error)
+
+      const result = login({
+        code: "code",
+        codeVerifier: "verifier",
+        nonce: "nonce",
+        state: "state",
+        useFapi: false,
+        logger,
+      })
+
+      await expect(result).rejects.toBe(error)
+      expect(logger.error).toHaveBeenCalledExactlyOnceWith(
+        {
+          singpassFlow: "legacy",
+          singpassStage: "token_exchange",
+          singpassOutcome: "failure",
+          singpassError,
+        },
+        "Singpass legacy: token exchange failed",
+      )
+    },
+  )
 })

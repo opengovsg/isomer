@@ -81,6 +81,30 @@ describe("redactLogInput", () => {
     expect(undefinedResult).toBeUndefined()
   })
 
+  it("omits content and blocks without serializing their values", () => {
+    const content = {
+      toJSON: () => {
+        throw new Error("Unexpected serialization")
+      },
+    }
+
+    expect(
+      redactLogInput({
+        content: "draft",
+        nested: { content },
+        blocks: [{ type: "prose", content }],
+        phone: "555-0100",
+        code: "authorization-code",
+      }),
+    ).toEqual({
+      content: "[OMITTED: 5 chars]",
+      nested: { content: "[OMITTED]" },
+      blocks: "[OMITTED: 1 items]",
+      phone: "[REDACTED]",
+      code: "[REDACTED]",
+    })
+  })
+
   it("logs a repeated object once, so output stays linear", () => {
     // Arrange: 30 levels, each referencing the level below twice (2^30 paths)
     let node: unknown = { token: "secret" }
