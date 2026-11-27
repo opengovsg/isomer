@@ -30,7 +30,6 @@ import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useOptionalEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { fetchImageBlob } from "~/features/editing-experience/components/ImageAdjustmentModal/useSaveImageAdjustment"
 import { pageOrLinkSchema } from "~/features/editing-experience/schema"
-import { useIsImageAdjustmentEnabled } from "~/hooks/useIsImageAdjustmentEnabled"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { MAX_IMG_FILE_SIZE_BYTES } from "~/lib/fileUpload"
 import {
@@ -88,9 +87,6 @@ function JsonFormsImageControl({
     onOpen: onAdjustmentModalOpen,
     onClose: onAdjustmentModalClose,
   } = useDisclosure()
-  // Gate the adjustment entry point behind a GrowthBook flag (off by default,
-  // rolled out per-user) — this is a rollout-sensitive editor path.
-  const isImageAdjustmentEnabled = useIsImageAdjustmentEnabled()
   // Undefined in the link editor, which has no EditorDrawerProvider.
   // AdjustmentPreview then falls back to "content".
   const pageLayout = useOptionalEditorDrawerContext()?.previewPageState.layout
@@ -122,14 +118,10 @@ function JsonFormsImageControl({
 
   // The animation check below narrows this further once it settles.
   const canAdjustBase =
-    isImageAdjustmentEnabled &&
-    isManagedAsset &&
-    hasResourceContext &&
-    !!config &&
-    isBakeableFormat
+    isManagedAsset && hasResourceContext && !!config && isBakeableFormat
 
   const showUnsupportedFormatCallout =
-    isImageAdjustmentEnabled && isManagedAsset && !!config && !isBakeableFormat
+    isManagedAsset && !!config && !isBakeableFormat
 
   // Keep the uploaded File so the editor can bake from local bytes while the
   // malware scan still blocks the uploaded original. onUploadedFile gets the
@@ -211,7 +203,7 @@ function JsonFormsImageControl({
         source: "post_upload",
       })
       onAdjustmentModalOpen()
-    } else if (isImageAdjustmentEnabled && componentType) {
+    } else if (componentType) {
       captureSiteEvent("image_adjustment_unavailable", siteId, {
         resource_id: resourceId,
         component_type: componentType,
@@ -231,7 +223,6 @@ function JsonFormsImageControl({
     siteId,
     resourceId,
     componentType,
-    isImageAdjustmentEnabled,
     showAnimatedFormatCallout,
     showUnsupportedFormatCallout,
     assetMime,
@@ -267,7 +258,6 @@ function JsonFormsImageControl({
         resource_id: resourceId,
         component_type: componentType,
         file_type: pendingFileRef.current?.type,
-        is_adjustment_enabled: isImageAdjustmentEnabled,
       })
     },
     setHref: (src?: string) => {
@@ -325,7 +315,7 @@ function JsonFormsImageControl({
   return (
     <Box as={FormControl} isRequired={required} isInvalid={!!errors}>
       <FormLabel description={description}>{label}</FormLabel>
-      {isImageAdjustmentEnabled && config?.preUploadCopy && (
+      {config?.preUploadCopy && (
         <Infobox
           variant="info"
           size="sm"

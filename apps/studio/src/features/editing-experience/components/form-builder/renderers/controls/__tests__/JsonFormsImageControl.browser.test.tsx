@@ -24,10 +24,6 @@ vi.mock("~/env.mjs", () => ({
     NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME: "user-content.example.com",
   },
 }))
-// No GrowthBookProvider here; these tests cover upload only, so keep Adjust off
-vi.mock("~/hooks/useIsImageAdjustmentEnabled", () => ({
-  useIsImageAdjustmentEnabled: () => false,
-}))
 vi.mock("~/hooks/useQueryParse", () => ({
   useQueryParse: () => ({ siteId: 1, pageId: 1 }),
 }))
