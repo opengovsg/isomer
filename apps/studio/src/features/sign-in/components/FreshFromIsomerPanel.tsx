@@ -14,8 +14,8 @@ interface Spotlight {
   title: string
   description: string
   learnMoreHref: string
-  // Link text. Feature spotlights use the default "See how it works"; set this
-  // only when the link goes somewhere else ("See all the winners").
+  // Link text. Defaults to "See how it works"; set this to say where the link
+  // goes, e.g. "See all the winners".
   learnMoreLabel?: string
 }
 
@@ -37,6 +37,22 @@ const SPOTLIGHTS: Spotlight[] = [
     learnMoreLabel: "See all the winners",
   },
   {
+    id: "image-editing",
+    tabLabel: "Image editing (crop and focus)",
+    media: {
+      type: "video",
+      src: "/assets/fresh-from-isomer/image-cropper.mp4",
+    },
+    aspectRatio: 1920 / 1080,
+    badge: "New",
+    title: "Crop images and set a focal point",
+    description:
+      "Trim what you don't need and choose which part of the image stays in view on every screen size.",
+    learnMoreHref:
+      "https://support.isomer.gov.sg/en/articles/18541169-preparing-images#h_9c22f08f46",
+    learnMoreLabel: "Read how to crop images and set a focal point",
+  },
+  {
     id: "table-editing",
     tabLabel: "Table editing",
     media: {
@@ -50,21 +66,7 @@ const SPOTLIGHTS: Spotlight[] = [
       "Pick a size, merge cells, add colours, resize or move columns and edit full screen.",
     learnMoreHref:
       "https://support.isomer.gov.sg/en/articles/10425930-text-block#h_6da533f62d",
-  },
-  {
-    id: "page-history",
-    tabLabel: "Page history",
-    media: {
-      type: "video",
-      src: "/assets/fresh-from-isomer/page-history.mp4",
-    },
-    aspectRatio: 1920 / 1080,
-    badge: "New",
-    title: "Page history",
-    description:
-      "See every published version of a page and compare any of them side by side with what's live now — changes highlighted, no guesswork.",
-    learnMoreHref:
-      "https://support.isomer.gov.sg/en/articles/17673203-viewing-a-page-s-history",
+    learnMoreLabel: "Read how to edit tables",
   },
 ]
 
