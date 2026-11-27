@@ -7,6 +7,7 @@ import { EditingLockedOverlay } from "~/features/editing-experience/components/E
 import { EditPageCarouselPreviewProvider } from "~/features/editing-experience/components/preview/EditPageCarouselPreviewProvider"
 import { EditPagePreview } from "~/features/editing-experience/components/preview/EditPagePreview"
 import { ViewportProvider } from "~/features/editing-experience/components/preview/ViewportProvider"
+import { UnsavedPageChangesGuard } from "~/features/editing-experience/components/UnsavedPageChangesGuard"
 import {
   useContentEditTracker,
   useLeftEditorSurveyTracker,
@@ -67,6 +68,7 @@ const PageEditingView = ({ pageId, siteId }: PageEditingViewProps) => {
 
   return (
     <ViewportProvider>
+      <UnsavedPageChangesGuard />
       <EditPageCarouselPreviewProvider>
         <Grid h="full" w="100%" templateColumns="repeat(3, 1fr)" gap={0}>
           <GridItem
