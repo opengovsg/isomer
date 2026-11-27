@@ -31,3 +31,4 @@ export type IsomerAdminScriptType =
   | "rebuild-all-codebuild-projects"
   | "remove-gazette-search-records"
   | "repair-gazette-search-records"
+  | "restore-cloudfront-origins"

@@ -1924,6 +1924,9 @@ importers:
 
   tooling/scripts:
     dependencies:
+      '@aws-sdk/client-cloudfront':
+        specifier: catalog:aws-sdk
+        version: 3.1169.0
       '@aws-sdk/client-codebuild':
         specifier: catalog:aws-sdk
         version: 3.1172.0

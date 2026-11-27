@@ -8,6 +8,7 @@
     "isomer-admin": "dotenv -e isomer-admin/.env -- tsx isomer-admin/index.ts"
   },
   "dependencies": {
+    "@aws-sdk/client-cloudfront": "catalog:aws-sdk",
     "@aws-sdk/client-codebuild": "catalog:aws-sdk",
     "@aws-sdk/client-s3": "catalog:aws-sdk",
     "@inquirer/prompts": "catalog:",
