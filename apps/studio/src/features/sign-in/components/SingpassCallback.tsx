@@ -37,7 +37,7 @@ const CompleteSingpassLogin = ({
 }: {
   code: string
   state: string
-  iss?: string
+  iss: string
 }): JSX.Element => {
   const { setHasLoginStateFlag } = useLoginState()
 
@@ -155,7 +155,7 @@ export const SingpassCallback = (): JSX.Element => {
 
   // A failed Singpass redirect has `error` and no authorization code. Do not
   // send a stand-in code to the token exchange.
-  if (singpassError || !code || !state) {
+  if (singpassError || !code || !state || !iss) {
     return <RedirectToSingpassSignIn singpassError={singpassError} />
   }
 

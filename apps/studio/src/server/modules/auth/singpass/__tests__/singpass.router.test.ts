@@ -9,7 +9,6 @@ import {
 import { setupUser, setUpWhitelist } from "tests/integration/helpers/seed"
 import { expect, vi } from "vitest"
 import { env } from "~/env.mjs"
-import { IS_SINGPASS_FAPI2_ENABLED_FEATURE_KEY } from "~/lib/growthbook"
 import { mockFeatureFlags } from "~/lib/growthbookOffline"
 import { AuditLogEvent, db } from "~/server/modules/database"
 import { createCallerFactory } from "~/server/trpc"
@@ -21,8 +20,10 @@ import * as SingpassService from "../singpass.service"
 const createCaller = createCallerFactory(singpassRouter)
 const TEST_VALID_EMAIL = "test@open.gov.sg"
 const CALLBACK_STATE = "callback-state"
+const CALLBACK_ISSUER = "https://stg-id.singpass.gov.sg/fapi"
 const MOCK_ORIGINAL_UUID = "2625dd66-2cbb-414b-a136-f62bb516653c"
 const MOCK_SINGPASS_UUID = "beef6054-985f-4073-ae91-cd61552e2a7d"
+const MOCK_DPOP_JWK = '{"kty":"EC"}'
 
 const MOCK_SESSION_VERIFICATION_TOKEN: SessionVerificationToken = {
   identifier: "identifier",
@@ -87,55 +88,13 @@ describe("auth.singpass", () => {
           >["userId"],
           verificationToken: toSessionVerificationToken(verificationToken),
           codeVerifier: "code-verifier",
+          dpopPrivateJwk: MOCK_DPOP_JWK,
           nonce: "nonce",
           state: CALLBACK_STATE,
         },
       }
       await session.save()
 
-      // Act
-      const result = await caller.login({
-        landingUrl: "http://localhost",
-      })
-
-      // Assert
-      expect(result).toHaveProperty("redirectUrl")
-      expect(session.singpass?.sessionState?.useFapi).toBe(false)
-    })
-
-    it("should start a FAPI login when the flag is on for the user", async () => {
-      // Arrange
-      mockGrowthBook.setForcedFeatures(
-        new Map([
-          ...mockFeatureFlags,
-          [IS_SINGPASS_FAPI2_ENABLED_FEATURE_KEY, true],
-        ]),
-      )
-      const user = await db
-        .selectFrom("User")
-        .selectAll()
-        .where("email", "=", TEST_VALID_EMAIL)
-        .executeTakeFirstOrThrow()
-      const verificationToken = await db
-        .insertInto("VerificationToken")
-        .values({
-          expires: new Date(Date.now() + env.OTP_EXPIRY * 1000),
-          identifier: "identifier",
-          token: "token",
-        })
-        .returningAll()
-        .executeTakeFirstOrThrow()
-      session.singpass = {
-        sessionState: {
-          userId: user.id as NonNullable<
-            NonNullable<SessionData["singpass"]>["sessionState"]
-          >["userId"],
-          verificationToken: toSessionVerificationToken(verificationToken),
-          codeVerifier: "code-verifier",
-          nonce: "nonce",
-        },
-      }
-      await session.save()
       const getAuthorizationUrl = vi
         .spyOn(SingpassService, "getAuthorizationUrl")
         .mockResolvedValue({
@@ -145,23 +104,19 @@ describe("auth.singpass", () => {
             codeVerifier: "verifier",
             nonce: "nonce",
             state: "fapi-state",
-            useFapi: true,
-            dpopPrivateJwk: '{"kty":"EC"}',
+            dpopPrivateJwk: MOCK_DPOP_JWK,
           },
         })
 
       // Act
-      const result = await caller.login({ landingUrl: "http://localhost" })
+      const result = await caller.login({
+        landingUrl: "http://localhost",
+      })
 
       // Assert
-      expect(getAuthorizationUrl).toHaveBeenCalledWith(
-        expect.objectContaining({ useFapi: true }),
-      )
+      expect(getAuthorizationUrl).toHaveBeenCalledOnce()
       expect(result.redirectUrl).toContain("request_uri=")
-      expect(session.singpass?.sessionState?.useFapi).toBe(true)
-      expect(session.singpass?.sessionState?.dpopPrivateJwk).toBe(
-        '{"kty":"EC"}',
-      )
+      expect(session.singpass?.sessionState?.dpopPrivateJwk).toBe(MOCK_DPOP_JWK)
     })
   })
 
@@ -188,6 +143,7 @@ describe("auth.singpass", () => {
           >["userId"],
           verificationToken: {} as never,
           codeVerifier: "code-verifier",
+          dpopPrivateJwk: MOCK_DPOP_JWK,
           nonce: "nonce",
           state: CALLBACK_STATE,
         },
@@ -217,6 +173,7 @@ describe("auth.singpass", () => {
           >["userId"],
           verificationToken: {} as never,
           codeVerifier: "code-verifier",
+          dpopPrivateJwk: MOCK_DPOP_JWK,
           nonce: "nonce",
           state: CALLBACK_STATE,
         },
@@ -249,6 +206,7 @@ describe("auth.singpass", () => {
           >["userId"],
           verificationToken: {} as never,
           codeVerifier: "code-verifier",
+          dpopPrivateJwk: MOCK_DPOP_JWK,
           nonce: "nonce",
           state: CALLBACK_STATE,
         },
@@ -260,6 +218,7 @@ describe("auth.singpass", () => {
       const result = caller.callback({
         state: "different-state",
         code: "code",
+        iss: CALLBACK_ISSUER,
       })
 
       // Assert
@@ -277,6 +236,7 @@ describe("auth.singpass", () => {
       const result = caller.callback({
         state: "state",
         code: "code",
+        iss: CALLBACK_ISSUER,
       })
 
       // Assert
@@ -297,6 +257,7 @@ describe("auth.singpass", () => {
           >["userId"],
           verificationToken: {} as never,
           codeVerifier: "code-verifier",
+          dpopPrivateJwk: MOCK_DPOP_JWK,
           nonce: "nonce",
           state: CALLBACK_STATE,
         },
@@ -311,6 +272,7 @@ describe("auth.singpass", () => {
       const result = caller.callback({
         state: CALLBACK_STATE,
         code: "code",
+        iss: CALLBACK_ISSUER,
       })
 
       // Assert
@@ -337,6 +299,7 @@ describe("auth.singpass", () => {
           >["userId"],
           verificationToken: {} as never,
           codeVerifier: "code-verifier",
+          dpopPrivateJwk: MOCK_DPOP_JWK,
           nonce: "nonce",
           state: CALLBACK_STATE,
         },
@@ -351,6 +314,7 @@ describe("auth.singpass", () => {
       const result = caller.callback({
         state: CALLBACK_STATE,
         code: "code",
+        iss: CALLBACK_ISSUER,
       })
 
       // Assert
@@ -377,6 +341,7 @@ describe("auth.singpass", () => {
           >["userId"],
           verificationToken: MOCK_SESSION_VERIFICATION_TOKEN,
           codeVerifier: "code-verifier",
+          dpopPrivateJwk: MOCK_DPOP_JWK,
           nonce: "nonce",
           state: CALLBACK_STATE,
         },
@@ -391,6 +356,7 @@ describe("auth.singpass", () => {
       await caller.callback({
         state: CALLBACK_STATE,
         code: "code",
+        iss: CALLBACK_ISSUER,
       })
 
       // Assert
@@ -441,6 +407,7 @@ describe("auth.singpass", () => {
           >["userId"],
           verificationToken: MOCK_SESSION_VERIFICATION_TOKEN,
           codeVerifier: "code-verifier",
+          dpopPrivateJwk: MOCK_DPOP_JWK,
           nonce: "nonce",
           state: CALLBACK_STATE,
         },
@@ -454,13 +421,14 @@ describe("auth.singpass", () => {
       await caller.callback({
         state: CALLBACK_STATE,
         code: "code",
-        iss: "https://stg-id.singpass.gov.sg/fapi",
+        iss: CALLBACK_ISSUER,
       })
 
       // Assert
       expect(login).toHaveBeenCalledWith(
         expect.objectContaining({
-          iss: "https://stg-id.singpass.gov.sg/fapi",
+          iss: CALLBACK_ISSUER,
+          dpopPrivateJwk: MOCK_DPOP_JWK,
         }),
       )
     })
@@ -480,6 +448,7 @@ describe("auth.singpass", () => {
           >["userId"],
           verificationToken: MOCK_SESSION_VERIFICATION_TOKEN,
           codeVerifier: "code-verifier",
+          dpopPrivateJwk: MOCK_DPOP_JWK,
           nonce: "nonce",
           state: CALLBACK_STATE,
         },
@@ -494,6 +463,7 @@ describe("auth.singpass", () => {
       await caller.callback({
         state: CALLBACK_STATE,
         code: "code",
+        iss: CALLBACK_ISSUER,
       })
 
       // Assert

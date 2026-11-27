@@ -24,10 +24,8 @@ export interface SessionData {
       codeVerifier: string
       nonce?: string
       state?: string
-      // Pinned when the authorization request is built. The callback must not
-      // re-read the GrowthBook flag: a mid-login change would exchange a FAPI
-      // authorization code against the legacy token endpoint.
-      useFapi?: boolean
+      // Ephemeral DPoP key for this FAPI login. The callback sends it on
+      // token exchange.
       dpopPrivateJwk?: string
     }
   }
