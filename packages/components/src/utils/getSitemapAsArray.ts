@@ -1,6 +1,8 @@
 import type { IsomerSitemap } from "~/types"
 
-export const getSitemapAsArray = (sitemap: IsomerSitemap) => {
+const flattenedBySitemap = new WeakMap<IsomerSitemap, IsomerSitemap[]>()
+
+const flattenSitemap = (sitemap: IsomerSitemap) => {
   const result: IsomerSitemap[] = []
 
   const traverse = (node: IsomerSitemap) => {
@@ -14,5 +16,16 @@ export const getSitemapAsArray = (sitemap: IsomerSitemap) => {
   }
 
   traverse(sitemap)
+  return result
+}
+
+export const getSitemapAsArray = (sitemap: IsomerSitemap) => {
+  const cached = flattenedBySitemap.get(sitemap)
+  if (cached) {
+    return cached
+  }
+
+  const result = flattenSitemap(sitemap)
+  flattenedBySitemap.set(sitemap, result)
   return result
 }

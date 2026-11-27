@@ -1,12 +1,9 @@
 import type { IsomerSitemap } from "~/types"
 import DOMPurify from "isomorphic-dompurify"
 
-// This function returns a sanitized version of the provided URL string
-export const getSanitizedLinkHref = (url?: string) => {
-  if (url === undefined) {
-    return undefined
-  }
+const sanitizedHrefs = new Map<string, string | undefined>()
 
+const sanitizeHrefString = (url: string) => {
   // We use DOMPurify to create the document fragment as Node.js has no browser 'document' object.
   const fragment = DOMPurify.sanitize("<a></a>", { RETURN_DOM_FRAGMENT: true })
   const anchor = fragment.firstElementChild
@@ -24,6 +21,21 @@ export const getSanitizedLinkHref = (url?: string) => {
     return undefined
   }
 
+  return sanitizedUrl
+}
+
+// This function returns a sanitized version of the provided URL string
+export const getSanitizedLinkHref = (url?: string) => {
+  if (url === undefined) {
+    return undefined
+  }
+
+  if (sanitizedHrefs.has(url)) {
+    return sanitizedHrefs.get(url)
+  }
+
+  const sanitizedUrl = sanitizeHrefString(url)
+  sanitizedHrefs.set(url, sanitizedUrl)
   return sanitizedUrl
 }
 
