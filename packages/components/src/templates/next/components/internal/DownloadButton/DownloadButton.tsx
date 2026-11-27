@@ -1,10 +1,7 @@
 "use client"
 
-import type { AriaButtonProps } from "@react-aria/button"
 import type { VariantProps } from "tailwind-variants"
-import { useButton } from "@react-aria/button"
 import { useFocusRing } from "@react-aria/focus"
-import { mergeProps } from "@react-aria/utils"
 import { useEffect, useMemo, useRef, useState } from "react"
 import { BiDownload, BiLoaderAlt } from "react-icons/bi"
 import { tv } from "~/lib/tv"
@@ -31,8 +28,7 @@ const downloadFile = (url: string) => {
   document.body.removeChild(a)
 }
 
-interface DownloadButtonProps
-  extends AriaButtonProps<"button">, VariantProps<typeof buttonStyles> {
+interface DownloadButtonProps extends VariantProps<typeof buttonStyles> {
   url: string // URL to download the file from
   className?: string
 }
@@ -47,7 +43,6 @@ export const DownloadButton = ({
   size,
   colorScheme,
   url,
-  ...props
 }: DownloadButtonProps) => {
   const [text, setText] = useState<string>("Download")
   const [isDownloading, setIsDownloading] = useState<boolean>(false)
@@ -93,23 +88,16 @@ export const DownloadButton = ({
     void updateDisplayText()
   }, [url, strategy])
 
-  const { buttonProps } = useButton(
-    {
-      ...props,
-      isDisabled: isDownloading,
-      onPress: () => {
-        void handleDownload()
-      },
-    },
-    ref,
-  )
   const { focusProps, isFocusVisible } = useFocusRing()
-
-  const mergedProps = mergeProps(buttonProps, focusProps)
 
   return (
     <button
-      {...mergedProps}
+      {...focusProps}
+      type="button"
+      disabled={isDownloading}
+      onClick={() => {
+        void handleDownload()
+      }}
       ref={ref}
       className={twMerge(
         buttonStyles({
