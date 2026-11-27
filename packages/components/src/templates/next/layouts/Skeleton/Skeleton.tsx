@@ -10,10 +10,12 @@ import { Polyglot } from "../../components/internal/Polyglot"
 import { ScrollToTop } from "../../components/internal/ScrollToTop"
 import { SkipToContent } from "../../components/internal/SkipToContent"
 import { UnsupportedBrowserBanner } from "../../components/internal/UnsupportedBrowserBanner"
+import { WogaaSentimentTrigger } from "../../components/internal/Wogaa"
 import { SKIP_TO_CONTENT_ANCHOR_ID } from "../../constants"
 
 export const Skeleton = ({
   site,
+  page,
   layout,
   children,
 }: React.PropsWithChildren<
@@ -68,6 +70,12 @@ export const Skeleton = ({
         lastUpdated={site.lastUpdated}
         site={site}
         {...site.footerItems}
+      />
+
+      <WogaaSentimentTrigger
+        site={site}
+        layout={layout}
+        permalink={page.permalink}
       />
     </>
   )
