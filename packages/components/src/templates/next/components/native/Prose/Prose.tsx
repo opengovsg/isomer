@@ -12,14 +12,10 @@ import { UnorderedList } from "../UnorderedList"
 const ProseComponent = ({
   component,
   site,
-  shouldStripContentHtmlTags,
   headingLevel,
 }: {
   component: NonNullable<ProseProps["content"]>[number]
-} & Pick<
-  ProseProps,
-  "site" | "shouldStripContentHtmlTags" | "headingLevel"
->): JSX.Element => {
+} & Pick<ProseProps, "site" | "headingLevel">): JSX.Element => {
   switch (component.type) {
     case "divider":
       return <Divider {...component} />
@@ -30,11 +26,7 @@ const ProseComponent = ({
     case "paragraph":
       return (
         <BaseParagraph
-          content={getTextAsHtml({
-            site,
-            content: component.content,
-            shouldStripContentHtmlTags: shouldStripContentHtmlTags,
-          })}
+          content={getTextAsHtml({ site, content: component.content })}
           className="prose-body-base text-base-content"
           attrs={component.attrs}
         />
@@ -46,12 +38,7 @@ const ProseComponent = ({
   }
 }
 
-export const Prose = ({
-  content,
-  site,
-  shouldStripContentHtmlTags = false,
-  headingLevel,
-}: ProseProps) => {
+export const Prose = ({ content, site, headingLevel }: ProseProps) => {
   if (!content) {
     return <></>
   }
@@ -63,7 +50,6 @@ export const Prose = ({
           component={component}
           key={index}
           site={site}
-          shouldStripContentHtmlTags={shouldStripContentHtmlTags}
           headingLevel={headingLevel}
         />
       ))}

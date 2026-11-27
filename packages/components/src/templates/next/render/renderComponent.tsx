@@ -89,14 +89,7 @@ export const renderComponent = ({
     case "childrenpages":
       return <ChildrenPages key={elementKey} {...component} {...rest} />
     case "prose":
-      return (
-        <Prose
-          key={elementKey}
-          {...component}
-          {...rest}
-          shouldStripContentHtmlTags
-        />
-      )
+      return <Prose key={elementKey} {...component} {...rest} />
     case "audio":
       return <Audio key={elementKey} {...component} {...rest} />
     case "video":

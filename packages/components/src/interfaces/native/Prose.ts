@@ -94,7 +94,6 @@ export const ContentpicProseSchema = generateProseSchema({
 
 export type ProseProps = Static<typeof ProseSchema> & {
   site: IsomerSiteProps
-  shouldStripContentHtmlTags?: boolean
   // Applied to every heading rendered within this Prose block — see
   // HeadingProps.headingLevel.
   headingLevel: number
