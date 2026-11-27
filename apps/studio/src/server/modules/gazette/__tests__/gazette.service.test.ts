@@ -41,6 +41,14 @@ describe("gazette.service", () => {
       await expect(assertGazetteAccess(user.id)).resolves.toBeUndefined()
     })
 
+    it.each(["anyone@open.gov.sg", "anyone@imda.gov.sg"])(
+      "allows a whitelisted-domain user (%s)",
+      async (email) => {
+        const user = await setupUser({ email })
+        await expect(assertGazetteAccess(user.id)).resolves.toBeUndefined()
+      },
+    )
+
     it("allows a Core IsomerAdmin even without a Toppan email", async () => {
       const user = await setupUser({ email: "admin@example.com" })
       await setupIsomerAdmin({ userId: user.id, role: IsomerAdminRole.Core })

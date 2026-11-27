@@ -6,7 +6,7 @@ import { BiData, BiPlus } from "react-icons/bi"
 import { z } from "zod"
 import { PermissionsBoundary } from "~/components/AuthWrappers"
 import { ISOMER_SUPPORT_LINK } from "~/constants/misc"
-import { TOPPAN_EMAIL_DOMAIN } from "~/constants/toppan"
+import { hasGazetteAccessEmailDomain } from "~/constants/toppan"
 import { DashboardLayout } from "~/features/dashboard/components/DashboardLayout"
 import {
   CreateGazetteModal,
@@ -37,8 +37,8 @@ const GazettesPage: NextPageWithLayout = () => {
     })
   const egazette = useEgazetteInfo()
 
-  const isToppanUser = me.email.endsWith(TOPPAN_EMAIL_DOMAIN)
-  const hasGazetteAccess = isToppanUser || isIsomerAdmin
+  const hasAllowedEmailDomain = hasGazetteAccessEmailDomain(me.email)
+  const hasGazetteAccess = hasAllowedEmailDomain || isIsomerAdmin
 
   useEffect(() => {
     if (!isAdminCheckLoading && !hasGazetteAccess) {
